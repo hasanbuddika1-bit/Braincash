@@ -25,7 +25,7 @@ export function HomeView() {
             <div className="absolute -right-1 bottom-0 text-base animate-bounce-slow pointer-events-none">💰</div>
           </div>
           <div>
-            <h1 className="text-2xl font-bold font-['Orbitron'] bg-gradient-to-r from-white via-purple-300 to-gold-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-white">
               {user?.first_name || 'Brain'}!
             </h1>
             <p className="text-purple-300 text-sm">Ready to earn?</p>
@@ -97,7 +97,7 @@ export function HomeView() {
         <div className="relative z-10">
           <p className="text-purple-300 text-sm mb-1">Your Balance</p>
           <div className="flex items-baseline gap-3 mb-2">
-            <h2 className="text-5xl font-bold font-['Orbitron'] text-white">
+            <h2 className="text-5xl font-bold text-white" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
               {(user?.points || 0).toLocaleString()}
             </h2>
             <span className="text-gold-400 font-semibold text-lg">pts</span>

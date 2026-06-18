@@ -25,35 +25,35 @@ export function AnimatedBackground() {
   const [coins, setCoins] = useState<FloatingCoin[]>([]);
 
   useEffect(() => {
-    const colors = ['#bf00ff', '#00d4ff', '#ffd700', '#ff00ff', '#00ff88', '#ff6b6b'];
-    const types: Particle['type'][] = ['circle', 'star', 'coin'];
+    const colors = ['#bf00ff', '#00d4ff', '#ffd700'];
     const newParticles: Particle[] = [];
 
-    for (let i = 0; i < 30; i++) {
+    // Fewer, softer particles — only 8
+    for (let i = 0; i < 8; i++) {
       newParticles.push({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 150 + 50,
+        size: Math.random() * 120 + 80,
         color: colors[Math.floor(Math.random() * colors.length)],
-        speed: Math.random() * 15 + 10,
+        speed: Math.random() * 20 + 15,
         delay: Math.random() * 5,
-        type: types[Math.floor(Math.random() * types.length)],
+        type: 'circle',
       });
     }
 
     setParticles(newParticles);
 
-    // Floating USDT coins
+    // Only 4 subtle coins
     const newCoins: FloatingCoin[] = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 4; i++) {
       newCoins.push({
         id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        delay: Math.random() * 5,
-        duration: Math.random() * 4 + 3,
-        size: Math.random() * 20 + 24,
+        x: [10, 30, 60, 85][i],
+        y: [20, 65, 35, 75][i],
+        delay: i * 1.2,
+        duration: 5 + i,
+        size: 18,
       });
     }
     setCoins(newCoins);
@@ -112,52 +112,22 @@ export function AnimatedBackground() {
         />
       ))}
 
-      {/* Floating USDT coins with 3D effect */}
+      {/* Subtle floating coins — 4 only, very low opacity */}
       <div className="absolute inset-0 overflow-hidden">
         {coins.map((coin) => (
           <div
             key={coin.id}
-            className="absolute"
+            className="absolute pointer-events-none select-none"
             style={{
               left: `${coin.x}%`,
               top: `${coin.y}%`,
               fontSize: coin.size,
               animation: `coinFloat ${coin.duration}s ease-in-out infinite`,
               animationDelay: `${coin.delay}s`,
-              opacity: 0.15,
-              filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.5))',
+              opacity: 0.07,
             }}
           >
             💰
-          </div>
-        ))}
-      </div>
-
-      {/* Floating 3D emojis */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[
-          { emoji: '🧠', x: 15, y: 30, delay: 0, dur: 5 },
-          { emoji: '💎', x: 85, y: 20, delay: 1, dur: 6 },
-          { emoji: '🎮', x: 10, y: 70, delay: 2, dur: 4.5 },
-          { emoji: '🏆', x: 90, y: 60, delay: 0.5, dur: 5.5 },
-          { emoji: '🚀', x: 50, y: 10, delay: 1.5, dur: 4 },
-          { emoji: '⭐', x: 30, y: 85, delay: 3, dur: 5 },
-          { emoji: '🔥', x: 70, y: 80, delay: 2.5, dur: 4.5 },
-        ].map((item, i) => (
-          <div
-            key={i}
-            className="absolute"
-            style={{
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              fontSize: 32,
-              animation: `float ${item.dur}s ease-in-out infinite`,
-              animationDelay: `${item.delay}s`,
-              opacity: 0.1,
-              filter: 'drop-shadow(0 0 15px currentColor)',
-            }}
-          >
-            {item.emoji}
           </div>
         ))}
       </div>

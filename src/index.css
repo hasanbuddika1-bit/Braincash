@@ -121,15 +121,10 @@ a[aria-label*="Bolt"] {
     @apply glass-card p-4 text-center;
   }
 
+  /* Use solid gold — no background-clip trick which causes □ on Android WebView */
   .stat-value {
-    @apply text-2xl font-bold;
-    font-family: 'Orbitron', 'Rajdhani', sans-serif;
-    background: linear-gradient(135deg, #ffd700 0%, #00d4ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    /* Fallback for browsers where gradient text fails */
-    color: #ffd700;
+    @apply text-2xl font-bold text-gold-400;
+    font-family: 'Rajdhani', sans-serif;
   }
 
   /* Progress Bar */

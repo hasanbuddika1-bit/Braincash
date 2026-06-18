@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { User, Task, Game, Withdrawal, LeaderboardEntry, ViewType } from '../types';
 
 interface AppContextType {
@@ -92,14 +92,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     if (!tgUser) return;
 
-    // Demo mode outside Telegram — show UI without hitting the database
-    if (tgUser.id === 0) {
+    // Demo mode: outside Telegram OR Supabase not configured
+    if (tgUser.id === 0 || !isSupabaseConfigured) {
       const now = new Date().toISOString();
       setUser({
         id: 'demo',
-        telegram_id: 0,
-        username: 'guest',
-        first_name: 'Guest',
+        telegram_id: tgUser.id,
+        username: tgUser.username || 'guest',
+        first_name: tgUser.first_name || 'Guest',
         last_name: '',
         photo_url: '',
         points: 0,
@@ -189,6 +189,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [tgUser, haptic]);
 
   const refreshTasks = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
     try {
       const { data, error: fetchError } = await supabase
         .from('tasks')
@@ -224,6 +225,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const refreshGames = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
     try {
       const { data, error: fetchError } = await supabase
         .from('games')
@@ -239,7 +241,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshWithdrawals = useCallback(async () => {
-    if (!user) return;
+    if (!user || !isSupabaseConfigured) return;
 
     try {
       const { data, error: fetchError } = await supabase
@@ -257,6 +259,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const refreshLeaderboard = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
     try {
       const { data, error: fetchError } = await supabase
         .from('users')
@@ -281,8 +284,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addPoints = useCallback(async (amount: number) => {
     if (!user) return;
 
-    // Demo mode — just update local state
-    if (user.id === 'demo') {
+    // Demo mode or Supabase not configured — just update local state
+    if (user.id === 'demo' || !isSupabaseConfigured) {
       setUser({ ...user, points: user.points + amount, total_earned: user.total_earned + amount });
       haptic('success');
       return;
