@@ -16,7 +16,13 @@ export function HomeView() {
     <div className="px-4 pb-24 pt-4">
       {/* Header with 3D Brain Mascot */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            setCurrentView('profile');
+          }}
+          className="flex items-center gap-3 text-left"
+        >
           <div className="relative w-14 h-14">
             <div className="brain-mascot text-5xl animate-float leading-none">🧠</div>
             {/* Glasses overlay */}
@@ -30,7 +36,7 @@ export function HomeView() {
             </h1>
             <p className="text-purple-300 text-sm">Ready to earn?</p>
           </div>
-        </div>
+        </button>
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -41,12 +47,16 @@ export function HomeView() {
           >
             <History className="text-gray-400" size={20} />
           </button>
-          <div className="glass-card px-3 py-2 bg-gradient-to-r from-purple-600/30 to-blue-600/30">
-            <div className="flex items-center gap-2">
-              <Crown className="text-gold-400" size={18} />
-              <span className="text-gold-400 font-bold">#{userRank?.rank || '-'}</span>
-            </div>
-          </div>
+          <button
+            onClick={() => {
+              haptic('light');
+              setCurrentView('profile');
+            }}
+            className="glass-card px-3 py-2 bg-gradient-to-r from-purple-600/30 to-blue-600/30 flex items-center gap-2"
+          >
+            <Crown className="text-gold-400" size={18} />
+            <span className="text-gold-400 font-bold">#{userRank?.rank || '-'}</span>
+          </button>
         </div>
       </div>
 

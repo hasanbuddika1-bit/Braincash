@@ -138,7 +138,7 @@ export interface LeaderboardEntry {
   rank: number;
 }
 
-export type ViewType = 'home' | 'games' | 'game' | 'tasks' | 'ads' | 'referrals' | 'withdraw' | 'admin' | 'challenge' | 'history' | 'payment';
+export type ViewType = 'home' | 'games' | 'game' | 'tasks' | 'ads' | 'referrals' | 'withdraw' | 'admin' | 'challenge' | 'history' | 'payment' | 'profile';
 
 export interface GameState {
   score: number;

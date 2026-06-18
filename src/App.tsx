@@ -12,6 +12,7 @@ import { AdminView } from './components/views/AdminView';
 import { DailyChallengeView } from './components/views/DailyChallengeView';
 import { HistoryView } from './components/views/HistoryView';
 import { PaymentView } from './components/views/PaymentView';
+import { ProfileView } from './components/views/ProfileView';
 
 function App() {
   const { loading, currentView, selectedGame } = useApp();
@@ -37,10 +38,11 @@ function App() {
         {currentView === 'challenge' && <DailyChallengeView />}
         {currentView === 'history' && <HistoryView />}
         {currentView === 'payment' && <PaymentView />}
+        {currentView === 'profile' && <ProfileView />}
       </main>
 
       {/* Tab Bar */}
-      {currentView !== 'game' && currentView !== 'challenge' && currentView !== 'history' && currentView !== 'payment' && <TabBar />}
+      {currentView !== 'game' && currentView !== 'challenge' && currentView !== 'history' && currentView !== 'payment' && currentView !== 'profile' && <TabBar />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../contexts/AppContext';
-import { Home, Gamepad2, Tv, Users, Wallet, User } from 'lucide-react';
+import { Home, Gamepad2, Tv, Users, Wallet, User, UserCircle } from 'lucide-react';
 
 interface TabItemProps {
   icon: React.ReactNode;
@@ -40,7 +40,7 @@ export function TabBar() {
     { id: 'games' as const, icon: <Gamepad2 size={22} />, label: 'Games' },
     { id: 'ads' as const, icon: <Tv size={22} />, label: 'Earn' },
     { id: 'referrals' as const, icon: <Users size={22} />, label: 'Refer' },
-    { id: 'withdraw' as const, icon: <Wallet size={22} />, label: 'Cash' },
+    { id: 'profile' as const, icon: <UserCircle size={22} />, label: 'Profile' },
   ];
 
   return (
