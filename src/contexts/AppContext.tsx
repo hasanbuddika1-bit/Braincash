@@ -66,8 +66,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       tg.expand();
 
       // Set theme colors
-      tg.setHeaderColor('#1a0a2e');
-      tg.setBackgroundColor('#1a0a2e');
+      try { tg.setHeaderColor('#1a0a2e'); } catch {}
+      try { tg.setBackgroundColor('#1a0a2e'); } catch {}
 
       if (tg.initDataUnsafe?.user) {
         setTgUser({
@@ -77,12 +77,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           username: tg.initDataUnsafe.user.username,
           photo_url: tg.initDataUnsafe.user.photo_url,
         });
+        return;
       }
     }
+
+    // Not inside Telegram — use a demo guest session so the app renders
+    setTgUser({
+      id: 0,
+      first_name: 'Guest',
+      username: 'guest',
+    });
   }, []);
 
   const refreshUser = useCallback(async () => {
     if (!tgUser) return;
+
+    // Demo mode outside Telegram — show UI without hitting the database
+    if (tgUser.id === 0) {
+      const now = new Date().toISOString();
+      setUser({
+        id: 'demo',
+        telegram_id: 0,
+        username: 'guest',
+        first_name: 'Guest',
+        last_name: '',
+        photo_url: '',
+        points: 0,
+        total_earned: 0,
+        total_withdrawn: 0,
+        referral_code: 'DEMO',
+        referred_by: undefined,
+        is_admin: false,
+        is_banned: false,
+        is_verified: false,
+        last_active: now,
+        created_at: now,
+        updated_at: now,
+      });
+      return;
+    }
 
     try {
       const { data, error: fetchError } = await supabase
@@ -247,6 +280,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addPoints = useCallback(async (amount: number) => {
     if (!user) return;
+
+    // Demo mode — just update local state
+    if (user.id === 'demo') {
+      setUser({ ...user, points: user.points + amount, total_earned: user.total_earned + amount });
+      haptic('success');
+      return;
+    }
 
     try {
       const { error: updateError } = await supabase

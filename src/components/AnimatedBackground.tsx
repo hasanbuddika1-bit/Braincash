@@ -98,7 +98,7 @@ export function AnimatedBackground() {
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute rounded-full blur-3xl"
+          className="absolute rounded-full blur-3xl pointer-events-none"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
@@ -107,7 +107,7 @@ export function AnimatedBackground() {
             background: `radial-gradient(circle, ${particle.color} 0%, transparent 70%)`,
             animation: `float ${particle.speed}s ease-in-out infinite`,
             animationDelay: `${particle.delay}s`,
-            opacity: 0.3,
+            opacity: 0.18,
           }}
         />
       ))}
@@ -198,11 +198,11 @@ export function AnimatedBackground() {
         <rect width="100%" height="100%" fill="url(#hexagons)" />
       </svg>
 
-      {/* Vignette effect */}
+      {/* Vignette effect — subtle, not blocking content */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%)',
+          background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.15) 100%)',
         }}
       />
 

@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Hide "Made in Bolt" badge ─────────────────────────────────────── */
+a[href*="bolt.new"],
+a[href*="bolt."],
+[data-bolt],
+.bolt-badge,
+button[aria-label*="Bolt"],
+a[aria-label*="Bolt"] {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -110,11 +122,14 @@
   }
 
   .stat-value {
-    @apply text-2xl font-bold font-['Orbitron'];
-    background: linear-gradient(135deg, #ffd700, #00d4ff);
+    @apply text-2xl font-bold;
+    font-family: 'Orbitron', 'Rajdhani', sans-serif;
+    background: linear-gradient(135deg, #ffd700 0%, #00d4ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    /* Fallback for browsers where gradient text fails */
+    color: #ffd700;
   }
 
   /* Progress Bar */

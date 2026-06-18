@@ -17,12 +17,12 @@ export function HomeView() {
       {/* Header with 3D Brain Mascot */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="brain-mascot text-5xl animate-float">🧠</div>
+          <div className="relative w-14 h-14">
+            <div className="brain-mascot text-5xl animate-float leading-none">🧠</div>
             {/* Glasses overlay */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-lg">🤓</div>
-            {/* Floating coin */}
-            <div className="absolute -right-2 bottom-0 text-xl animate-bounce-slow">💰</div>
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-base pointer-events-none">🤓</div>
+            {/* Floating coin - clipped to avoid overflow */}
+            <div className="absolute -right-1 bottom-0 text-base animate-bounce-slow pointer-events-none">💰</div>
           </div>
           <div>
             <h1 className="text-2xl font-bold font-['Orbitron'] bg-gradient-to-r from-white via-purple-300 to-gold-400 bg-clip-text text-transparent">
@@ -284,19 +284,19 @@ function ActionButton({
       }}
       className="flex items-center gap-4 w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all group"
     >
-      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/30 to-blue-600/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+      <div className="w-12 h-12 flex-shrink-0 rounded-xl bg-gradient-to-br from-purple-600/30 to-blue-600/30 flex items-center justify-center group-hover:scale-110 transition-transform">
         {icon}
       </div>
-      <div className="flex-1 text-left">
-        <p className="text-white font-semibold">{title}</p>
-        <p className="text-gray-400 text-sm">{subtitle}</p>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="text-white font-semibold truncate">{title}</p>
+        <p className="text-gray-400 text-sm truncate">{subtitle}</p>
       </div>
       {badge && (
-        <span className="text-xs text-gold-400 font-bold px-2 py-1 rounded-full bg-gold-400/10 border border-gold-400/30">
+        <span className="flex-shrink-0 text-xs text-gold-400 font-bold px-2 py-1 rounded-full bg-gold-400/10 border border-gold-400/30 whitespace-nowrap">
           {badge}
         </span>
       )}
-      <ChevronRight className="text-gray-500 group-hover:text-gold-400 group-hover:translate-x-1 transition-all" size={20} />
+      <ChevronRight className="flex-shrink-0 text-gray-500 group-hover:text-gold-400 group-hover:translate-x-1 transition-all" size={20} />
     </button>
   );
 }
