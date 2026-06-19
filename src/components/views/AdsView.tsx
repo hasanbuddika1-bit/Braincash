@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import { PlayCircle, Gift, Zap, Clock, Tv } from 'lucide-react';
 
@@ -11,6 +12,7 @@ const AD_PROVIDERS = [
 
 export function AdsView() {
   const { user, addPoints, haptic } = useApp();
+  const { success: showSuccess, error: showError } = useToast();
   const [watching, setWatching] = useState(false);
   const [currentAd, setCurrentAd] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
@@ -54,10 +56,11 @@ export function AdsView() {
         // Add points
         await addPoints(reward);
         setLastReward(reward);
-
+        showSuccess(`+${reward} Points Earned!`, 'Ad reward added to your balance.');
         haptic('success');
       } catch (error) {
         console.error('Error recording ad view:', error);
+        showError('Failed', 'Could not record ad. Please try again.');
         haptic('error');
       } finally {
         setWatching(false);

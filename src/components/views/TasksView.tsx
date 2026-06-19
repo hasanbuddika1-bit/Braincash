@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import { CheckCircle, Circle, ExternalLink, Clock } from 'lucide-react';
 import type { Task } from '../../types';
 
 export function TasksView() {
   const { user, tasks, refreshTasks, addPoints, haptic } = useApp();
+  const { success: showSuccess, error: showError } = useToast();
   const [completingId, setCompletingId] = useState<string | null>(null);
 
   const handleTaskClick = async (task: Task) => {
@@ -34,13 +36,12 @@ export function TasksView() {
 
         // Add points
         await addPoints(task.reward_points);
-
-        // Refresh tasks
         await refreshTasks();
-
+        showSuccess(`+${task.reward_points} Points!`, `Task "${task.title}" completed.`);
         haptic('success');
       } catch (error) {
         console.error('Error completing task:', error);
+        showError('Task Failed', 'Could not complete task. Please try again.');
         haptic('error');
       } finally {
         setCompletingId(null);

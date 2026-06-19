@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useToast } from '../Toast';
 import { ArrowLeft, Trophy } from 'lucide-react';
 
 export function GamesView() {
@@ -106,7 +107,7 @@ function Game2048() {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const { addPoints, setCurrentView, haptic } = useApp();
-
+  const { success: showSuccess } = useToast();
   const gridRef = useRef<HTMLDivElement>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
@@ -199,6 +200,7 @@ function Game2048() {
         setGameOver(true);
         const reward = Math.floor(Math.random() * 5) + 4;
         addPoints(reward);
+        showSuccess(`+${reward} Points Earned!`, 'Game over — reward added.');
         haptic('success');
       }
     }

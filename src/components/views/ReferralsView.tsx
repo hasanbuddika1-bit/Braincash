@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import { Gift, Users, TrendingUp, Copy, Check, Share2 } from 'lucide-react';
 import type { Referral, User } from '../../types';
 
 export function ReferralsView() {
   const { user, haptic } = useApp();
+  const { success: showSuccess } = useToast();
   const [referrals, setReferrals] = useState<(Referral & { referred?: User })[]>([]);
   const [copied, setCopied] = useState(false);
   const [totalCommission, setTotalCommission] = useState(0);
@@ -60,23 +62,31 @@ export function ReferralsView() {
   }
 
   const copyReferralCode = () => {
-    if (!user?.referral_code) return;
+    if (!user?.referral_code && !user?.telegram_id) return;
 
-    const code = user.referral_code;
-    navigator.clipboard.writeText(code);
+    const tgId = user.telegram_id || user.referral_code;
+    const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${tgId}`;
+    navigator.clipboard.writeText(referralLink);
     setCopied(true);
+    showSuccess('Copied!', 'Referral link copied to clipboard.');
     haptic('success');
 
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const referralLink = user
+    ? `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id || user.referral_code}`
+    : '';
 
   const shareReferral = () => {
     if (!user?.referral_code) return;
 
     haptic('light');
 
-    const shareUrl = `https://t.me/braincash_bot?start=ref_${user.referral_code}`;
-    const shareText = `🧠 Join Brain Cash and start earning!\n\nUse my referral code: ${user.referral_code}\n\nYou'll get 50 points instantly when you join!`;
+    // Use the telegram ID for referral link
+    const tgId = user.telegram_id || user.referral_code;
+    const shareUrl = `https://t.me/Brain_cashbot/braincash?startapp=ref_${tgId}`;
+    const shareText = `🧠 Join Brain Cash and start earning!\n\nUse my referral link and get 50 points instantly!`;
 
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.switchInlineQuery(shareText, ['users', 'groups', 'channels']);
@@ -107,14 +117,14 @@ export function ReferralsView() {
         </div>
 
         <div className="relative z-10">
-          <h2 className="text-white font-semibold mb-2">Your Referral Code</h2>
+          <h2 className="text-white font-semibold mb-2">Your Referral Link</h2>
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 py-3 px-4 rounded-xl bg-white/10 font-mono text-xl text-gold-400 font-bold">
-              {user?.referral_code}
+            <div className="flex-1 py-3 px-4 rounded-xl bg-white/10 font-mono text-sm text-gold-400 font-bold break-all">
+              {referralLink}
             </div>
             <button
               onClick={copyReferralCode}
-              className="p-3 rounded-xl bg-purple-600 hover:bg-purple-500 transition-colors"
+              className="p-3 rounded-xl bg-purple-600 hover:bg-purple-500 transition-colors flex-shrink-0"
             >
               {copied ? (
                 <Check className="text-green-400" size={24} />

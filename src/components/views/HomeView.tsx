@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown } from 'lucide-react';
+import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown, ExternalLink } from 'lucide-react';
 
 export function HomeView() {
   const { user, leaderboard, setCurrentView, games, haptic } = useApp();
@@ -146,6 +146,56 @@ export function HomeView() {
               <span className="text-sm">Buy</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Community Links */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+          <span className="text-xl">🌐</span>
+          Community
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <a
+            href="https://t.me/brain_cach_channel"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <span className="text-xl">📢</span>
+            <span className="text-sm text-white">Official Channel</span>
+            <ExternalLink size={14} className="text-gray-400 ml-auto" />
+          </a>
+          <a
+            href="https://t.me/braincashgroup"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <span className="text-xl">👥</span>
+            <span className="text-sm text-white">Community Group</span>
+            <ExternalLink size={14} className="text-gray-400 ml-auto" />
+          </a>
+          <a
+            href="https://t.me/braincashpayment"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <span className="text-xl">💳</span>
+            <span className="text-sm text-white">Payment Channel</span>
+            <ExternalLink size={14} className="text-gray-400 ml-auto" />
+          </a>
+          <a
+            href="https://braincash.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <span className="text-xl">🌐</span>
+            <span className="text-sm text-white">Website</span>
+            <ExternalLink size={14} className="text-gray-400 ml-auto" />
+          </a>
         </div>
       </div>
 

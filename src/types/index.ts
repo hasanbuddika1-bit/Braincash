@@ -140,6 +140,21 @@ export interface LeaderboardEntry {
 
 export type ViewType = 'home' | 'games' | 'game' | 'tasks' | 'ads' | 'referrals' | 'withdraw' | 'admin' | 'challenge' | 'history' | 'payment' | 'profile';
 
+export const VIEW_LABELS: Record<ViewType, string> = {
+  home: 'Home',
+  games: 'Games',
+  game: 'Play',
+  tasks: 'Tasks',
+  ads: 'Earn',
+  referrals: 'Refer',
+  withdraw: 'Withdraw',
+  admin: 'Admin',
+  challenge: 'Challenge',
+  history: 'History',
+  payment: 'Buy',
+  profile: 'Profile',
+};
+
 export interface GameState {
   score: number;
   reward: number;

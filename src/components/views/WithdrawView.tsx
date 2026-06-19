@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import { Wallet, ArrowUpRight, Clock, CheckCircle, XCircle, ExternalLink, Info } from 'lucide-react';
 import type { Withdrawal } from '../../types';
@@ -11,6 +12,7 @@ const WITHDRAW_FEE_PERCENT = 5;
 
 export function WithdrawView() {
   const { user, withdrawals, refreshWithdrawals, haptic } = useApp();
+  const { success: showSuccess, error: showError } = useToast();
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<'USDT' | 'TON'>('USDT');
   const [walletAddress, setWalletAddress] = useState('');
@@ -88,9 +90,11 @@ export function WithdrawView() {
       setAmount('');
       setWalletAddress('');
 
+      showSuccess('Withdrawal Requested', `Your ${netAmount.toFixed(2)} ${currency} withdrawal is pending review.`);
       haptic('success');
     } catch (error) {
       console.error('Withdrawal error:', error);
+      showError('Withdrawal Failed', 'Could not create withdrawal. Please try again.');
       haptic('error');
     } finally {
       setLoading(false);
@@ -204,7 +208,7 @@ export function WithdrawView() {
               }`}
             >
               <div className="text-2xl mb-1">🚀</div>
-              <p className="text-white font-semibold">TON</p>
+              <p className="text-white font-semibold">TON / GRAM</p>
               <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
             </button>
           </div>

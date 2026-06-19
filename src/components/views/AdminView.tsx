@@ -13,14 +13,21 @@ import {
   BarChart3,
   Bell,
   RefreshCw,
+  AlertTriangle,
+  Globe,
 } from 'lucide-react';
 import type { Withdrawal, User, Task } from '../../types';
+
+const ADMIN_TELEGRAM_ID = 5419054691;
 
 export function AdminView() {
   const { user, haptic } = useApp();
   const [tab, setTab] = useState<'stats' | 'users' | 'withdrawals' | 'tasks'>('stats');
 
-  if (!user?.is_admin) {
+  // Check admin by telegram ID
+  const isAdmin = user?.is_admin || user?.telegram_id === ADMIN_TELEGRAM_ID;
+
+  if (!isAdmin) {
     return (
       <div className="px-4 pb-24 pt-4 text-center">
         <div className="text-6xl mb-4">🔒</div>
@@ -79,6 +86,7 @@ function AdminStats() {
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
+    suspendedUsers: 0,
     totalPoints: 0,
     totalWithdrawn: 0,
     pendingWithdrawals: 0,
@@ -101,6 +109,11 @@ function AdminStats() {
         .from('users')
         .select('*', { count: 'exact', head: true })
         .gt('last_active', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+
+      const { count: suspendedUsers } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_banned', true);
 
       const { data: pointsData } = await supabase
         .from('users')
@@ -126,6 +139,7 @@ function AdminStats() {
       setStats({
         totalUsers: totalUsers || 0,
         activeUsers: activeUsers || 0,
+        suspendedUsers: suspendedUsers || 0,
         totalPoints,
         totalWithdrawn,
         pendingWithdrawals: pendingWithdrawals || 0,
@@ -151,6 +165,11 @@ function AdminStats() {
           label="Today Signups"
         />
         <StatCard
+          icon={<AlertTriangle className="text-red-400" />}
+          value={stats.suspendedUsers.toLocaleString()}
+          label="Suspended"
+        />
+        <StatCard
           icon={<Gift className="text-neon-purple" />}
           value={stats.totalPoints.toLocaleString()}
           label="Total Points"
@@ -160,13 +179,14 @@ function AdminStats() {
           value={`$${(stats.totalWithdrawn).toFixed(2)}`}
           label="Total Withdrawn"
         />
+        <StatCard
+          icon={<Clock className="text-yellow-400" />}
+          value={stats.pendingWithdrawals.toString()}
+          label="Pending Withdrawals"
+        />
       </div>
 
       <div className="glass-card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white font-semibold">Pending Withdrawals</h3>
-          <span className="badge">{stats.pendingWithdrawals}</span>
-        </div>
         <button
           onClick={() => {
             haptic('light');
@@ -201,7 +221,7 @@ function StatCard({
 }
 
 function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<(User & { ip_address?: string; suspended_at?: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const { haptic } = useApp();
@@ -217,7 +237,7 @@ function AdminUsers() {
         .from('users')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (error) throw error;
       setUsers(data || []);
@@ -233,7 +253,11 @@ function AdminUsers() {
     try {
       const { error } = await supabase
         .from('users')
-        .update({ is_banned: !isBanned })
+        .update({
+          is_banned: !isBanned,
+          suspended_at: !isBanned ? new Date().toISOString() : null,
+          suspension_reason: !isBanned ? 'Admin suspension' : null
+        })
         .eq('id', userId);
 
       if (error) throw error;
@@ -248,8 +272,18 @@ function AdminUsers() {
   const filteredUsers = users.filter(
     (u) =>
       u.username?.toLowerCase().includes(search.toLowerCase()) ||
-      u.first_name?.toLowerCase().includes(search.toLowerCase())
+      u.first_name?.toLowerCase().includes(search.toLowerCase()) ||
+      u.telegram_id?.toString().includes(search) ||
+      u.ip_address?.includes(search)
   );
+
+  // Group users by IP for duplicate detection
+  const ipCounts: Record<string, number> = {};
+  users.forEach((u) => {
+    if (u.ip_address) {
+      ipCounts[u.ip_address] = (ipCounts[u.ip_address] || 0) + 1;
+    }
+  });
 
   return (
     <div>
@@ -257,7 +291,7 @@ function AdminUsers() {
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search users..."
+        placeholder="Search users, IPs, or Telegram ID..."
         className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 mb-4"
       />
 
@@ -267,30 +301,60 @@ function AdminUsers() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredUsers.map((u) => (
-            <div
-              key={u.id}
-              className={`glass-card p-4 flex items-center gap-4 ${
-                u.is_banned ? 'opacity-50' : ''
-              }`}
-            >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xl font-bold text-white">
-                {(u.first_name?.[0] || u.username?.[0] || '?').toUpperCase()}
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">{u.first_name || u.username || 'Anonymous'}</p>
-                <p className="text-gray-400 text-sm">{u.points.toLocaleString()} pts</p>
-              </div>
-              <button
-                onClick={() => toggleBan(u.id, u.is_banned)}
-                className={`p-2 rounded-lg ${
-                  u.is_banned ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                }`}
+          {filteredUsers.map((u) => {
+            const hasDuplicateIp = u.ip_address && ipCounts[u.ip_address] > 1;
+
+            return (
+              <div
+                key={u.id}
+                className={`glass-card p-4 ${
+                  u.is_banned ? 'opacity-50 border-red-500/50' : ''
+                } ${hasDuplicateIp && !u.is_banned ? 'border-yellow-500/50' : ''}`}
               >
-                {u.is_banned ? <CheckCircle size={20} /> : <XCircle size={20} />}
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xl font-bold text-white">
+                    {(u.first_name?.[0] || u.username?.[0] || '?').toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-semibold">{u.first_name || u.username || 'Anonymous'}</p>
+                      {u.is_banned && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400">BANNED</span>
+                      )}
+                      {hasDuplicateIp && !u.is_banned && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">
+                          <AlertTriangle size={12} className="inline mr-1" />
+                          DUP IP
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-400 text-sm">{u.points.toLocaleString()} pts</p>
+                  </div>
+                  <button
+                    onClick={() => toggleBan(u.id, u.is_banned)}
+                    className={`p-2 rounded-lg ${
+                      u.is_banned ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                    }`}
+                  >
+                    {u.is_banned ? <CheckCircle size={20} /> : <XCircle size={20} />}
+                  </button>
+                </div>
+
+                {/* Additional info */}
+                <div className="flex flex-wrap gap-3 text-xs text-gray-500 mt-2 pt-2 border-t border-white/5">
+                  <span>🆔 {u.telegram_id}</span>
+                  {u.ip_address && (
+                    <span className="flex items-center gap-1">
+                      <Globe size={12} />
+                      {u.ip_address}
+                    </span>
+                  )}
+                  <span>📅 {new Date(u.created_at).toLocaleDateString()}</span>
+                  <span>💰 ${(u.total_withdrawn || 0).toFixed(2)} withdrawn</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

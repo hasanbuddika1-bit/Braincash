@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+const ADMIN_TELEGRAM_ID = 5419054691;
+const WELCOME_PHOTO_URL = 'https://i.imgur.com/braincash-welcome.png'; // Replace with actual photo
+
 interface TelegramUpdate {
   update_id: number;
   message?: {
@@ -107,6 +110,29 @@ async function sendMessage(botToken: string, chatId: number | string, text: stri
   return response.json();
 }
 
+async function sendPhoto(botToken: string, chatId: number | string, photoUrl: string, caption: string, keyboard?: object) {
+  const url = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+
+  const body: Record<string, unknown> = {
+    chat_id: chatId,
+    photo: photoUrl,
+    caption,
+    parse_mode: 'HTML',
+  };
+
+  if (keyboard) {
+    body.reply_markup = keyboard;
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  return response.json();
+}
+
 async function answerCallbackQuery(botToken: string, callbackId: string, text?: string) {
   const url = `https://api.telegram.org/bot${botToken}/answerCallbackQuery`;
   await fetch(url, {
@@ -140,14 +166,18 @@ function getMainKeyboard(miniAppUrl: string) {
   };
 }
 
-// Get or create user
-async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, telegramUser: {
-  id: number;
-  first_name?: string;
-  last_name?: string;
-  username?: string;
-}, referredBy?: string) {
-
+// Get or create user with IP tracking
+async function getOrCreateUser(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  telegramUser: {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+  },
+  referredBy?: string,
+  clientIp?: string
+) {
   let { data: user, error } = await supabase
     .from('users')
     .select('*')
@@ -156,6 +186,24 @@ async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, t
 
   if (error?.code === 'PGRST116' || !user) {
     const referralCode = 'BC' + telegramUser.id.toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    // Check for existing accounts with same IP
+    let shouldSuspend = false;
+    if (clientIp) {
+      const { data: existingAccounts } = await supabase
+        .from('users')
+        .select('id, telegram_id, is_banned')
+        .eq('ip_address', clientIp)
+        .neq('telegram_id', telegramUser.id);
+
+      if (existingAccounts && existingAccounts.length > 0) {
+        // Check if any existing account is not banned
+        const activeAccounts = existingAccounts.filter(a => !a.is_banned);
+        if (activeAccounts.length > 0) {
+          shouldSuspend = true;
+        }
+      }
+    }
 
     const { data: newUser, error: createError } = await supabase
       .from('users')
@@ -168,8 +216,10 @@ async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, t
         points: 0,
         total_earned: 0,
         total_withdrawn: 0,
-        is_admin: false,
+        is_admin: telegramUser.id === ADMIN_TELEGRAM_ID,
         is_verified: false,
+        ip_address: clientIp,
+        is_banned: shouldSuspend,
       })
       .select()
       .single();
@@ -181,6 +231,34 @@ async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, t
 
     user = newUser;
 
+    // Send notification to admin about new user
+    const botToken = await getBotToken(supabase);
+    if (botToken) {
+      await sendMessage(botToken, ADMIN_TELEGRAM_ID, `
+🆕 <b>New User Registration</b>
+
+👤 <b>User:</b> ${telegramUser.first_name || 'Unknown'} ${telegramUser.last_name || ''}
+📱 <b>Username:</b> @${telegramUser.username || 'N/A'}
+🆔 <b>Telegram ID:</b> ${telegramUser.id}
+🌐 <b>IP:</b> ${clientIp || 'Unknown'}
+⚠️ <b>Status:</b> ${shouldSuspend ? 'Suspended (duplicate IP)' : 'Active'}
+
+${shouldSuspend ? '⚠️ Multiple accounts detected from same IP!' : ''}
+      `);
+    }
+
+    // If suspended, notify user
+    if (shouldSuspend) {
+      if (botToken) {
+        await sendMessage(botToken, telegramUser.id, `
+⚠️ <b>Account Under Review</b>
+
+Your account has been temporarily suspended for security reasons. Please contact support @braincashsupport if you believe this is an error.
+        `);
+      }
+      return user; // Return suspended user
+    }
+
     // Give welcome bonus to new user
     const welcomeBonus = 10;
     await supabase.rpc('add_points', {
@@ -190,35 +268,42 @@ async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, t
 
     // Handle referral bonus if applicable
     if (referredBy && referredBy.startsWith('ref_')) {
-      const referrerCode = referredBy.replace('ref_', '');
-
-      const { data: referrer } = await supabase
-        .from('users')
-        .select('id')
-        .eq('referral_code', referrerCode)
-        .single();
-
-      if (referrer && referrer.id !== user.id) {
-        // Add referral record
-        await supabase.from('referrals').insert({
-          referrer_id: referrer.id,
-          referred_id: user.id,
-          join_bonus: 50,
-          task_bonus: 0,
-          total_commission: 0,
-        });
-
-        // Update user's referred_by
-        await supabase
+      // Check if referral is from same IP (block self-referrals)
+      let isBlockedReferral = false;
+      if (clientIp) {
+        const referrerCode = referredBy.replace('ref_', '');
+        const { data: referrer } = await supabase
           .from('users')
-          .update({ referred_by: referrer.id })
-          .eq('id', user.id);
+          .select('id, ip_address')
+          .eq('referral_code', referrerCode)
+          .single();
 
-        // Award join bonus to referrer
-        await supabase.rpc('add_points', {
-          user_id: referrer.id,
-          amount: 50,
-        });
+        if (referrer && referrer.ip_address === clientIp) {
+          isBlockedReferral = true;
+        }
+
+        if (referrer && referrer.id !== user.id && !isBlockedReferral) {
+          // Add referral record
+          await supabase.from('referrals').insert({
+            referrer_id: referrer.id,
+            referred_id: user.id,
+            join_bonus: 50,
+            task_bonus: 0,
+            total_commission: 0,
+          });
+
+          // Update user's referred_by
+          await supabase
+            .from('users')
+            .update({ referred_by: referrer.id })
+            .eq('id', user.id);
+
+          // Award join bonus to referrer
+          await supabase.rpc('add_points', {
+            user_id: referrer.id,
+            amount: 50,
+          });
+        }
       }
     }
   }
@@ -332,9 +417,10 @@ Deno.serve(async (req: Request) => {
 
       const user = await getOrCreateUser(supabase, telegramUser, startParam);
 
-      const referralCode = user?.referral_code || 'BC' + telegramUser.id.toString(36).toUpperCase();
+      const referralId = telegramUser.id;
 
-      const message = `
+      // Send welcome photo with caption
+      const welcomeCaption = `
 🧠 <b>Welcome to Brain Cash!</b>
 
 Play games, watch ads, complete tasks and earn real cash rewards!
@@ -343,13 +429,23 @@ Play games, watch ads, complete tasks and earn real cash rewards!
 📺 Watch ads to earn 4-8 points
 🎮 Play 7+ puzzle games
 👥 Invite friends for 150 pts + 10% commission
-💳 Withdraw to USDT or TON
+💳 Withdraw to USDT or TON (GRAM)
 
 <b>Your referral link:</b>
-https://t.me/braincash_bot?start=ref_${referralCode}
-`;
+https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
 
-      await sendMessage(botToken, chatId, message, getMainKeyboard(miniAppUrl));
+📢 <b>Join our community:</b>
+• Channel: @brain_cach_channel
+• Group: @braincashgroup
+• Payments: @braincashpayment
+      `;
+
+      // Try to send photo first, fallback to message
+      try {
+        await sendPhoto(botToken, chatId, WELCOME_PHOTO_URL, welcomeCaption, getMainKeyboard(miniAppUrl));
+      } catch {
+        await sendMessage(botToken, chatId, welcomeCaption, getMainKeyboard(miniAppUrl));
+      }
 
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -401,13 +497,13 @@ https://t.me/braincash_bot?start=ref_${referralCode}
       }
 
       const user = await getOrCreateUser(supabase, telegramUser);
-      const referralCode = user?.referral_code || 'BC' + telegramUser.id.toString(36).toUpperCase();
+      const referralId = telegramUser.id;
 
       await sendMessage(botToken, chatId, `
 👥 <b>Referral Program</b>
 
 🔗 <b>Your Referral Link:</b>
-https://t.me/braincash_bot?start=ref_${referralCode}
+https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
 
 🎁 <b>Rewards:</b>
 • +50 pts when friend joins
@@ -417,7 +513,7 @@ https://t.me/braincash_bot?start=ref_${referralCode}
 <i>Share your link and start earning!</i>
       `, {
         inline_keyboard: [
-          [{ text: "📤 Share Link", switch_inline_query: `Join Brain Cash and earn crypto! Use my link: https://t.me/braincash_bot?start=ref_${referralCode}` }],
+          [{ text: "📤 Share Link", switch_inline_query: `Join Brain Cash and earn crypto! Use my link: https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}` }],
           [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
         ],
       });
@@ -465,10 +561,11 @@ https://t.me/braincash_bot?start=ref_${referralCode}
 100 points = $0.01 USDT
 
 💳 <b>Withdrawal:</b>
-Minimum $0.05 to USDT or TON wallet
+Minimum $0.05 to USDT or TON (GRAM) wallet
 
-📧 <b>Support:</b> @braincashsupport
-📢 <b>Updates:</b> @braincash
+📢 <b>Official Channel:</b> @brain_cach_channel
+👥 <b>Community Group:</b> @braincashgroup
+💳 <b>Payment Channel:</b> @braincashpayment
       `, getMainKeyboard(miniAppUrl));
 
       return new Response(JSON.stringify({ ok: true }), {
@@ -505,13 +602,15 @@ Click below to purchase with crypto or Telegram Stars.
         await sendMessage(botToken, chatId!, `
 🌍 <b>Join Our Community!</b>
 
-📢 <b>Official Channel:</b> @braincash
+📢 <b>Official Channel:</b> @brain_cach_channel
 👥 <b>Community Group:</b> @braincashgroup
+💳 <b>Payment Channel:</b> @braincashpayment
 🌐 <b>Website:</b> https://braincash.app
         `, {
           inline_keyboard: [
-            [{ text: "📢 Join Channel", url: "https://t.me/braincash" }],
+            [{ text: "📢 Join Channel", url: "https://t.me/brain_cach_channel" }],
             [{ text: "👥 Join Group", url: "https://t.me/braincashgroup" }],
+            [{ text: "💳 Payment Channel", url: "https://t.me/braincashpayment" }],
             [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
           ],
         });

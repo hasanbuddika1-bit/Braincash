@@ -1,6 +1,26 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { useToast } from '../components/Toast';
 import type { User, Task, Game, Withdrawal, LeaderboardEntry, ViewType } from '../types';
+
+const CACHE_KEY = 'brain_cash_user';
+const VIEW_HISTORY_KEY = 'brain_cash_view_history';
+
+function saveUserCache(u: User) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(u)); } catch {}
+}
+function loadUserCache(): User | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as User) : null;
+  } catch { return null; }
+}
+function clearUserCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch {}
+}
+
+// Views that should not be in history
+const EXCLUDED_FROM_HISTORY: ViewType[] = ['game', 'admin'];
 
 interface AppContextType {
   user: User | null;
@@ -10,6 +30,8 @@ interface AppContextType {
   leaderboard: LeaderboardEntry[];
   currentView: ViewType;
   setCurrentView: (view: ViewType) => void;
+  goBack: () => void;
+  canGoBack: boolean;
   selectedGame: Game | null;
   setSelectedGame: (game: Game | null) => void;
   loading: boolean;
@@ -20,6 +42,7 @@ interface AppContextType {
   refreshWithdrawals: () => Promise<void>;
   refreshLeaderboard: () => Promise<void>;
   addPoints: (amount: number) => Promise<void>;
+  recordActivity: (type: string, details?: Record<string, unknown>) => Promise<void>;
   tgUser: {
     id: number;
     first_name?: string;
@@ -33,16 +56,26 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
+
+  // Seed from cache immediately so balance shows on refresh before network resolves
+  const [user, setUserState] = useState<User | null>(() => loadUserCache());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [currentView, setCurrentView] = useState<ViewType>('home');
+  const [currentView, setCurrentViewState] = useState<ViewType>('home');
+  const [viewHistory, setViewHistory] = useState<ViewType[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tgUser, setTgUser] = useState<AppContextType['tgUser']>(null);
+
+  // Wrap setUser to always persist to cache
+  const setUser = useCallback((u: User | null) => {
+    setUserState(u);
+    if (u) saveUserCache(u); else clearUserCache();
+  }, []);
 
   const haptic = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning') => {
     try {
@@ -54,18 +87,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           tg.HapticFeedback.impactOccurred(type);
         }
       }
-    } catch {
-      // Ignore haptic errors
-    }
+    } catch {}
   }, []);
+
+  // Track view history for back navigation
+  const setCurrentView = useCallback((view: ViewType) => {
+    if (!EXCLUDED_FROM_HISTORY.includes(currentView)) {
+      setViewHistory((prev) => [...prev, currentView]);
+    }
+    setCurrentViewState(view);
+  }, [currentView]);
+
+  const goBack = useCallback(() => {
+    setViewHistory((prev) => {
+      if (prev.length > 0) {
+        const lastView = prev[prev.length - 1];
+        setCurrentViewState(lastView);
+        return prev.slice(0, -1);
+      }
+      // Default to home if no history
+      setCurrentViewState('home');
+      return [];
+    });
+  }, []);
+
+  const canGoBack = viewHistory.length > 0;
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
-
-      // Set theme colors
       try { tg.setHeaderColor('#1a0a2e'); } catch {}
       try { tg.setBackgroundColor('#1a0a2e'); } catch {}
 
@@ -80,22 +132,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     }
-
-    // Not inside Telegram — use a demo guest session so the app renders
-    setTgUser({
-      id: 0,
-      first_name: 'Guest',
-      username: 'guest',
-    });
+    setTgUser({ id: 0, first_name: 'Guest', username: 'guest' });
   }, []);
 
   const refreshUser = useCallback(async () => {
     if (!tgUser) return;
 
-    // Demo mode: outside Telegram OR Supabase not configured
     if (tgUser.id === 0 || !isSupabaseConfigured) {
       const now = new Date().toISOString();
-      setUser({
+      const demo: User = {
         id: 'demo',
         telegram_id: tgUser.id,
         username: tgUser.username || 'guest',
@@ -113,7 +158,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         last_active: now,
         created_at: now,
         updated_at: now,
-      });
+      };
+      setUser(demo);
       return;
     }
 
@@ -125,7 +171,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (fetchError && fetchError.code === 'PGRST116') {
-        // User doesn't exist, create new
         const referralCode = 'BC' + Math.random().toString(36).substring(2, 8).toUpperCase();
         const { data: newUser, error: createError } = await supabase
           .from('users')
@@ -142,8 +187,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         if (createError) throw createError;
         setUser(newUser);
+        toastSuccess('Welcome to Brain Cash!', 'Your account has been created.');
+        haptic('success');
 
-        // Check for referral
         const tg = window.Telegram?.WebApp;
         const startParam = tg?.initDataUnsafe?.start_param;
         if (startParam && startParam.startsWith('ref_')) {
@@ -155,28 +201,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           if (referrer) {
-            // Add referral bonus
             await supabase.from('referrals').insert({
               referrer_id: referrer.id,
               referred_id: newUser.id,
               join_bonus: 50,
             });
-
-            // Update user's referred_by
-            await supabase
-              .from('users')
-              .update({ referred_by: referrer.id })
-              .eq('id', newUser.id);
-
-            // Add points to referrer
-            await supabase.rpc('add_points', {
-              user_id: referrer.id,
-              amount: 50,
-            });
+            await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
+            await supabase.rpc('add_points', { user_id: referrer.id, amount: 50 });
           }
         }
-
-        haptic('success');
       } else if (fetchError) {
         throw fetchError;
       } else {
@@ -185,8 +218,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('Error refreshing user:', err);
       setError('Failed to load user data');
+      toastError('Connection Error', 'Could not load your profile. Using cached data.');
     }
-  }, [tgUser, haptic]);
+  }, [tgUser, haptic, toastSuccess, toastError, setUser]);
 
   const refreshTasks = useCallback(async () => {
     if (!isSupabaseConfigured) return;
@@ -199,7 +233,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (fetchError) throw fetchError;
 
-      // Get user's completed tasks
       if (user) {
         const { data: completions } = await supabase
           .from('task_completions')
@@ -211,10 +244,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         );
 
         setTasks(
-          (data || []).map((task) => ({
-            ...task,
-            completed: completedIds.has(task.id),
-          }))
+          (data || []).map((task) => ({ ...task, completed: completedIds.has(task.id) }))
         );
       } else {
         setTasks(data || []);
@@ -242,7 +272,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refreshWithdrawals = useCallback(async () => {
     if (!user || !isSupabaseConfigured) return;
-
     try {
       const { data, error: fetchError } = await supabase
         .from('withdrawals')
@@ -269,13 +298,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .limit(100);
 
       if (fetchError) throw fetchError;
-
-      const ranked = (data || []).map((entry, index) => ({
-        ...entry,
-        rank: index + 1,
-      }));
-
-      setLeaderboard(ranked);
+      setLeaderboard((data || []).map((entry, i) => ({ ...entry, rank: i + 1 })));
     } catch (err) {
       console.error('Error refreshing leaderboard:', err);
     }
@@ -284,57 +307,100 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addPoints = useCallback(async (amount: number) => {
     if (!user) return;
 
-    // Demo mode or Supabase not configured — just update local state
     if (user.id === 'demo' || !isSupabaseConfigured) {
-      setUser({ ...user, points: user.points + amount, total_earned: user.total_earned + amount });
-      haptic('success');
-      return;
-    }
-
-    try {
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          points: user.points + amount,
-          total_earned: user.total_earned + amount,
-        })
-        .eq('id', user.id);
-
-      if (updateError) throw updateError;
-
       setUser({
         ...user,
         points: user.points + amount,
         total_earned: user.total_earned + amount,
       });
+      haptic('success');
+      return;
+    }
+
+    try {
+      // Use RPC function for atomic update
+      const { error: updateError } = await supabase.rpc('add_points', {
+        user_id: user.id,
+        amount: amount,
+      });
+
+      if (updateError) {
+        // Fallback to direct update if RPC doesn't exist
+        const { error: directError } = await supabase
+          .from('users')
+          .update({
+            points: user.points + amount,
+            total_earned: user.total_earned + amount,
+            last_active: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
+
+        if (directError) throw directError;
+      }
+
+      // Update local state
+      setUser({
+        ...user,
+        points: user.points + amount,
+        total_earned: user.total_earned + amount,
+        last_active: new Date().toISOString(),
+      });
+
+      // Record activity
+      await recordActivity('points_earned', { amount, source: 'app' });
 
       haptic('success');
     } catch (err) {
       console.error('Error adding points:', err);
       haptic('error');
+      toastError('Error', 'Could not save points. Please try again.');
     }
-  }, [user, haptic]);
+  }, [user, haptic, toastError, setUser]);
 
-  // Load data on mount
+  // Record user activity for tracking
+  const recordActivity = useCallback(async (
+    type: string,
+    details?: Record<string, unknown>
+  ) => {
+    if (!user || user.id === 'demo' || !isSupabaseConfigured) return;
+
+    try {
+      // Update last_active timestamp
+      await supabase
+        .from('users')
+        .update({ last_active: new Date().toISOString() })
+        .eq('id', user.id);
+
+      // Try to insert into activities table if it exists
+      const { error } = await supabase.from('user_activities').insert({
+        user_id: user.id,
+        activity_type: type,
+        details: details || {},
+      });
+
+      // Silently fail if table doesn't exist
+      if (error && error.code !== 'PGRST116') {
+        console.log('Activity logging not available');
+      }
+    } catch {
+      // Silently ignore activity logging errors
+    }
+  }, [user]);
+
+  // Load on mount
   useEffect(() => {
     if (tgUser) {
       setLoading(true);
-      Promise.all([refreshUser()])
-        .then(() => setLoading(false))
-        .catch(() => setLoading(false));
+      refreshUser().finally(() => setLoading(false));
     }
   }, [tgUser, refreshUser]);
 
   useEffect(() => {
     if (user) {
-      Promise.all([
-        refreshTasks(),
-        refreshGames(),
-        refreshWithdrawals(),
-        refreshLeaderboard(),
-      ]);
+      Promise.all([refreshTasks(), refreshGames(), refreshWithdrawals(), refreshLeaderboard()]);
     }
-  }, [user, refreshTasks, refreshGames, refreshWithdrawals, refreshLeaderboard]);
+  }, [user?.id]);
 
   const value: AppContextType = {
     user,
@@ -344,6 +410,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     leaderboard,
     currentView,
     setCurrentView,
+    goBack,
+    canGoBack,
     selectedGame,
     setSelectedGame,
     loading,
@@ -354,6 +422,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     refreshWithdrawals,
     refreshLeaderboard,
     addPoints,
+    recordActivity,
     tgUser,
     haptic,
   };
@@ -362,9 +431,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
+  const ctx = useContext(AppContext);
+  if (ctx === undefined) throw new Error('useApp must be used within an AppProvider');
+  return ctx;
 }
