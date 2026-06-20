@@ -6,7 +6,7 @@ export function HomeView() {
   const { user, leaderboard, setCurrentView, games, haptic } = useApp();
 
   const pointsToUSD = (points: number) => {
-    return (points * 0.01).toFixed(2);
+    return (points * 0.0001).toFixed(2);
   };
 
   const userRank = leaderboard.find((entry) => entry.user_id === user?.id);
@@ -180,20 +180,10 @@ export function HomeView() {
             href="https://t.me/braincashpayment"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors col-span-2"
           >
             <span className="text-xl">💳</span>
             <span className="text-sm text-white">Payment Channel</span>
-            <ExternalLink size={14} className="text-gray-400 ml-auto" />
-          </a>
-          <a
-            href="https://braincash.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <span className="text-xl">🌐</span>
-            <span className="text-sm text-white">Website</span>
             <ExternalLink size={14} className="text-gray-400 ml-auto" />
           </a>
         </div>

@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const ADMIN_TELEGRAM_ID = 5419054691;
-const WELCOME_PHOTO_URL = 'https://i.imgur.com/braincash-welcome.png'; // Replace with actual photo
+const WELCOME_PHOTO_FILENAME = 'files_10647109-2026-06-19T11-55-14-664Z-file_00000000bac07208b0ae09c6a7b5a75b.webp';
 
 interface TelegramUpdate {
   update_id: number;
@@ -418,6 +418,7 @@ Deno.serve(async (req: Request) => {
       const user = await getOrCreateUser(supabase, telegramUser, startParam);
 
       const referralId = telegramUser.id;
+      const welcomePhotoUrl = `${miniAppUrl}/images/${WELCOME_PHOTO_FILENAME}`;
 
       // Send welcome photo with caption
       const welcomeCaption = `
@@ -425,10 +426,10 @@ Deno.serve(async (req: Request) => {
 
 Play games, watch ads, complete tasks and earn real cash rewards!
 
-💰 <b>100 Points = $0.01 USDT</b>
+💰 <b>500 Points = $0.05 USDT</b>
 📺 Watch ads to earn 4-8 points
 🎮 Play 7+ puzzle games
-👥 Invite friends for 150 pts + 10% commission
+👥 Invite friends for 50 pts + 10% commission
 💳 Withdraw to USDT or TON (GRAM)
 
 <b>Your referral link:</b>
@@ -441,9 +442,8 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
       `;
 
       // Try to send photo first, fallback to message
-      try {
-        await sendPhoto(botToken, chatId, WELCOME_PHOTO_URL, welcomeCaption, getMainKeyboard(miniAppUrl));
-      } catch {
+      const photoResult = await sendPhoto(botToken, chatId, welcomePhotoUrl, welcomeCaption, getMainKeyboard(miniAppUrl));
+      if (!photoResult.ok) {
         await sendMessage(botToken, chatId, welcomeCaption, getMainKeyboard(miniAppUrl));
       }
 
@@ -467,7 +467,7 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
 
       const user = await getOrCreateUser(supabase, telegramUser);
       const points = user?.points || 0;
-      const usdValue = (points * 0.01).toFixed(2);
+      const usdValue = (points * 0.0001).toFixed(4);
 
       await sendMessage(botToken, chatId, `
 💰 <b>Your Balance</b>
@@ -558,7 +558,7 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
 • Invite friends for bonus + commission
 
 💰 <b>Points Value:</b>
-100 points = $0.01 USDT
+500 points = $0.05 USDT
 
 💳 <b>Withdrawal:</b>
 Minimum $0.05 to USDT or TON (GRAM) wallet
@@ -605,7 +605,6 @@ Click below to purchase with crypto or Telegram Stars.
 📢 <b>Official Channel:</b> @brain_cach_channel
 👥 <b>Community Group:</b> @braincashgroup
 💳 <b>Payment Channel:</b> @braincashpayment
-🌐 <b>Website:</b> https://braincash.app
         `, {
           inline_keyboard: [
             [{ text: "📢 Join Channel", url: "https://t.me/brain_cach_channel" }],
