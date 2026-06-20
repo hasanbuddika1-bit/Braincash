@@ -655,6 +655,26 @@ Open the Mini App to withdraw your earnings.
       });
     }
 
+    // Handle membership check action from Mini App
+    const bodyText = await req.text();
+    if (bodyText) {
+      try {
+        const bodyData = JSON.parse(bodyText);
+        if (bodyData.action === 'check_membership') {
+          const { user_id, chat_id } = bodyData;
+          const isMember = await getChatMember(botToken, chat_id, user_id);
+          return new Response(JSON.stringify({
+            is_member: isMember?.status === 'member' || isMember?.status === 'administrator' || isMember?.status === 'creator'
+          }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } catch {
+        // Not JSON, ignore - it's a Telegram update
+      }
+    }
+
     // Handle chat member updates (for task auto-verification)
     if (body.my_chat_member || body.chat_member) {
       const update = body.my_chat_member || body.chat_member;

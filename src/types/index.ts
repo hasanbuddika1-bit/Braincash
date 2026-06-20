@@ -45,7 +45,7 @@ export interface TaskCompletion {
 export interface Game {
   id: string;
   name: string;
-  game_type: '2048' | 'memory' | 'connect' | 'sudoku' | 'color' | 'blocks' | 'maze' | 'reaction' | 'wordguess';
+  game_type: 'memory' | 'connect' | 'color' | 'reaction' | 'wordguess' | 'numberguess' | 'wordtype';
   description?: string;
   icon: string;
   reward_range_min: number;

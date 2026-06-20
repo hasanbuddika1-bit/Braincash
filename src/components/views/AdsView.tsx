@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
-import { PlayCircle, Gift, Zap, Clock, Tv, Target, CheckCircle, ChevronRight, Flame } from 'lucide-react';
+import { PlayCircle, Gift, Zap, Clock, Tv, Target, CheckCircle, ChevronRight, Flame, X, AlertCircle } from 'lucide-react';
 
 const AD_PROVIDERS = [
   { id: 'adgamer', name: 'AdGamer', logo: '🎮' },
@@ -11,6 +11,99 @@ const AD_PROVIDERS = [
 ];
 
 const INITIAL_TASKS_SHOWN = 4;
+
+// Verify popup for channel membership check
+function VerifyPopup({
+  task,
+  onVerify,
+  onClose,
+  isVerifying,
+  verificationStatus
+}: {
+  task: { id: string; title: string; link?: string; reward_points: number; icon_emoji?: string; task_type: string };
+  onVerify: () => void;
+  onClose: () => void;
+  isVerifying: boolean;
+  verificationStatus: 'pending' | 'success' | 'failed' | null;
+}) {
+  const taskIcons: Record<string, string> = {
+    channel: '📢',
+    group: '👥',
+    bot: '🤖',
+    post: '📰',
+    partner: '🤝',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 animate-fade-in">
+      <div className="mx-4 w-full max-w-sm rounded-3xl overflow-hidden" style={{
+        background: 'linear-gradient(135deg, #0a0d1a 0%, #1a0a2e 100%)',
+        border: '1px solid rgba(124,58,237,0.4)',
+      }}>
+        <div className="p-6 text-center">
+          <div className="text-5xl mb-4">{task.icon_emoji || taskIcons[task.task_type] || '📋'}</div>
+
+          <h3 className="text-white font-bold text-lg mb-2">{task.title}</h3>
+
+          {verificationStatus === null && (
+            <>
+              <p className="text-gray-400 text-sm mb-6">
+                Click the button below to open the channel/group, then come back and click "Check" to verify your membership.
+              </p>
+
+              {task.link && (
+                <button
+                  onClick={() => {
+                    window.Telegram?.WebApp?.openTelegramLink?.(task.link) || window.open(task.link, '_blank');
+                  }}
+                  className="w-full py-3 rounded-xl font-bold mb-3"
+                  style={{ background: 'linear-gradient(90deg, #7c3aed, #2563eb)', color: 'white' }}
+                >
+                  Open {task.task_type === 'channel' ? 'Channel' : task.task_type === 'group' ? 'Group' : 'Link'}
+                </button>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 py-3 rounded-xl bg-white/10 text-gray-400 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={onVerify}
+                  disabled={isVerifying}
+                  className="flex-1 py-3 rounded-xl font-bold"
+                  style={{ background: 'linear-gradient(90deg, #00c853, #fbbf24)', color: '#080814' }}
+                >
+                  {isVerifying ? 'Checking...' : 'Check Membership'}
+                </button>
+              </div>
+            </>
+          )}
+
+          {verificationStatus === 'success' && (
+            <div className="py-4">
+              <div className="text-4xl mb-3 animate-bounce">✅</div>
+              <p className="text-green-400 font-bold mb-4">Membership verified!</p>
+            </div>
+          )}
+
+          {verificationStatus === 'failed' && (
+            <div className="py-4">
+              <AlertCircle className="text-yellow-400 w-12 h-12 mx-auto mb-3" />
+              <p className="text-yellow-400 font-bold mb-2">You haven't joined yet!</p>
+              <p className="text-gray-400 text-sm mb-4">Please join the channel/group first, then try again.</p>
+              <button onClick={onVerify} className="w-full py-3 rounded-xl font-bold" style={{ background: 'linear-gradient(90deg, #00c853, #fbbf24)', color: '#080814' }}>
+                Check Again
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function AdsView() {
   const { user, tasks, refreshTasks, addPoints, haptic } = useApp();
@@ -21,6 +114,9 @@ export function AdsView() {
   const [lastReward, setLastReward] = useState<number | null>(null);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
   const [visibleTasks, setVisibleTasks] = useState(INITIAL_TASKS_SHOWN);
+  const [showVerifyPopup, setShowVerifyPopup] = useState<typeof tasks[0] | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'success' | 'failed' | null>(null);
 
   // Get all tasks (main, partner, other)
   const allIncompleteTasks = tasks.filter((t) => !t.completed);
@@ -36,6 +132,80 @@ export function AdsView() {
     // If we have more tasks waiting, increment visible count
     if (allIncompleteTasks.length > visibleTasks) {
       setVisibleTasks(prev => prev + 1);
+    }
+  };
+
+  // Check membership via edge function
+  const checkMembership = async (task: typeof tasks[0]) => {
+    if (!user || !task.link) return;
+
+    setIsVerifying(true);
+    setVerificationStatus(null);
+
+    try {
+      // Extract chat username/id from link
+      const chatId = task.link.replace('https://t.me/', '').replace('@', '').replace('/', '');
+
+      // Call edge function to check membership
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'check_membership',
+          user_id: user.telegram_id,
+          chat_id: chatId,
+        }),
+      });
+
+      const data = await response.json();
+      setIsVerifying(false);
+
+      if (data.is_member) {
+        setVerificationStatus('success');
+        haptic('success');
+
+        // Complete the task
+        const { error: completionError } = await supabase.from('task_completions').insert({
+          user_id: user.id,
+          task_id: task.id,
+          status: 'completed',
+        });
+
+        if (completionError) throw completionError;
+
+        await addPoints(task.reward_points);
+
+        // Update referral task bonus
+        const { data: referral } = await supabase
+          .from('referrals')
+          .select('referrer_id')
+          .eq('referred_id', user.id)
+          .single();
+
+        if (referral && task.task_section === 'main') {
+          await supabase.rpc('add_points', { user_id: referral.referrer_id, amount: 50 });
+          await supabase
+            .from('referrals')
+            .update({ task_bonus: 50, total_commission: 50 })
+            .eq('referred_id', user.id);
+        }
+
+        await handleTaskComplete();
+        showSuccess(`+${task.reward_points} Points!`, `Task completed.`);
+
+        setTimeout(() => {
+          setShowVerifyPopup(null);
+          setVerificationStatus(null);
+        }, 1500);
+      } else {
+        setVerificationStatus('failed');
+        haptic('error');
+      }
+    } catch (error) {
+      console.error('Error checking membership:', error);
+      setIsVerifying(false);
+      setVerificationStatus('failed');
+      showError('Verification Failed', 'Could not verify membership. Please try again.');
     }
   };
 
@@ -124,7 +294,13 @@ export function AdsView() {
 
     haptic('light');
 
-    // Open link
+    // For channel/group tasks, show verification popup
+    if ((task.task_type === 'channel' || task.task_type === 'group') && task.link) {
+      setShowVerifyPopup(task);
+      return;
+    }
+
+    // For other tasks, auto-complete after opening link
     if (task.link) {
       window.Telegram?.WebApp?.openTelegramLink?.(task.link) || window.open(task.link, '_blank');
     }
@@ -401,6 +577,17 @@ export function AdsView() {
             <p className="text-gold-400 font-bold text-2xl">{countdown}s</p>
           </div>
         </div>
+      )}
+
+      {/* Verification Popup */}
+      {showVerifyPopup && (
+        <VerifyPopup
+          task={showVerifyPopup}
+          onVerify={() => checkMembership(showVerifyPopup)}
+          onClose={() => { setShowVerifyPopup(null); setVerificationStatus(null); }}
+          isVerifying={isVerifying}
+          verificationStatus={verificationStatus}
+        />
       )}
     </div>
   );

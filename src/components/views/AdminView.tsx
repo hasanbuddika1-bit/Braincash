@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import {
   Users,

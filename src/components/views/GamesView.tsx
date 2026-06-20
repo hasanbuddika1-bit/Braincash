@@ -117,6 +117,26 @@ const TUTORIALS: Record<string, { title: string; steps: string[]; icon: string }
       '6 attempts allowed!',
     ],
   },
+  numberguess: {
+    icon: '#️⃣',
+    title: 'Number Guess',
+    steps: [
+      'Guess the secret number 1-100',
+      'You will get hints: Higher/Lower',
+      'Keep guessing until you find it!',
+      'Fewer guesses = better score!',
+    ],
+  },
+  wordtype: {
+    icon: '⌨️',
+    title: 'Word Type',
+    steps: [
+      'A word appears on screen',
+      'Type it correctly before time runs out!',
+      'Faster typing = more points',
+      'Complete all words to win!',
+    ],
+  },
 };
 
 function TutorialOverlay({ gameType, onClose }: { gameType: string; onClose: () => void }) {
@@ -180,7 +200,7 @@ export function GamesView() {
     setCurrentView('game');
   };
 
-  const SUPPORTED_TYPES = ['memory', 'connect', 'color', 'reaction', 'wordguess'];
+  const SUPPORTED_TYPES = ['memory', 'connect', 'color', 'reaction', 'wordguess', 'numberguess', 'wordtype'];
   const availableGames = games.filter(g => SUPPORTED_TYPES.includes(g.game_type));
 
   return (
@@ -266,11 +286,13 @@ export function GamePlayView() {
 
       {/* Game Area */}
       <div className="flex-1 overflow-auto">
-        {selectedGame.game_type === 'memory'    && <GameMemory />}
-        {selectedGame.game_type === 'connect'   && <GameTileConnect />}
-        {selectedGame.game_type === 'color'     && <GameColorMatch />}
-        {selectedGame.game_type === 'reaction'  && <GameReactionTime />}
-        {selectedGame.game_type === 'wordguess' && <GameWordGuess />}
+        {selectedGame.game_type === 'memory'      && <GameMemory />}
+        {selectedGame.game_type === 'connect'     && <GameTileConnect />}
+        {selectedGame.game_type === 'color'       && <GameColorMatch />}
+        {selectedGame.game_type === 'reaction'    && <GameReactionTime />}
+        {selectedGame.game_type === 'wordguess'   && <GameWordGuess />}
+        {selectedGame.game_type === 'numberguess' && <GameNumberGuess />}
+        {selectedGame.game_type === 'wordtype'    && <GameWordType />}
       </div>
 
       {/* Tutorial overlay */}
@@ -816,6 +838,222 @@ function GameWordGuess() {
 
       {pendingReward !== null && (
         <RewardPopup reward={pendingReward} score={won ? `Found in ${guesses.length} tries` : 'Better luck next time!'} gameIcon="🔤"
+          onClaim={() => { claimReward(); }} />
+      )}
+    </div>
+  );
+}
+
+// ── GameNumberGuess ─────────────────────────────────────────────────────────────
+
+function GameNumberGuess() {
+  const [target] = useState(() => Math.floor(Math.random() * 100) + 1);
+  const [guess, setGuess] = useState('');
+  const [guesses, setGuesses] = useState<number[]>([]);
+  const [hint, setHint] = useState<'higher' | 'lower' | 'correct' | null>(null);
+  const [gameOver, setGameOver] = useState(false);
+  const { haptic } = useApp();
+  const { completeLevel, claimReward, pendingReward } = useGameReward();
+
+  function handleGuess() {
+    const num = parseInt(guess);
+    if (isNaN(num) || num < 1 || num > 100) return;
+
+    haptic('light');
+    const newGuesses = [...guesses, num];
+    setGuesses(newGuesses);
+
+    if (num === target) {
+      setHint('correct');
+      setGameOver(true);
+      haptic('success');
+      completeLevel(`${newGuesses.length} guesses`);
+    } else if (num < target) {
+      setHint('higher');
+    } else {
+      setHint('lower');
+    }
+
+    setGuess('');
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center p-4 h-full gap-4">
+      <div className="text-center">
+        <p className="text-gray-400 text-sm">Guess the number</p>
+        <p className="text-white text-xl font-bold">1 - 100</p>
+      </div>
+
+      {/* Previous guesses */}
+      <div className="flex flex-wrap gap-2 justify-center max-w-xs">
+        {guesses.map((g, i) => (
+          <span key={i} className={`px-3 py-1 rounded-full text-sm font-bold ${
+            g === target ? 'bg-green-500/30 text-green-400' :
+            g < target ? 'bg-blue-500/30 text-blue-400' :
+            'bg-orange-500/30 text-orange-400'
+          }`}>
+            {g}
+          </span>
+        ))}
+      </div>
+
+      {/* Hint */}
+      {hint && !gameOver && (
+        <div className={`text-center py-3 px-6 rounded-xl ${
+          hint === 'higher' ? 'bg-blue-500/20' : 'bg-orange-500/20'
+        }`}>
+          <p className={`text-xl font-bold ${hint === 'higher' ? 'text-blue-400' : 'text-orange-400'}`}>
+            {hint === 'higher' ? '⬆️ Go Higher!' : '⬇️ Go Lower!'}
+          </p>
+        </div>
+      )}
+
+      {/* Input */}
+      {!gameOver && (
+        <div className="flex gap-2 w-full max-w-xs">
+          <input
+            type="number"
+            value={guess}
+            onChange={(e) => setGuess(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
+            placeholder="Your guess"
+            min="1"
+            max="100"
+            className="flex-1 py-3 px-4 rounded-xl bg-white/10 text-white text-center font-bold text-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <button
+            onClick={handleGuess}
+            className="px-6 py-3 rounded-xl font-bold text-white"
+            style={{ background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }}
+          >
+            Guess
+          </button>
+        </div>
+      )}
+
+      <div className="text-center">
+        <p className="text-gray-400 text-sm">Attempts: {guesses.length}</p>
+      </div>
+
+      {pendingReward !== null && (
+        <RewardPopup reward={pendingReward} score={`${guesses.length} guesses`} gameIcon="#️⃣"
+          onClaim={() => { claimReward(); }} />
+      )}
+    </div>
+  );
+}
+
+// ── GameWordType ────────────────────────────────────────────────────────────────
+
+const TYPE_WORDS = [
+  'brain', 'cash', 'money', 'games', 'points', 'earn', 'play', 'bonus',
+  'prize', 'fast', 'quick', 'type', 'word', 'game', 'win', 'score',
+  'reward', 'token', 'speed', 'power', 'light', 'smart', 'level', 'quest',
+];
+
+function GameWordType() {
+  const [words, setWords] = useState<string[]>([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [input, setInput] = useState('');
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [gameOver, setGameOver] = useState(false);
+  const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { haptic } = useApp();
+  const { completeLevel, claimReward, pendingReward } = useGameReward();
+
+  useEffect(() => {
+    const shuffled = [...TYPE_WORDS].sort(() => Math.random() - 0.5).slice(0, 10);
+    setWords(shuffled);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft > 0 && !gameOver) {
+      const t = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
+      return () => clearTimeout(t);
+    } else if (timeLeft === 0 && !gameOver) {
+      setGameOver(true);
+      completeLevel(`${score}/${words.length}`);
+    }
+  }, [timeLeft, gameOver]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [currentWordIndex]);
+
+  function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value.toLowerCase();
+    setInput(value);
+
+    if (words[currentWordIndex] && value === words[currentWordIndex].toLowerCase()) {
+      haptic('success');
+      setScore(s => s + 1);
+      setFlash('correct');
+      setTimeout(() => {
+        setFlash(null);
+        setInput('');
+        if (currentWordIndex < words.length - 1) {
+          setCurrentWordIndex(i => i + 1);
+        } else {
+          setGameOver(true);
+          completeLevel(`${score + 1}/${words.length}`);
+        }
+      }, 200);
+    }
+  }
+
+  const currentWord = words[currentWordIndex] || '';
+
+  return (
+    <div className="flex flex-col items-center justify-center p-4 h-full gap-4">
+      {/* Stats */}
+      <div className="flex justify-between w-full max-w-xs">
+        <div className="text-center">
+          <p className="text-gray-400 text-xs">Time</p>
+          <p className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}s</p>
+        </div>
+        <div className="text-center">
+          <p className="text-gray-400 text-xs">Word</p>
+          <p className="text-2xl font-bold text-gold-400">{currentWordIndex + 1}/{words.length || 10}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-gray-400 text-xs">Score</p>
+          <p className="text-2xl font-bold text-green-400">{score}</p>
+        </div>
+      </div>
+
+      {/* Word display */}
+      {!gameOver && currentWord && (
+        <div className={`text-center py-4 px-8 rounded-2xl transition-all ${
+          flash === 'correct' ? 'bg-green-500/30' : 'bg-white/5'
+        }`}>
+          <p className="text-3xl font-black text-white uppercase tracking-wider">{currentWord}</p>
+        </div>
+      )}
+
+      {/* Input */}
+      {!gameOver && (
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={handleInput}
+          placeholder="Type the word..."
+          className="w-full max-w-xs py-4 px-4 rounded-xl bg-white/10 text-white text-center font-bold text-xl focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+        />
+      )}
+
+      {gameOver && !pendingReward && (
+        <p className="text-green-400 font-bold">Completed!</p>
+      )}
+
+      {pendingReward !== null && (
+        <RewardPopup reward={pendingReward} score={`${score}/${words.length} correct`} gameIcon="⌨️"
           onClaim={() => { claimReward(); }} />
       )}
     </div>
