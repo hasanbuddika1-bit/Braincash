@@ -26,6 +26,7 @@ export interface Task {
   description?: string;
   link?: string;
   reward_points: number;
+  icon_emoji?: string;
   is_partner: boolean;
   is_active: boolean;
   verification_method: string;
@@ -44,7 +45,7 @@ export interface TaskCompletion {
 export interface Game {
   id: string;
   name: string;
-  game_type: '2048' | 'memory' | 'connect' | 'sudoku' | 'color' | 'blocks' | 'maze';
+  game_type: '2048' | 'memory' | 'connect' | 'sudoku' | 'color' | 'blocks' | 'maze' | 'reaction' | 'wordguess';
   description?: string;
   icon: string;
   reward_range_min: number;

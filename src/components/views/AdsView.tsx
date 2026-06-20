@@ -10,6 +10,8 @@ const AD_PROVIDERS = [
   { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
 ];
 
+const INITIAL_TASKS_SHOWN = 4;
+
 export function AdsView() {
   const { user, tasks, refreshTasks, addPoints, haptic } = useApp();
   const { success: showSuccess, error: showError } = useToast();
@@ -18,10 +20,24 @@ export function AdsView() {
   const [countdown, setCountdown] = useState(0);
   const [lastReward, setLastReward] = useState<number | null>(null);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const [visibleTasks, setVisibleTasks] = useState(INITIAL_TASKS_SHOWN);
 
-  // Get main tasks for this view
-  const mainTasks = tasks.filter((t) => (t.task_section === 'main' || !t.task_section) && !t.completed);
-  const completedTasks = tasks.filter((t) => (t.task_section === 'main' || !t.task_section) && t.completed);
+  // Get all tasks (main, partner, other)
+  const allIncompleteTasks = tasks.filter((t) => !t.completed);
+  const completedTasks = tasks.filter((t) => t.completed);
+
+  // Show only visible count of incomplete tasks
+  const displayedTasks = allIncompleteTasks.slice(0, visibleTasks);
+  const hasMoreTasks = allIncompleteTasks.length > visibleTasks;
+
+  // Auto-load more tasks when one is completed
+  const handleTaskComplete = () => {
+    refreshTasks();
+    // If we have more tasks waiting, increment visible count
+    if (allIncompleteTasks.length > visibleTasks) {
+      setVisibleTasks(prev => prev + 1);
+    }
+  };
 
   const watchAd = async (provider: string, adType: 'rewarded' | 'interstitial') => {
     if (watching || !user) return;
@@ -142,7 +158,7 @@ export function AdsView() {
             .eq('referred_id', user.id);
         }
 
-        await refreshTasks();
+        await handleTaskComplete();
         showSuccess(`+${task.reward_points} Points!`, `Task completed.`);
         haptic('success');
       } catch (error) {
@@ -193,18 +209,18 @@ export function AdsView() {
       </div>
 
       {/* Tasks Section */}
-      {mainTasks.length > 0 && (
+      {displayedTasks.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Target className="text-green-400" size={20} />
             <h2 className="text-white font-semibold">Quick Tasks</h2>
             <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">
-              {mainTasks.length} available
+              {allIncompleteTasks.length} available
             </span>
           </div>
 
           <div className="space-y-3">
-            {mainTasks.slice(0, 3).map((task) => (
+            {displayedTasks.map((task) => (
               <button
                 key={task.id}
                 onClick={() => handleTaskClick(task)}
@@ -213,7 +229,7 @@ export function AdsView() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-xl">
-                    {taskIcons[task.task_type] || '📋'}
+                    {task.icon_emoji || taskIcons[task.task_type] || '📋'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-semibold text-sm truncate">{task.title}</p>
@@ -229,10 +245,13 @@ export function AdsView() {
             ))}
           </div>
 
-          {mainTasks.length > 3 && (
-            <p className="text-gray-500 text-xs text-center mt-2">
-              +{mainTasks.length - 3} more tasks available
-            </p>
+          {hasMoreTasks && (
+            <button
+              onClick={() => setVisibleTasks(prev => prev + INITIAL_TASKS_SHOWN)}
+              className="w-full mt-3 py-2 text-center text-green-400 text-sm font-semibold"
+            >
+              Load {allIncompleteTasks.length - visibleTasks} more tasks
+            </button>
           )}
         </div>
       )}

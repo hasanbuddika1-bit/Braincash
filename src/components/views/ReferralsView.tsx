@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
-import { Gift, Users, TrendingUp, Copy, Check, Share2, Crown, Target, Tv, Percent } from 'lucide-react';
+import { Gift, Users, TrendingUp, Copy, Check, Share2, Crown, Target, Tv, Percent, AlertTriangle } from 'lucide-react';
 import type { Referral, User } from '../../types';
+
+const REFERRAL_BONUSES = {
+  JOIN: 50,
+  TASK: 50,
+  AD_10: 50,
+};
 
 export function ReferralsView() {
   const { user, haptic } = useApp();
@@ -73,7 +79,7 @@ export function ReferralsView() {
   const copyReferralCode = () => {
     if (!user) return;
 
-    const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}`;
+    const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     showSuccess('Copied!', 'Referral link copied to clipboard.');
@@ -83,7 +89,7 @@ export function ReferralsView() {
   };
 
   const referralLink = user
-    ? `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}`
+    ? `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`
     : '';
 
   const shareReferral = () => {
@@ -91,7 +97,7 @@ export function ReferralsView() {
 
     haptic('light');
 
-    const shareUrl = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}`;
+    const shareUrl = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
     const shareText = `🧠 Join Brain Cash and start earning!\n\nUse my referral link and get 50 points instantly! 💰`;
 
     if (window.Telegram?.WebApp) {
@@ -169,9 +175,23 @@ export function ReferralsView() {
       <div className="glass-card p-4 mb-6 border border-gold-500/30" style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1) 0%, transparent 100%)' }}>
         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
           <Gift className="text-gold-400" size={20} />
-          Referral Rewards Structure
+          Per Referral Earnings
         </h3>
         <div className="space-y-3">
+          {/* Total per referral */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/10 border border-gold-500/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gold-500/30 flex items-center justify-center">
+                <Crown className="text-gold-400" size={20} />
+              </div>
+              <div>
+                <p className="text-white font-semibold">Total Per Referral</p>
+                <p className="text-gray-400 text-sm">When fully completed</p>
+              </div>
+            </div>
+            <p className="text-gold-400 font-bold text-xl">+{REFERRAL_BONUSES.JOIN + REFERRAL_BONUSES.TASK + REFERRAL_BONUSES.AD_10} pts</p>
+          </div>
+
           {/* Join Bonus */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
             <div className="flex items-center gap-3">
@@ -183,7 +203,7 @@ export function ReferralsView() {
                 <p className="text-gray-400 text-sm">When friend joins via your link</p>
               </div>
             </div>
-            <p className="text-green-400 font-bold text-lg">+50 pts</p>
+            <p className="text-green-400 font-bold text-lg">+{REFERRAL_BONUSES.JOIN} pts</p>
           </div>
 
           {/* Task Bonus */}
@@ -197,7 +217,7 @@ export function ReferralsView() {
                 <p className="text-gray-400 text-sm">After friend completes main tasks</p>
               </div>
             </div>
-            <p className="text-blue-400 font-bold text-lg">+50 pts</p>
+            <p className="text-blue-400 font-bold text-lg">+{REFERRAL_BONUSES.TASK} pts</p>
           </div>
 
           {/* Ad Bonus */}
@@ -211,11 +231,11 @@ export function ReferralsView() {
                 <p className="text-gray-400 text-sm">After friend watches 10 ads</p>
               </div>
             </div>
-            <p className="text-purple-400 font-bold text-lg">+50 pts</p>
+            <p className="text-purple-400 font-bold text-lg">+{REFERRAL_BONUSES.AD_10} pts</p>
           </div>
 
           {/* Lifetime Commission */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/10 border border-gold-500/30">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gold-500/20 flex items-center justify-center">
                 <Percent className="text-gold-400" size={20} />
@@ -226,6 +246,19 @@ export function ReferralsView() {
               </div>
             </div>
             <p className="text-gold-400 font-bold text-lg">10%</p>
+          </div>
+        </div>
+      </div>
+
+      {/* IP Warning */}
+      <div className="glass-card p-4 mb-6 border border-yellow-500/30 bg-yellow-500/10">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="text-yellow-400 flex-shrink-0" size={24} />
+          <div>
+            <h3 className="text-yellow-400 font-semibold mb-1">Multiple Account Warning</h3>
+            <p className="text-gray-400 text-sm">
+              Creating multiple accounts from the same IP address is prohibited. The first account will remain active, but additional accounts will be suspended automatically.
+            </p>
           </div>
         </div>
       </div>

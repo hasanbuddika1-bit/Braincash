@@ -508,7 +508,27 @@ function AdminWithdrawals() {
 function AdminTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'main' | 'partner' | 'other'>('all');
   const { haptic } = useApp();
+  const { success: showSuccess, error: showError } = useToast();
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    link: '',
+    task_type: 'channel' as Task['task_type'],
+    task_section: 'main' as Task['task_section'],
+    reward_points: 10,
+    icon_emoji: '📋',
+    is_partner: false,
+    is_active: true,
+  });
+
+  const TASK_ICONS = ['📋', '📢', '👥', '🤖', '📰', '🤝', '🎁', '⭐', '🔥', '💰', '🎮', '📱', '💬', '✨', '🎯'];
+  const TASK_TYPES = ['channel', 'group', 'bot', 'post', 'partner'];
+  const TASK_SECTIONS = ['main', 'partner', 'other'];
 
   useEffect(() => {
     loadTasks();
@@ -517,7 +537,7 @@ function AdminTasks() {
   async function loadTasks() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('tasks').select('*').order('created_at');
+      const { data, error } = await supabase.from('tasks').select('*').order('task_section').order('created_at');
 
       if (error) throw error;
       setTasks(data || []);
@@ -525,6 +545,100 @@ function AdminTasks() {
       console.error('Error loading tasks:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function resetForm() {
+    setFormData({
+      title: '',
+      description: '',
+      link: '',
+      task_type: 'channel',
+      task_section: 'main',
+      reward_points: 10,
+      icon_emoji: '📋',
+      is_partner: false,
+      is_active: true,
+    });
+    setEditingTask(null);
+    setShowForm(false);
+  }
+
+  function startEdit(task: Task) {
+    haptic('light');
+    setFormData({
+      title: task.title,
+      description: task.description || '',
+      link: task.link || '',
+      task_type: task.task_type,
+      task_section: task.task_section,
+      reward_points: task.reward_points,
+      icon_emoji: task.icon_emoji || '📋',
+      is_partner: task.is_partner,
+      is_active: task.is_active,
+    });
+    setEditingTask(task);
+    setShowForm(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!formData.title.trim()) return;
+
+    haptic('light');
+    setLoading(true);
+
+    try {
+      if (editingTask) {
+        // Update existing task
+        const { error } = await supabase
+          .from('tasks')
+          .update({
+            ...formData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingTask.id);
+
+        if (error) throw error;
+        showSuccess('Task Updated', 'Task has been updated successfully.');
+      } else {
+        // Create new task
+        const { error } = await supabase.from('tasks').insert({
+          ...formData,
+          verification_method: 'auto',
+        });
+
+        if (error) throw error;
+        showSuccess('Task Created', 'New task has been added successfully.');
+      }
+
+      resetForm();
+      await loadTasks();
+      haptic('success');
+    } catch (error) {
+      console.error('Error saving task:', error);
+      showError('Error', 'Failed to save task.');
+      haptic('error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function deleteTask(taskId: string) {
+    haptic('light');
+    if (!confirm('Are you sure you want to delete this task?')) return;
+
+    try {
+      const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+
+      if (error) throw error;
+      setTasks(tasks.filter((t) => t.id !== taskId));
+      showSuccess('Task Deleted', 'Task has been removed.');
+      haptic('success');
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      showError('Error', 'Failed to delete task.');
+      haptic('error');
     }
   }
 
@@ -545,48 +659,234 @@ function AdminTasks() {
     }
   }
 
-  const taskIcons: Record<string, string> = {
-    channel: '📢',
-    group: '👥',
-    bot: '🤖',
-    post: '📰',
-    partner: '🤝',
+  const filteredTasks = tasks.filter((t) => filter === 'all' || t.task_section === filter);
+
+  const sectionColors: Record<string, string> = {
+    main: 'bg-green-500/20 text-green-400',
+    partner: 'bg-blue-500/20 text-blue-400',
+    other: 'bg-purple-500/20 text-purple-400',
   };
 
   return (
     <div>
-      <button onClick={loadTasks} className="btn-neon mb-4 w-full">
-        <RefreshCw className="w-4 h-4 mr-2" />
-        Refresh Tasks
+      {/* Add Task Button */}
+      <button
+        onClick={() => {
+          haptic('light');
+          resetForm();
+          setShowForm(true);
+        }}
+        className="btn-neon-gold w-full mb-4"
+      >
+        + Add New Task
       </button>
 
+      {/* Filter Tabs */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        {['all', 'main', 'partner', 'other'].map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilter(s as typeof filter)}
+            className={`px-4 py-2 rounded-xl capitalize whitespace-nowrap ${
+              filter === s ? 'bg-purple-600 text-white' : 'bg-white/10 text-gray-400'
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {/* Task Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="glass-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-white font-bold text-lg mb-4">
+              {editingTask ? 'Edit Task' : 'Add New Task'}
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Title */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Title *</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Task title"
+                  className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Description</label>
+                <input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Optional description"
+                  className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                />
+              </div>
+
+              {/* Link */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Link</label>
+                <input
+                  type="text"
+                  value={formData.link}
+                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  placeholder="https://t.me/channel or https://..."
+                  className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                />
+              </div>
+
+              {/* Icon Selection */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Icon</label>
+                <div className="flex flex-wrap gap-2">
+                  {TASK_ICONS.map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, icon_emoji: icon })}
+                      className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center ${
+                        formData.icon_emoji === icon
+                          ? 'bg-purple-600 border-2 border-purple-400'
+                          : 'bg-white/10'
+                      }`}
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Task Type & Section */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-gray-400 text-sm mb-1 block">Type</label>
+                  <select
+                    value={formData.task_type}
+                    onChange={(e) => setFormData({ ...formData, task_type: e.target.value as Task['task_type'] })}
+                    className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                  >
+                    {TASK_TYPES.map((t) => (
+                      <option key={t} value={t} className="bg-gray-900">
+                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-gray-400 text-sm mb-1 block">Section</label>
+                  <select
+                    value={formData.task_section}
+                    onChange={(e) => setFormData({ ...formData, task_section: e.target.value as Task['task_section'], is_partner: e.target.value === 'partner' })}
+                    className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                  >
+                    {TASK_SECTIONS.map((s) => (
+                      <option key={s} value={s} className="bg-gray-900">
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Reward Points */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Reward Points</label>
+                <input
+                  type="number"
+                  value={formData.reward_points}
+                  onChange={(e) => setFormData({ ...formData, reward_points: parseInt(e.target.value) || 0 })}
+                  min="1"
+                  className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                />
+              </div>
+
+              {/* Active Toggle */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="w-5 h-5"
+                />
+                <label htmlFor="is_active" className="text-white text-sm">
+                  Task is active
+                </label>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button type="submit" className="flex-1 btn-neon-gold">
+                  {editingTask ? 'Update' : 'Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="flex-1 py-2 rounded-lg bg-white/10 text-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Task List */}
       {loading ? (
         <div className="flex justify-center py-8">
           <div className="loader" />
         </div>
       ) : (
         <div className="space-y-3">
-          {tasks.map((t) => (
+          {filteredTasks.map((t) => (
             <div
               key={t.id}
-              className={`glass-card p-4 flex items-center gap-4 ${
-                !t.is_active ? 'opacity-50' : ''
-              }`}
+              className={`glass-card p-4 ${!t.is_active ? 'opacity-50' : ''}`}
             >
-              <div className="text-3xl">{taskIcons[t.task_type] || '📋'}</div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">{t.title}</p>
-                <p className="text-gray-400 text-sm">{t.is_partner ? 'Partner' : 'Main'} Task</p>
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">{t.icon_emoji || '📋'}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-white font-semibold truncate">{t.title}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded ${sectionColors[t.task_section]}`}>
+                      {t.task_section}
+                    </span>
+                  </div>
+                  <p className="text-gray-400 text-sm">{t.task_type} task</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-gold-400 font-bold">+{t.reward_points}</p>
+                  <button
+                    onClick={() => toggleTask(t.id, t.is_active)}
+                    className={`text-xs ${t.is_active ? 'text-green-400' : 'text-red-400'}`}
+                  >
+                    {t.is_active ? 'Active' : 'Disabled'}
+                  </button>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-gold-400 font-bold">+{t.reward_points}</p>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
                 <button
-                  onClick={() => toggleTask(t.id, t.is_active)}
-                  className={`text-xs mt-1 ${
-                    t.is_active ? 'text-green-400' : 'text-red-400'
-                  }`}
+                  onClick={() => startEdit(t)}
+                  className="flex-1 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold"
                 >
-                  {t.is_active ? 'Active' : 'Disabled'}
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteTask(t.id)}
+                  className="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-semibold"
+                >
+                  Delete
                 </button>
               </div>
             </div>

@@ -156,7 +156,8 @@ async function getChatMember(botToken: string, chatId: number | string, userId: 
 }
 
 // Main keyboard
-function getMainKeyboard(miniAppUrl: string) {
+function getMainKeyboard() {
+  const miniAppUrl = "https://t.me/Brain_cashbot/braincash";
   return {
     inline_keyboard: [
       [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
@@ -268,28 +269,30 @@ Your account has been temporarily suspended for security reasons. Please contact
 
     // Handle referral bonus if applicable
     if (referredBy && referredBy.startsWith('ref_')) {
+      const referrerCode = referredBy.replace('ref_', '');
+
       // Check if referral is from same IP (block self-referrals)
       let isBlockedReferral = false;
-      if (clientIp) {
-        const referrerCode = referredBy.replace('ref_', '');
-        const { data: referrer } = await supabase
-          .from('users')
-          .select('id, ip_address')
-          .eq('referral_code', referrerCode)
-          .single();
 
-        if (referrer && referrer.ip_address === clientIp) {
+      const { data: referrer } = await supabase
+        .from('users')
+        .select('id, ip_address')
+        .eq('referral_code', referrerCode)
+        .single();
+
+      if (referrer) {
+        if (clientIp && referrer.ip_address === clientIp) {
           isBlockedReferral = true;
         }
 
-        if (referrer && referrer.id !== user.id && !isBlockedReferral) {
+        if (referrer.id !== user.id && !isBlockedReferral) {
           // Add referral record
           await supabase.from('referrals').insert({
             referrer_id: referrer.id,
             referred_id: user.id,
             join_bonus: 50,
             task_bonus: 0,
-            total_commission: 0,
+            total_commission: 50,
           });
 
           // Update user's referred_by
@@ -398,7 +401,8 @@ Deno.serve(async (req: Request) => {
       .eq('key', 'mini_app_url')
       .single();
 
-    const miniAppUrl = settings?.value || (Deno.env.get("MINI_APP_URL") || "https://braincash.app");
+    const miniAppBaseUrl = settings?.value || (Deno.env.get("MINI_APP_URL") || "https://braincash.app");
+    const miniAppUrl = "https://t.me/Brain_cashbot/braincash";
 
     const body: TelegramUpdate = await req.json();
 
@@ -417,8 +421,8 @@ Deno.serve(async (req: Request) => {
 
       const user = await getOrCreateUser(supabase, telegramUser, startParam);
 
-      const referralId = telegramUser.id;
-      const welcomePhotoUrl = `${miniAppUrl}/images/${WELCOME_PHOTO_FILENAME}`;
+      const referralCode = user?.referral_code || ('BC' + telegramUser.id.toString(36).toUpperCase());
+      const welcomePhotoUrl = `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`;
 
       // Send welcome photo with caption
       const welcomeCaption = `
@@ -433,7 +437,7 @@ Play games, watch ads, complete tasks and earn real cash rewards!
 💳 Withdraw to USDT or TON (GRAM)
 
 <b>Your referral link:</b>
-https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
+https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}
 
 📢 <b>Join our community:</b>
 • Channel: @brain_cach_channel
@@ -442,9 +446,9 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
       `;
 
       // Try to send photo first, fallback to message
-      const photoResult = await sendPhoto(botToken, chatId, welcomePhotoUrl, welcomeCaption, getMainKeyboard(miniAppUrl));
+      const photoResult = await sendPhoto(botToken, chatId, welcomePhotoUrl, welcomeCaption, getMainKeyboard());
       if (!photoResult.ok) {
-        await sendMessage(botToken, chatId, welcomeCaption, getMainKeyboard(miniAppUrl));
+        await sendMessage(botToken, chatId, welcomeCaption, getMainKeyboard());
       }
 
       return new Response(JSON.stringify({ ok: true }), {
@@ -476,7 +480,7 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
 💵 <b>USD Value:</b> $${usdValue}
 
 <i>Open the Mini App to earn more!</i>
-      `, getMainKeyboard(miniAppUrl));
+      `, getMainKeyboard());
 
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -497,24 +501,25 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
       }
 
       const user = await getOrCreateUser(supabase, telegramUser);
-      const referralId = telegramUser.id;
+      const referralCode = user?.referral_code || ('BC' + telegramUser.id.toString(36).toUpperCase());
 
       await sendMessage(botToken, chatId, `
 👥 <b>Referral Program</b>
 
 🔗 <b>Your Referral Link:</b>
-https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
+https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}
 
 🎁 <b>Rewards:</b>
 • +50 pts when friend joins
-• +100 pts when friend completes tasks
+• +50 pts when friend completes tasks
+• +50 pts when friend watches 10 ads
 • 10% lifetime commission on all earnings
 
 <i>Share your link and start earning!</i>
       `, {
         inline_keyboard: [
-          [{ text: "📤 Share Link", switch_inline_query: `Join Brain Cash and earn crypto! Use my link: https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}` }],
-          [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
+          [{ text: "📤 Share Link", switch_inline_query: `Join Brain Cash and earn crypto! Use my link: https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}` }],
+          [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
         ],
       });
 
@@ -536,7 +541,7 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralId}
 📉 <b>Fee:</b> $0.01 + 5%
 
 <i>Open the Mini App to withdraw your earnings.</i>
-      `, getMainKeyboard(miniAppUrl));
+      `, getMainKeyboard());
 
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -566,7 +571,7 @@ Minimum $0.05 to USDT or TON (GRAM) wallet
 📢 <b>Official Channel:</b> @brain_cach_channel
 👥 <b>Community Group:</b> @braincashgroup
 💳 <b>Payment Channel:</b> @braincashpayment
-      `, getMainKeyboard(miniAppUrl));
+      `, getMainKeyboard());
 
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -595,7 +600,7 @@ Minimum $0.05 to USDT or TON (GRAM) wallet
 Click below to purchase with crypto or Telegram Stars.
         `, {
           inline_keyboard: [
-            [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
+            [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
           ],
         });
       } else if (callbackData === "community") {
@@ -610,7 +615,7 @@ Click below to purchase with crypto or Telegram Stars.
             [{ text: "📢 Join Channel", url: "https://t.me/brain_cach_channel" }],
             [{ text: "👥 Join Group", url: "https://t.me/braincashgroup" }],
             [{ text: "💳 Payment Channel", url: "https://t.me/braincashpayment" }],
-            [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
+            [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
           ],
         });
       } else if (callbackData === "history") {
@@ -625,7 +630,7 @@ View your complete transaction history in the Mini App including:
 • Withdrawals
         `, {
           inline_keyboard: [
-            [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
+            [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
           ],
         });
       } else if (callbackData === "withdraw") {
@@ -639,7 +644,7 @@ View your complete transaction history in the Mini App including:
 Open the Mini App to withdraw your earnings.
         `, {
           inline_keyboard: [
-            [{ text: "🧠 Open Mini App", web_app: { url: miniAppUrl } }],
+            [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
           ],
         });
       }

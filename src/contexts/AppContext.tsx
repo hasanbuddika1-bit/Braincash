@@ -237,6 +237,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               referrer_id: referrer.id,
               referred_id: newUser.id,
               join_bonus: 50,
+              task_bonus: 0,
+              total_commission: 50,
             });
             await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
             await supabase.rpc('add_points', { user_id: referrer.id, amount: 50 });
