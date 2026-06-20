@@ -21,6 +21,7 @@ export interface User {
 export interface Task {
   id: string;
   task_type: 'channel' | 'group' | 'bot' | 'post' | 'partner';
+  task_section: 'main' | 'partner' | 'other';
   title: string;
   description?: string;
   link?: string;

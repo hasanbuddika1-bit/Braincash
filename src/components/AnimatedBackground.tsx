@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 
-interface Particle {
+interface Orb {
   id: number;
   x: number;
   y: number;
@@ -8,242 +8,139 @@ interface Particle {
   color: string;
   speed: number;
   delay: number;
-  type: 'circle' | 'star' | 'coin';
-}
-
-interface FloatingCoin {
-  id: number;
-  x: number;
-  y: number;
-  delay: number;
-  duration: number;
-  size: number;
 }
 
 export function AnimatedBackground() {
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [coins, setCoins] = useState<FloatingCoin[]>([]);
+  const [orbs, setOrbs] = useState<Orb[]>([]);
 
   useEffect(() => {
-    const colors = ['#bf00ff', '#00d4ff', '#ffd700'];
-    const newParticles: Particle[] = [];
-
-    // Fewer, softer particles — only 8
-    for (let i = 0; i < 8; i++) {
-      newParticles.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 120 + 80,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        speed: Math.random() * 20 + 15,
-        delay: Math.random() * 5,
-        type: 'circle',
-      });
-    }
-
-    setParticles(newParticles);
-
-    // Only 4 subtle coins
-    const newCoins: FloatingCoin[] = [];
-    for (let i = 0; i < 4; i++) {
-      newCoins.push({
-        id: i,
-        x: [10, 30, 60, 85][i],
-        y: [20, 65, 35, 75][i],
-        delay: i * 1.2,
-        duration: 5 + i,
-        size: 18,
-      });
-    }
-    setCoins(newCoins);
+    // Logo-matching colors: green, purple, blue, gold
+    const colors = ['#00c853', '#7c3aed', '#2563eb', '#fbbf24', '#00c853', '#4a2c7a'];
+    const newOrbs: Orb[] = Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 150 + 80,
+      color: colors[i % colors.length],
+      speed: Math.random() * 18 + 12,
+      delay: Math.random() * 5,
+    }));
+    setOrbs(newOrbs);
   }, []);
-
-  const emojis = useMemo(() => ({
-    coin: '💰',
-    star: '⭐',
-    diamond: '💎',
-    brain: '🧠',
-    rocket: '🚀',
-    fire: '🔥',
-    lightning: '⚡',
-    trophy: '🏆',
-    gift: '🎁',
-  }), []);
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-      {/* Multi-layer gradient base */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800/90 to-blue-900" />
-        <div className="absolute inset-0 bg-gradient-to-t from-purple-950/50 via-transparent to-purple-800/30" />
-        <div className="absolute inset-0 bg-gradient-radial from-purple-600/20 via-transparent to-transparent" />
-      </div>
+      {/* Deep dark base — matches logo background */}
+      <div className="absolute inset-0" style={{
+        background: 'linear-gradient(135deg, #080814 0%, #0a0d1a 40%, #080f0a 70%, #0d0a18 100%)',
+      }} />
 
-      {/* Animated mesh gradient */}
-      <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          background: `
-            radial-gradient(ellipse at 20% 20%, rgba(191, 0, 255, 0.4) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 80%, rgba(0, 212, 255, 0.4) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 40%)
-          `,
-          animation: 'gradient 8s ease infinite',
-          backgroundSize: '200% 200%',
-        }}
-      />
+      {/* Mesh gradient overlays */}
+      <div className="absolute inset-0" style={{
+        background: `
+          radial-gradient(ellipse at 15% 15%, rgba(0,200,83,0.10) 0%, transparent 50%),
+          radial-gradient(ellipse at 85% 80%, rgba(124,58,237,0.12) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.08) 0%, transparent 40%),
+          radial-gradient(ellipse at 80% 20%, rgba(251,191,36,0.06) 0%, transparent 35%)
+        `,
+      }} />
 
-      {/* Floating particles */}
-      {particles.map((particle) => (
+      {/* Animated floating orbs */}
+      {orbs.map((orb) => (
         <div
-          key={particle.id}
-          className="absolute rounded-full blur-3xl pointer-events-none"
+          key={orb.id}
+          className="absolute rounded-full blur-3xl"
           style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-            background: `radial-gradient(circle, ${particle.color} 0%, transparent 70%)`,
-            animation: `float ${particle.speed}s ease-in-out infinite`,
-            animationDelay: `${particle.delay}s`,
-            opacity: 0.18,
+            left: `${orb.x}%`,
+            top: `${orb.y}%`,
+            width: orb.size,
+            height: orb.size,
+            background: `radial-gradient(circle, ${orb.color}28 0%, transparent 70%)`,
+            animation: `float ${orb.speed}s ease-in-out infinite`,
+            animationDelay: `${orb.delay}s`,
           }}
         />
       ))}
 
-      {/* Subtle floating coins — 4 only, very low opacity */}
-      <div className="absolute inset-0 overflow-hidden">
-        {coins.map((coin) => (
-          <div
-            key={coin.id}
-            className="absolute pointer-events-none select-none"
-            style={{
-              left: `${coin.x}%`,
-              top: `${coin.y}%`,
-              fontSize: coin.size,
-              animation: `coinFloat ${coin.duration}s ease-in-out infinite`,
-              animationDelay: `${coin.delay}s`,
-              opacity: 0.07,
-            }}
-          >
-            💰
-          </div>
-        ))}
-      </div>
-
-      {/* Cinematic light rays */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          background: `
-            linear-gradient(135deg, transparent 40%, rgba(255, 215, 0, 0.3) 50%, transparent 60%),
-            linear-gradient(225deg, transparent 40%, rgba(191, 0, 255, 0.3) 50%, transparent 60%)
-          `,
-          animation: 'shimmer 10s linear infinite',
-        }}
-      />
-
-      {/* Hexagonal grid pattern */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-5"
-        style={{ backgroundSize: '60px 60px' }}
-      >
+      {/* Subtle grid pattern */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.03]">
         <defs>
-          <pattern
-            id="hexagons"
-            width="60"
-            height="60"
-            patternUnits="userSpaceOnUse"
-            patternTransform="scale(2)"
-          >
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,200,83,1)" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
+
+      {/* Hexagonal network */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.04]">
+        <defs>
+          <pattern id="hexnet" width="60" height="60" patternUnits="userSpaceOnUse" patternTransform="scale(1.5)">
             <polygon
-              points="30,0 60,15 60,45 30,60 0,45 0,15"
+              points="30,2 58,17 58,47 30,62 2,47 2,17"
               fill="none"
-              stroke="rgba(255,255,255,0.1)"
+              stroke="rgba(124,58,237,1)"
               strokeWidth="0.5"
             />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#hexagons)" />
+        <rect width="100%" height="100%" fill="url(#hexnet)" />
       </svg>
 
-      {/* Vignette effect — subtle, not blocking content */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.15) 100%)',
-        }}
-      />
+      {/* Floating emoji elements */}
+      {['💰', '🧠', '💎', '⭐', '🚀', '💰'].map((emoji, i) => (
+        <div
+          key={i}
+          className="absolute select-none"
+          style={{
+            left: `${8 + i * 16}%`,
+            top: `${15 + (i % 3) * 25}%`,
+            fontSize: '24px',
+            opacity: 0.06,
+            animation: `coinFloat ${4 + i}s ease-in-out infinite`,
+            animationDelay: `${i * 0.7}s`,
+            filter: 'drop-shadow(0 0 6px rgba(0,200,83,0.8))',
+          }}
+        >
+          {emoji}
+        </div>
+      ))}
 
-      {/* Top glow line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-1"
-        style={{
-          background: 'linear-gradient(90deg, transparent, #bf00ff, #00d4ff, #ffd700, transparent)',
-          opacity: 0.5,
-        }}
-      />
+      {/* Top green glow line */}
+      <div className="absolute top-0 left-0 right-0 h-px" style={{
+        background: 'linear-gradient(90deg, transparent, #00c853, #fbbf24, #7c3aed, transparent)',
+        opacity: 0.6,
+      }} />
+
+      {/* Bottom vignette */}
+      <div className="absolute bottom-0 left-0 right-0 h-32" style={{
+        background: 'linear-gradient(to top, rgba(8,8,20,0.8), transparent)',
+      }} />
     </div>
   );
 }
 
-// Premium 3D Brain Mascot Component
+// Logo-styled Brain Mascot Component
 export function BrainMascot({ size = 'lg', animate = true }: { size?: 'sm' | 'md' | 'lg'; animate?: boolean }) {
-  const sizes = {
-    sm: 'text-4xl',
-    md: 'text-5xl',
-    lg: 'text-7xl',
-  };
+  const LOGO = '/images/files_10647109-2026-06-19T11-55-14-438Z-file_00000000dcc87208a4f089391cccaaa0.webp';
+  const sizes = { sm: 40, md: 56, lg: 80 };
+  const px = sizes[size];
 
   return (
     <div className={`relative inline-block ${animate ? 'animate-float' : ''}`}>
-      {/* Glow effect behind */}
       <div
-        className="absolute inset-0 blur-2xl opacity-50"
+        className="rounded-2xl overflow-hidden"
         style={{
-          background: 'radial-gradient(circle, rgba(191, 0, 255, 0.5) 0%, transparent 70%)',
-          transform: 'scale(1.5)',
-        }}
-      />
-
-      {/* Main brain emoji */}
-      <div className={`${sizes[size]} relative`} style={{ filter: 'drop-shadow(0 0 20px rgba(191, 0, 255, 0.6))' }}>
-        🧠
-      </div>
-
-      {/* Glasses overlay */}
-      <div
-        className="absolute"
-        style={{
-          top: '25%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          fontSize: size === 'lg' ? '2rem' : size === 'md' ? '1.5rem' : '1rem',
+          width: px, height: px,
+          boxShadow: `0 0 20px rgba(0,200,83,0.4), 0 0 40px rgba(124,58,237,0.3)`,
         }}
       >
-        🤓
+        <img src={LOGO} alt="Brain Cash" className="w-full h-full object-cover" />
       </div>
-
-      {/* Coin in hand effect */}
-      {size === 'lg' && (
-        <div
-          className="absolute animate-bounce-slow"
-          style={{
-            bottom: '10%',
-            right: '-20%',
-            fontSize: '2rem',
-            filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.8))',
-          }}
-        >
-          💰
-        </div>
-      )}
     </div>
   );
 }
 
-// Premium Button Component
 export function PremiumButton({
   children,
   variant = 'primary',
@@ -255,7 +152,7 @@ export function PremiumButton({
   className = '',
 }: {
   children: React.ReactNode;
-  variant?: 'primary' | 'gold' | 'secondary' | 'danger';
+  variant?: 'primary' | 'gold' | 'green' | 'secondary' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   icon?: React.ReactNode;
   loading?: boolean;
@@ -264,35 +161,21 @@ export function PremiumButton({
   className?: string;
 }) {
   const variants = {
-    primary: 'bg-gradient-to-r from-purple-600 to-blue-600 shadow-neon-purple hover:shadow-[0_0_30px_rgba(191,0,255,0.5)]',
-    gold: 'bg-gradient-to-r from-gold-500 to-gold-400 text-purple-900 shadow-neon-gold hover:shadow-[0_0_30px_rgba(255,215,0,0.5)]',
+    primary: 'bg-gradient-to-r from-purple-700 to-blue-600',
+    gold: 'bg-gradient-to-r from-gold-500 to-gold-400 text-gray-900',
+    green: 'bg-gradient-to-r from-green-600 to-green-brand text-white',
     secondary: 'bg-white/10 border border-white/20 hover:bg-white/20',
-    danger: 'bg-gradient-to-r from-red-600 to-red-500 shadow-[0_0_20px_rgba(255,0,0,0.3)]',
+    danger: 'bg-gradient-to-r from-red-600 to-red-500',
   };
 
-  const sizes = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg',
-  };
+  const sizes = { sm: 'px-4 py-2 text-sm', md: 'px-6 py-3 text-base', lg: 'px-8 py-4 text-lg' };
 
   return (
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`
-        relative overflow-hidden rounded-xl font-bold font-['Rajdhani']
-        transition-all duration-300 transform
-        ${variants[variant]}
-        ${sizes[size]}
-        ${disabled || loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
-        ${className}
-      `}
+      className={`relative overflow-hidden rounded-xl font-bold transition-all duration-300 transform ${variants[variant]} ${sizes[size]} ${disabled || loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'} ${className}`}
     >
-      {/* Shimmer effect */}
-      <div className="absolute inset-0 shimmer" />
-
-      {/* Content */}
       <div className="relative flex items-center justify-center gap-2">
         {loading ? (
           <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
@@ -304,117 +187,5 @@ export function PremiumButton({
         )}
       </div>
     </button>
-  );
-}
-
-// Stats Card with 3D effect
-export function StatCard3D({
-  icon,
-  value,
-  label,
-  trend,
-  color = 'purple',
-}: {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-  trend?: 'up' | 'down' | 'neutral';
-  color?: 'purple' | 'blue' | 'gold' | 'green';
-}) {
-  const colors = {
-    purple: 'from-purple-600/20 to-purple-800/20 border-purple-500/30',
-    blue: 'from-blue-600/20 to-blue-800/20 border-blue-500/30',
-    gold: 'from-gold-500/20 to-gold-600/20 border-gold-500/30',
-    green: 'from-green-600/20 to-green-800/20 border-green-500/30',
-  };
-
-  const trendColors = {
-    up: 'text-green-400',
-    down: 'text-red-400',
-    neutral: 'text-gray-400',
-  };
-
-  const trendIcons = {
-    up: '↑',
-    down: '↓',
-    neutral: '→',
-  };
-
-  return (
-    <div className={`glass-card p-4 bg-gradient-to-br ${colors[color]} relative overflow-hidden group hover:scale-105 transition-transform duration-300`}>
-      {/* Glowing orb */}
-      <div
-        className="absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl opacity-30 group-hover:opacity-50 transition-opacity"
-        style={{ background: color === 'gold' ? '#ffd700' : color === 'blue' ? '#00d4ff' : color === 'green' ? '#00ff88' : '#bf00ff' }}
-      />
-
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-2xl" style={{ filter: 'drop-shadow(0 0 10px currentColor)' }}>
-            {icon}
-          </div>
-          {trend && (
-            <span className={`text-xs font-bold ${trendColors[trend]}`}>
-              {trendIcons[trend]}
-            </span>
-          )}
-        </div>
-        <div className="stat-value text-xl">{value}</div>
-        <div className="text-gray-400 text-xs mt-1">{label}</div>
-      </div>
-    </div>
-  );
-}
-
-// Confetti celebration component
-export function ConfettiCelebration({ active, onComplete }: { active: boolean; onComplete?: () => void }) {
-  const [particles, setParticles] = useState<Array<{
-    id: number;
-    x: number;
-    color: string;
-    delay: number;
-    rotation: number;
-  }>>([]);
-
-  useEffect(() => {
-    if (active) {
-      const colors = ['#ffd700', '#bf00ff', '#00d4ff', '#ff00ff', '#00ff88', '#ff6b6b'];
-      const newParticles = Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        delay: Math.random() * 0.5,
-        rotation: Math.random() * 360,
-      }));
-      setParticles(newParticles);
-
-      const timer = setTimeout(() => {
-        setParticles([]);
-        onComplete?.();
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [active, onComplete]);
-
-  if (!active || particles.length === 0) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute w-3 h-3 confetti"
-          style={{
-            left: `${p.x}%`,
-            top: '-10px',
-            backgroundColor: p.color,
-            animationDelay: `${p.delay}s`,
-            transform: `rotate(${p.rotation}deg)`,
-            borderRadius: Math.random() > 0.5 ? '50%' : '0',
-          }}
-        />
-      ))}
-    </div>
   );
 }

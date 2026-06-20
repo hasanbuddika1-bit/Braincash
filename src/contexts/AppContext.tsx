@@ -118,10 +118,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (tg) {
       tg.ready();
       tg.expand();
-      try { tg.setHeaderColor('#1a0a2e'); } catch {}
-      try { tg.setBackgroundColor('#1a0a2e'); } catch {}
+      try { tg.setHeaderColor('#080814'); } catch {}
+      try { tg.setBackgroundColor('#080814'); } catch {}
 
-      if (tg.initDataUnsafe?.user) {
+      if (tg.initDataUnsafe?.user && tg.initDataUnsafe.user.id) {
         setTgUser({
           id: tg.initDataUnsafe.user.id,
           first_name: tg.initDataUnsafe.user.first_name,
@@ -132,13 +132,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     }
-    setTgUser({ id: 0, first_name: 'Guest', username: 'guest' });
+    // Fallback for development/testing
+    const devId = import.meta.env.DEV ? 5419054691 : 0;
+    setTgUser({ id: devId, first_name: devId ? 'Admin' : 'Guest', username: devId ? 'admin' : 'guest' });
   }, []);
 
   const refreshUser = useCallback(async () => {
     if (!tgUser) return;
 
-    if (tgUser.id === 0 || !isSupabaseConfigured) {
+    // Admin Telegram ID
+    const ADMIN_TELEGRAM_ID = 5419054691;
+    const isAdmin = tgUser.id === ADMIN_TELEGRAM_ID;
+
+    if (tgUser.id === 0) {
       const now = new Date().toISOString();
       const demo: User = {
         id: 'demo',
@@ -153,6 +159,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         referral_code: 'DEMO',
         referred_by: undefined,
         is_admin: false,
+        is_banned: false,
+        is_verified: false,
+        last_active: now,
+        created_at: now,
+        updated_at: now,
+      };
+      setUser(demo);
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      const now = new Date().toISOString();
+      const demo: User = {
+        id: 'demo_' + tgUser.id,
+        telegram_id: tgUser.id,
+        username: tgUser.username,
+        first_name: tgUser.first_name,
+        last_name: tgUser.last_name,
+        photo_url: tgUser.photo_url,
+        points: 0,
+        total_earned: 0,
+        total_withdrawn: 0,
+        referral_code: 'BC' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        referred_by: undefined,
+        is_admin: isAdmin,
         is_banned: false,
         is_verified: false,
         last_active: now,
@@ -181,6 +212,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             last_name: tgUser.last_name,
             photo_url: tgUser.photo_url,
             referral_code: referralCode,
+            is_admin: isAdmin,
           })
           .select()
           .single();
@@ -213,6 +245,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } else if (fetchError) {
         throw fetchError;
       } else {
+        // Ensure admin status is correct
+        if (data.telegram_id === ADMIN_TELEGRAM_ID && !data.is_admin) {
+          await supabase.from('users').update({ is_admin: true }).eq('id', data.id);
+          data.is_admin = true;
+        }
         setUser(data);
       }
     } catch (err) {

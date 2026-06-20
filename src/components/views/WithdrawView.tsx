@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { Wallet, ArrowUpRight, Clock, CheckCircle, XCircle, ExternalLink, Info } from 'lucide-react';
 import type { Withdrawal } from '../../types';
 
-const POINTS_TO_USD = 0.01;
+const POINTS_TO_USD = 0.0001; // 500 pts = $0.05
 const MIN_WITHDRAW = 0.05;
 const WITHDRAW_FEE = 0.01;
 const WITHDRAW_FEE_PERCENT = 5;
@@ -149,7 +149,7 @@ export function WithdrawView() {
 
           <div className="flex items-center gap-2 text-sm">
             <Info className="text-blue-400" size={14} />
-            <span className="text-gray-400">100 pts = $0.01 USDT</span>
+            <span className="text-gray-400">500 pts = $0.05 USDT</span>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
-import { PlayCircle, Gift, Zap, Clock, Tv } from 'lucide-react';
+import { PlayCircle, Gift, Zap, Clock, Tv, Target, CheckCircle, ChevronRight, Flame } from 'lucide-react';
 
 const AD_PROVIDERS = [
   { id: 'adgamer', name: 'AdGamer', logo: '🎮' },
@@ -11,12 +11,17 @@ const AD_PROVIDERS = [
 ];
 
 export function AdsView() {
-  const { user, addPoints, haptic } = useApp();
+  const { user, tasks, refreshTasks, addPoints, haptic } = useApp();
   const { success: showSuccess, error: showError } = useToast();
   const [watching, setWatching] = useState(false);
   const [currentAd, setCurrentAd] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [lastReward, setLastReward] = useState<number | null>(null);
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+
+  // Get main tasks for this view
+  const mainTasks = tasks.filter((t) => (t.task_section === 'main' || !t.task_section) && !t.completed);
+  const completedTasks = tasks.filter((t) => (t.task_section === 'main' || !t.task_section) && t.completed);
 
   const watchAd = async (provider: string, adType: 'rewarded' | 'interstitial') => {
     if (watching || !user) return;
@@ -55,6 +60,35 @@ export function AdsView() {
 
         // Add points
         await addPoints(reward);
+
+        // Check if this is the 10th ad for referral bonus
+        const { count } = await supabase
+          .from('ad_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        // Update referral ad count and give bonus at 10 ads
+        if (count && count % 10 === 0) {
+          const { data: referral } = await supabase
+            .from('referrals')
+            .select('referrer_id, referred_ad_count')
+            .eq('referred_id', user.id)
+            .single();
+
+          if (referral) {
+            const newAdCount = (referral.referred_ad_count || 0) + 10;
+            await supabase
+              .from('referrals')
+              .update({ referred_ad_count: newAdCount })
+              .eq('referred_id', user.id);
+
+            // Give referrer 50 pts bonus at 10 ads milestone
+            if (newAdCount >= 10) {
+              await supabase.rpc('add_points', { user_id: referral.referrer_id, amount: 50 });
+            }
+          }
+        }
+
         setLastReward(reward);
         showSuccess(`+${reward} Points Earned!`, 'Ad reward added to your balance.');
         haptic('success');
@@ -69,6 +103,66 @@ export function AdsView() {
     }, adDuration * 1000);
   };
 
+  const handleTaskClick = async (task: typeof tasks[0]) => {
+    if (task.completed || !user || completingTaskId) return;
+
+    haptic('light');
+
+    // Open link
+    if (task.link) {
+      window.Telegram?.WebApp?.openTelegramLink?.(task.link) || window.open(task.link, '_blank');
+    }
+
+    setCompletingTaskId(task.id);
+
+    setTimeout(async () => {
+      try {
+        const { error: completionError } = await supabase.from('task_completions').insert({
+          user_id: user.id,
+          task_id: task.id,
+          status: 'completed',
+        });
+
+        if (completionError) throw completionError;
+
+        await addPoints(task.reward_points);
+
+        // Update referral task bonus
+        const { data: referral } = await supabase
+          .from('referrals')
+          .select('referrer_id')
+          .eq('referred_id', user.id)
+          .single();
+
+        if (referral && task.task_section === 'main') {
+          await supabase.rpc('add_points', { user_id: referral.referrer_id, amount: 50 });
+          await supabase
+            .from('referrals')
+            .update({ task_bonus: 50, total_commission: 50 })
+            .eq('referred_id', user.id);
+        }
+
+        await refreshTasks();
+        showSuccess(`+${task.reward_points} Points!`, `Task completed.`);
+        haptic('success');
+      } catch (error) {
+        console.error('Error completing task:', error);
+        showError('Task Failed', 'Could not complete task.');
+        haptic('error');
+      } finally {
+        setCompletingTaskId(null);
+      }
+    }, 2000);
+  };
+
+  const taskIcons: Record<string, string> = {
+    channel: '📢',
+    group: '👥',
+    bot: '🤖',
+    post: '📰',
+    partner: '🤝',
+  };
+
   return (
     <div className="px-4 pb-24 pt-4">
       {/* Header */}
@@ -77,26 +171,85 @@ export function AdsView() {
           <span className="text-4xl">📺</span>
           Watch & Earn
         </h1>
-        <p className="text-purple-300 mt-2">Watch ads to earn 4-8 points instantly!</p>
+        <p className="text-green-400 mt-2">Complete tasks and watch ads to earn points!</p>
       </div>
 
-      {/* Stats Card */}
-      <div className="glass-card p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center text-3xl">
-            💰
+      {/* Balance Card */}
+      <div className="glass-card p-4 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(0,200,83,0.15) 0%, rgba(251,191,36,0.1) 100%)' }}>
+        <div className="absolute top-0 right-0 text-6xl opacity-20 transform translate-x-2 -translate-y-2">
+          💰
+        </div>
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-600 to-green-brand flex items-center justify-center text-2xl">
+            💎
           </div>
-          <div>
-            <p className="text-gray-400 text-sm">Your Earnings Today</p>
-            <p className="text-2xl font-bold text-gold-400">{user?.points || 0} pts</p>
-            <p className="text-gray-500 text-xs">~${((user?.points || 0) * 0.01).toFixed(2)} USDT</p>
+          <div className="flex-1">
+            <p className="text-gray-400 text-sm">Your Balance</p>
+            <p className="text-2xl font-bold text-green-400">{user?.points?.toLocaleString() || 0} pts</p>
+            <p className="text-gray-500 text-xs">~${((user?.points || 0) * 0.0001).toFixed(2)} USDT</p>
           </div>
+          <Flame className="text-orange-400" size={32} />
         </div>
       </div>
 
+      {/* Tasks Section */}
+      {mainTasks.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="text-green-400" size={20} />
+            <h2 className="text-white font-semibold">Quick Tasks</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">
+              {mainTasks.length} available
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {mainTasks.slice(0, 3).map((task) => (
+              <button
+                key={task.id}
+                onClick={() => handleTaskClick(task)}
+                disabled={completingTaskId === task.id}
+                className="glass-card p-3 w-full text-left border border-green-500/30 bg-gradient-to-r from-green-500/10 to-green-600/5 transition-all hover:scale-[1.02]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-xl">
+                    {taskIcons[task.task_type] || '📋'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-sm truncate">{task.title}</p>
+                    <p className="text-green-400 text-xs font-bold">+{task.reward_points} pts</p>
+                  </div>
+                  {completingTaskId === task.id ? (
+                    <div className="loader w-5 h-5 !border-2 !border-t-green-brand" />
+                  ) : (
+                    <ChevronRight className="text-gray-500" size={20} />
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {mainTasks.length > 3 && (
+            <p className="text-gray-500 text-xs text-center mt-2">
+              +{mainTasks.length - 3} more tasks available
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Completed Tasks */}
+      {completedTasks.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle className="text-green-400" size={16} />
+            <span className="text-gray-400 text-sm">{completedTasks.length} tasks completed</span>
+          </div>
+        </div>
+      )}
+
       {/* Last Reward Animation */}
       {lastReward && (
-        <div className="glass-card p-4 mb-6 text-center animate-scale-in bg-gradient-to-r from-green-500/20 to-blue-500/20">
+        <div className="glass-card p-4 mb-6 text-center animate-scale-in bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30">
           <div className="text-4xl mb-2">🎉</div>
           <p className="text-green-400 font-bold text-xl">+{lastReward} Points Earned!</p>
           <button
@@ -111,7 +264,7 @@ export function AdsView() {
       {/* Rewarded Video Ads */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Gift className="text-neon-gold" size={20} />
+          <Gift className="text-gold-400" size={20} />
           <h2 className="text-white font-semibold">Rewarded Video Ads</h2>
         </div>
         <p className="text-gray-400 text-sm mb-4">Watch a short video to earn points instantly</p>
@@ -124,7 +277,7 @@ export function AdsView() {
               disabled={watching}
               className={`glass-card p-4 flex items-center gap-4 transition-all ${
                 watching && currentAd === provider.id
-                  ? 'bg-purple-600/30'
+                  ? 'bg-purple-600/30 border-purple-500/50'
                   : watching
                   ? 'opacity-50'
                   : 'hover:border-gold-500/50'
@@ -135,7 +288,7 @@ export function AdsView() {
               </div>
               <div className="flex-1 text-left">
                 <h3 className="text-white font-bold">{provider.name}</h3>
-                <p className="text-grey-400 text-sm">Watch Video</p>
+                <p className="text-gray-400 text-sm">Watch Video</p>
               </div>
               <div className="text-right">
                 {watching && currentAd === provider.id ? (
@@ -145,7 +298,7 @@ export function AdsView() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <PlayCircle className="text-neon-blue" size={28} />
+                    <PlayCircle className="text-blue-400" size={28} />
                     <div>
                       <p className="text-gold-400 font-bold">+4-8</p>
                       <p className="text-gray-500 text-xs">pts</p>
@@ -158,10 +311,10 @@ export function AdsView() {
         </div>
       </div>
 
-      {/* Interstitial Ads */}
+      {/* Quick Ads */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="text-neon-blue" size={20} />
+          <Zap className="text-blue-400" size={20} />
           <h2 className="text-white font-semibold">Quick Ads</h2>
         </div>
         <p className="text-gray-400 text-sm mb-4">Watch a short ad for instant points</p>
@@ -205,7 +358,7 @@ export function AdsView() {
           </li>
           <li className="flex items-start gap-2">
             <span className="text-green-400">✓</span>
-            100 points = $0.01 USDT
+            500 points = $0.05 USDT
           </li>
         </ul>
       </div>
@@ -217,10 +370,13 @@ export function AdsView() {
             <div className="text-6xl mb-4 animate-pulse">📺</div>
             <h3 className="text-xl font-bold text-white mb-2">Watch Ad</h3>
             <p className="text-gray-400 mb-4">Please wait while the ad plays...</p>
-            <div className="w-full h-4 rounded-full bg-white/10 overflow-hidden mb-4">
+            <div className="w-full h-4 rounded-full overflow-hidden mb-4" style={{ background: 'rgba(255,255,255,0.1)' }}>
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all"
-                style={{ width: `${((15 - countdown) / 15) * 100}%` }}
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${((15 - countdown) / 15) * 100}%`,
+                  background: 'linear-gradient(90deg, #00c853, #fbbf24)',
+                }}
               />
             </div>
             <p className="text-gold-400 font-bold text-2xl">{countdown}s</p>

@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         purple: {
+          950: '#0d0515',
           900: '#1a0a2e',
           800: '#2d1b4e',
           700: '#4a2c7a',
@@ -22,6 +23,13 @@ export default {
           400: '#60a5fa',
           300: '#93c5fd',
         },
+        green: {
+          600: '#16a34a',
+          500: '#22c55e',
+          400: '#4ade80',
+          300: '#86efac',
+          brand: '#00c853',
+        },
         gold: {
           500: '#f59e0b',
           400: '#fbbf24',
@@ -34,6 +42,10 @@ export default {
           gold: '#ffd700',
           pink: '#ff00ff',
           green: '#00ff88',
+        },
+        brand: {
+          green: '#00c853',
+          dark: '#080814',
         },
       },
       fontFamily: {

@@ -96,8 +96,9 @@ export function ProfileView() {
   }
 
   function copyReferral() {
-    if (!user?.referral_code) return;
-    navigator.clipboard.writeText(user.referral_code);
+    if (!user?.telegram_id) return;
+    const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}`;
+    navigator.clipboard.writeText(referralLink);
     setCopied(true);
     haptic('success');
     setTimeout(() => setCopied(false), 2000);
@@ -216,18 +217,21 @@ export function ProfileView() {
           </div>
         </div>
 
-        {/* Referral Code */}
-        <div className="relative z-10 mt-3 flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
-          <div className="flex-1 min-w-0">
-            <p className="text-gray-500 text-xs mb-0.5">Referral Code</p>
-            <p className="text-gold-400 font-mono font-bold tracking-widest">{user?.referral_code || '—'}</p>
+        {/* Referral Link */}
+        <div className="relative z-10 mt-3">
+          <p className="text-gray-500 text-xs mb-1.5">Your Referral Link</p>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 py-2.5 px-3 rounded-xl bg-black/30 font-mono text-xs text-green-400 truncate border border-green-500/30">
+              {user?.telegram_id ? `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}` : 'Connect Telegram to get link'}
+            </div>
+            <button
+              onClick={copyReferral}
+              disabled={!user?.telegram_id}
+              className={`p-2.5 rounded-xl transition-all flex-shrink-0 ${copied ? 'bg-green-500/20 text-green-400' : 'bg-gradient-to-br from-green-600 to-green-brand text-white hover:from-green-500 hover:to-green-400'}`}
+            >
+              {copied ? <Check size={18} /> : <Copy size={18} />}
+            </button>
           </div>
-          <button
-            onClick={copyReferral}
-            className={`p-2 rounded-lg transition-all ${copied ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}
-          >
-            {copied ? <Check size={18} /> : <Copy size={18} />}
-          </button>
         </div>
       </div>
 
@@ -265,7 +269,7 @@ export function ProfileView() {
             <p className="text-gray-500 text-xs mt-0.5">Withdrawn</p>
           </div>
           <div className="rounded-xl bg-white/5 p-3 text-center">
-            <p className="text-xl font-bold text-white">${((user?.points || 0) * 0.01).toFixed(2)}</p>
+            <p className="text-xl font-bold text-white">${((user?.points || 0) * 0.0001).toFixed(2)}</p>
             <p className="text-gray-500 text-xs mt-0.5">Claimable</p>
           </div>
         </div>
@@ -336,7 +340,7 @@ export function ProfileView() {
           <DetailRow
             icon={<Wallet className="text-purple-400" size={16} />}
             label="Points Value"
-            value={`$${((user?.points || 0) * 0.01).toFixed(4)} USDT`}
+            value={`$${((user?.points || 0) * 0.0001).toFixed(4)} USDT`}
             valueClass="text-gold-400 font-bold"
           />
         </div>
