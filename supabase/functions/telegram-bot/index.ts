@@ -167,6 +167,25 @@ function getMainKeyboard() {
   };
 }
 
+// Get bot token from database or environment
+async function getBotToken(supabase: ReturnType<typeof getSupabaseClient>): Promise<string | null> {
+  // First try environment variable
+  let token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+  if (token) return token;
+
+  // Fall back to database settings
+  try {
+    const { data } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'bot_token')
+      .single();
+    return data?.value || null;
+  } catch {
+    return null;
+  }
+}
+
 // Get or create user with IP tracking
 async function getOrCreateUser(
   supabase: ReturnType<typeof getSupabaseClient>,
@@ -176,9 +195,9 @@ async function getOrCreateUser(
     last_name?: string;
     username?: string;
   },
-  referredBy?: string,
-  clientIp?: string
+  referredBy?: string
 ) {
+  // First check if user already exists
   let { data: user, error } = await supabase
     .from('users')
     .select('*')
@@ -186,25 +205,8 @@ async function getOrCreateUser(
     .single();
 
   if (error?.code === 'PGRST116' || !user) {
+    // User doesn't exist, create new one
     const referralCode = 'BC' + telegramUser.id.toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-    // Check for existing accounts with same IP
-    let shouldSuspend = false;
-    if (clientIp) {
-      const { data: existingAccounts } = await supabase
-        .from('users')
-        .select('id, telegram_id, is_banned')
-        .eq('ip_address', clientIp)
-        .neq('telegram_id', telegramUser.id);
-
-      if (existingAccounts && existingAccounts.length > 0) {
-        // Check if any existing account is not banned
-        const activeAccounts = existingAccounts.filter(a => !a.is_banned);
-        if (activeAccounts.length > 0) {
-          shouldSuspend = true;
-        }
-      }
-    }
 
     const { data: newUser, error: createError } = await supabase
       .from('users')
@@ -219,8 +221,7 @@ async function getOrCreateUser(
         total_withdrawn: 0,
         is_admin: telegramUser.id === ADMIN_TELEGRAM_ID,
         is_verified: false,
-        ip_address: clientIp,
-        is_banned: shouldSuspend,
+        is_banned: false,
       })
       .select()
       .single();
@@ -235,63 +236,46 @@ async function getOrCreateUser(
     // Send notification to admin about new user
     const botToken = await getBotToken(supabase);
     if (botToken) {
-      await sendMessage(botToken, ADMIN_TELEGRAM_ID, `
+      try {
+        await sendMessage(botToken, ADMIN_TELEGRAM_ID, `
 🆕 <b>New User Registration</b>
 
 👤 <b>User:</b> ${telegramUser.first_name || 'Unknown'} ${telegramUser.last_name || ''}
 📱 <b>Username:</b> @${telegramUser.username || 'N/A'}
 🆔 <b>Telegram ID:</b> ${telegramUser.id}
-🌐 <b>IP:</b> ${clientIp || 'Unknown'}
-⚠️ <b>Status:</b> ${shouldSuspend ? 'Suspended (duplicate IP)' : 'Active'}
-
-${shouldSuspend ? '⚠️ Multiple accounts detected from same IP!' : ''}
-      `);
-    }
-
-    // If suspended, notify user
-    if (shouldSuspend) {
-      if (botToken) {
-        await sendMessage(botToken, telegramUser.id, `
-⚠️ <b>Account Under Review</b>
-
-Your account has been temporarily suspended for security reasons. Please contact support @braincashsupport if you believe this is an error.
         `);
+      } catch (e) {
+        console.error('Failed to send admin notification:', e);
       }
-      return user; // Return suspended user
     }
 
-    // Give welcome bonus to new user
-    const welcomeBonus = 10;
-    await supabase.rpc('add_points', {
-      user_id: user.id,
-      amount: welcomeBonus,
-    });
-
-    // Handle referral bonus if applicable
+    // Handle referral bonus if applicable - ONLY ONCE when user is created
     if (referredBy && referredBy.startsWith('ref_')) {
       const referrerCode = referredBy.replace('ref_', '');
 
-      // Check if referral is from same IP (block self-referrals)
-      let isBlockedReferral = false;
-
       const { data: referrer } = await supabase
         .from('users')
-        .select('id, ip_address')
+        .select('id')
         .eq('referral_code', referrerCode)
         .single();
 
-      if (referrer) {
-        if (clientIp && referrer.ip_address === clientIp) {
-          isBlockedReferral = true;
-        }
+      if (referrer && referrer.id !== user.id) {
+        // Check if this referrer hasn't already referred this user
+        const { data: existingReferral } = await supabase
+          .from('referrals')
+          .select('id')
+          .eq('referrer_id', referrer.id)
+          .eq('referred_id', user.id)
+          .single();
 
-        if (referrer.id !== user.id && !isBlockedReferral) {
-          // Add referral record
+        if (!existingReferral) {
+          // Add referral record - ONLY ONCE
           await supabase.from('referrals').insert({
             referrer_id: referrer.id,
             referred_id: user.id,
             join_bonus: 50,
             task_bonus: 0,
+            ad_bonus: 0,
             total_commission: 50,
           });
 
@@ -301,7 +285,7 @@ Your account has been temporarily suspended for security reasons. Please contact
             .update({ referred_by: referrer.id })
             .eq('id', user.id);
 
-          // Award join bonus to referrer
+          // Award join bonus to referrer ONCE
           await supabase.rpc('add_points', {
             user_id: referrer.id,
             amount: 50,
@@ -315,7 +299,7 @@ Your account has been temporarily suspended for security reasons. Please contact
 }
 
 // Check and complete task via chat membership
-async function checkAndCompleteTask(supabase: ReturnType<typeof getSupabaseClient>, userId: number, chatId: number | string) {
+async function checkAndCompleteTask(supabase: ReturnType<typeof getSupabaseClient>, userId: string, chatId: number | string, botToken: string) {
   // Find task linked to this chat
   const { data: tasks } = await supabase
     .from('tasks')
@@ -323,7 +307,13 @@ async function checkAndCompleteTask(supabase: ReturnType<typeof getSupabaseClien
     .eq('is_active', true);
 
   for (const task of tasks || []) {
-    if (task.link?.includes(chatId.toString()) || task.link?.includes('@' + task.link?.split('/').pop())) {
+    const chatUsername = task.link?.replace('https://t.me/', '').replace('@', '').replace('/', '');
+    const linkMatches = task.link?.includes(chatId.toString()) ||
+                        task.link?.includes('@' + chatId) ||
+                        chatUsername === chatId ||
+                        task.link?.includes('/' + chatId);
+
+    if (linkMatches) {
       // Check if user already completed this task
       const { data: existing } = await supabase
         .from('task_completions')
@@ -346,31 +336,31 @@ async function checkAndCompleteTask(supabase: ReturnType<typeof getSupabaseClien
           amount: task.reward_points,
         });
 
+        // Check for referral task bonus
+        const { data: referral } = await supabase
+          .from('referrals')
+          .select('referrer_id, task_bonus')
+          .eq('referred_id', userId)
+          .single();
+
+        if (referral && referral.task_bonus === 0) {
+          // Give referrer task bonus ONCE
+          await supabase.rpc('add_points', {
+            user_id: referral.referrer_id,
+            amount: 50,
+          });
+          await supabase
+            .from('referrals')
+            .update({ task_bonus: 50, total_commission: 50 })
+            .eq('referred_id', userId);
+        }
+
         return task;
       }
     }
   }
 
   return null;
-}
-
-// Get bot token from database or environment
-async function getBotToken(supabase: ReturnType<typeof getSupabaseClient>): Promise<string | null> {
-  // First try environment variable
-  let token = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  if (token) return token;
-
-  // Fall back to database settings
-  try {
-    const { data } = await supabase
-      .from('settings')
-      .select('value')
-      .eq('key', 'bot_token')
-      .single();
-    return data?.value || null;
-  } catch {
-    return null;
-  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -394,6 +384,37 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // Clone the request to read the body
+    const clonedReq = req.clone();
+    const bodyText = await clonedReq.text();
+
+    if (!bodyText) {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Try to parse as membership check request first
+    try {
+      const bodyData = JSON.parse(bodyText);
+      if (bodyData.action === 'check_membership') {
+        const { user_id, chat_id } = bodyData;
+        const isMember = await getChatMember(botToken, chat_id, user_id);
+        return new Response(JSON.stringify({
+          is_member: isMember?.status === 'member' || isMember?.status === 'administrator' || isMember?.status === 'creator'
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch {
+      // Not a membership check request, continue with Telegram update
+    }
+
+    // Parse as Telegram update
+    const body: TelegramUpdate = JSON.parse(bodyText);
+
     // Get mini app URL from settings
     const { data: settings } = await supabase
       .from('settings')
@@ -403,8 +424,6 @@ Deno.serve(async (req: Request) => {
 
     const miniAppBaseUrl = settings?.value || (Deno.env.get("MINI_APP_URL") || "https://braincash.app");
     const miniAppUrl = "https://t.me/Brain_cashbot/braincash";
-
-    const body: TelegramUpdate = await req.json();
 
     // Handle /start command
     if (body.message?.text?.startsWith("/start")) {
@@ -583,7 +602,6 @@ Minimum $0.05 to USDT or TON (GRAM) wallet
     if (body.callback_query) {
       const callbackId = body.callback_query.id;
       const chatId = body.callback_query.message?.chat.id;
-      const userId = body.callback_query.from.id;
       const callbackData = body.callback_query.data;
 
       await answerCallbackQuery(botToken, callbackId);
@@ -655,26 +673,6 @@ Open the Mini App to withdraw your earnings.
       });
     }
 
-    // Handle membership check action from Mini App
-    const bodyText = await req.text();
-    if (bodyText) {
-      try {
-        const bodyData = JSON.parse(bodyText);
-        if (bodyData.action === 'check_membership') {
-          const { user_id, chat_id } = bodyData;
-          const isMember = await getChatMember(botToken, chat_id, user_id);
-          return new Response(JSON.stringify({
-            is_member: isMember?.status === 'member' || isMember?.status === 'administrator' || isMember?.status === 'creator'
-          }), {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-      } catch {
-        // Not JSON, ignore - it's a Telegram update
-      }
-    }
-
     // Handle chat member updates (for task auto-verification)
     if (body.my_chat_member || body.chat_member) {
       const update = body.my_chat_member || body.chat_member;
@@ -693,9 +691,9 @@ Open the Mini App to withdraw your earnings.
         if (user) {
           // Try to complete task by chat ID or username
           if (chatUsername) {
-            await checkAndCompleteTask(supabase, user.id, chatUsername);
+            await checkAndCompleteTask(supabase, user.id, chatUsername, botToken);
           }
-          await checkAndCompleteTask(supabase, user.id, chatId);
+          await checkAndCompleteTask(supabase, user.id, chatId, botToken);
         }
       }
 

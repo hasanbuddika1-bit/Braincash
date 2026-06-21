@@ -27,9 +27,10 @@ export interface Task {
   link?: string;
   reward_points: number;
   icon_emoji?: string;
+  image_url?: string;
   is_partner: boolean;
   is_active: boolean;
-  verification_method: string;
+  verification_method: 'auto' | 'bot_verify' | 'trust_verify';
   created_at: string;
   completed?: boolean;
 }

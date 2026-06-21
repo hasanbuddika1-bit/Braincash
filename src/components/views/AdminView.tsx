@@ -523,6 +523,8 @@ function AdminTasks() {
     task_section: 'main' as Task['task_section'],
     reward_points: 10,
     icon_emoji: '📋',
+    image_url: '',
+    verification_method: 'auto' as Task['verification_method'],
     is_partner: false,
     is_active: true,
   });
@@ -530,6 +532,11 @@ function AdminTasks() {
   const TASK_ICONS = ['📋', '📢', '👥', '🤖', '📰', '🤝', '🎁', '⭐', '🔥', '💰', '🎮', '📱', '💬', '✨', '🎯'];
   const TASK_TYPES = ['channel', 'group', 'bot', 'post', 'partner'];
   const TASK_SECTIONS = ['main', 'partner', 'other'];
+  const VERIFICATION_METHODS = [
+    { value: 'auto', label: 'Auto Verify', description: 'Complete after clicking' },
+    { value: 'bot_verify', label: 'Bot Verify', description: 'Check membership via bot' },
+    { value: 'trust_verify', label: 'Trust Verify', description: 'Manual admin approval' },
+  ];
 
   useEffect(() => {
     loadTasks();
@@ -558,6 +565,8 @@ function AdminTasks() {
       task_section: 'main',
       reward_points: 10,
       icon_emoji: '📋',
+      image_url: '',
+      verification_method: 'auto',
       is_partner: false,
       is_active: true,
     });
@@ -575,6 +584,8 @@ function AdminTasks() {
       task_section: task.task_section,
       reward_points: task.reward_points,
       icon_emoji: task.icon_emoji || '📋',
+      image_url: task.image_url || '',
+      verification_method: task.verification_method || 'auto',
       is_partner: task.is_partner,
       is_active: task.is_active,
     });
@@ -759,6 +770,45 @@ function AdminTasks() {
                       }`}
                     >
                       {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Image URL */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Image URL (optional)</label>
+                <input
+                  type="text"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                  className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm"
+                />
+                {formData.image_url && (
+                  <div className="mt-2">
+                    <img src={formData.image_url} alt="Preview" className="w-16 h-16 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
+              </div>
+
+              {/* Verification Method */}
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Verification Method</label>
+                <div className="space-y-2">
+                  {VERIFICATION_METHODS.map((method) => (
+                    <button
+                      key={method.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, verification_method: method.value as Task['verification_method'] })}
+                      className={`w-full p-3 rounded-lg text-left transition-all ${
+                        formData.verification_method === method.value
+                          ? 'bg-purple-600 border-2 border-purple-400'
+                          : 'bg-white/10 border border-white/10'
+                      }`}
+                    >
+                      <p className="text-white font-semibold text-sm">{method.label}</p>
+                      <p className="text-gray-400 text-xs">{method.description}</p>
                     </button>
                   ))}
                 </div>
