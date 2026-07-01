@@ -236,12 +236,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             await supabase.from('referrals').insert({
               referrer_id: referrer.id,
               referred_id: newUser.id,
-              join_bonus: 50,
+              join_bonus: 20,
               task_bonus: 0,
-              total_commission: 50,
+              total_commission: 20,
             });
             await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
-            await supabase.rpc('add_points', { user_id: referrer.id, amount: 50 });
+            await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
           }
         }
       } else if (fetchError) {
@@ -251,6 +251,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (data.telegram_id === ADMIN_TELEGRAM_ID && !data.is_admin) {
           await supabase.from('users').update({ is_admin: true }).eq('id', data.id);
           data.is_admin = true;
+        }
+        // Check if user is suspended/banned
+        if (data.is_banned) {
+          // Find the first account created from the same IP to show as reference
+          let suspendedInfo = 'Your account has been suspended.';
+          if (data.registration_ip) {
+            const { data: firstUser } = await supabase
+              .from('users')
+              .select('username, telegram_id, first_name')
+              .eq('registration_ip', data.registration_ip)
+              .order('created_at', { ascending: true })
+              .limit(1)
+              .maybeSingle();
+            if (firstUser && firstUser.telegram_id !== data.telegram_id) {
+              suspendedInfo = `Your account has been suspended. First account from your IP: ${firstUser.username || firstUser.first_name || firstUser.telegram_id}`;
+            }
+          }
+          if (data.suspension_reason) {
+            suspendedInfo += ` Reason: ${data.suspension_reason}`;
+          }
+          setUser(null);
+          setError(suspendedInfo);
+          return;
         }
         setUser(data);
       }

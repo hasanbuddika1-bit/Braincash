@@ -16,12 +16,18 @@ export interface User {
   last_active: string;
   created_at: string;
   updated_at: string;
+  withdraw_count?: number;
+  first_withdraw_done?: boolean;
+  ip_address?: string;
+  suspended_at?: string;
+  suspension_reason?: string;
+  registration_ip?: string;
 }
 
 export interface Task {
   id: string;
   task_type: 'channel' | 'group' | 'bot' | 'post' | 'partner';
-  task_section: 'main' | 'partner' | 'other';
+  task_section: 'main' | 'partner' | 'other' | 'community';
   title: string;
   description?: string;
   link?: string;
@@ -46,7 +52,7 @@ export interface TaskCompletion {
 export interface Game {
   id: string;
   name: string;
-  game_type: 'memory' | 'connect' | 'color' | 'reaction' | 'wordguess' | 'numberguess' | 'wordtype';
+  game_type: 'memory' | 'connect' | 'color' | 'wordguess' | 'numberguess' | 'wordtype' | 'math' | 'drawing';
   description?: string;
   icon: string;
   reward_range_min: number;
@@ -86,6 +92,8 @@ export interface Withdrawal {
   status: 'pending' | 'approved' | 'rejected' | 'completed';
   processed_at?: string;
   created_at: string;
+  withdraw_number?: number;
+  reject_reason?: string;
 }
 
 export interface Referral {
@@ -96,6 +104,11 @@ export interface Referral {
   task_bonus: number;
   total_commission: number;
   created_at: string;
+  ad_bonus_paid?: boolean;
+  task_bonus_paid?: boolean;
+  referred_ad_count?: number;
+  referred_task_count?: number;
+  ad_bonus?: number;
 }
 
 export interface DailyChallenge {
@@ -139,6 +152,56 @@ export interface LeaderboardEntry {
   photo_url?: string;
   total_earned: number;
   rank: number;
+}
+
+export interface CommunityTask {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  channel_link?: string;
+  icon_emoji?: string;
+  image_url?: string;
+  verification_method: 'auto' | 'bot_verify';
+  bot_username?: string;
+  member_amount: number;
+  members_joined: number;
+  points_per_member: number;
+  total_cost: number;
+  status: 'active' | 'completed';
+  is_bot_admin_verified: boolean;
+  created_at: string;
+}
+
+export interface PartnerSubmission {
+  id: string;
+  user_id: string;
+  post_link: string;
+  channel_name?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_notes?: string;
+  reviewed_at?: string;
+  created_at: string;
+}
+
+export interface GameChance {
+  id: string;
+  user_id: string;
+  game_id: string;
+  chances_left: number;
+  last_refill_date: string;
+  ads_watched_for_refill: number;
+}
+
+export interface WithdrawRequirement {
+  id: string;
+  user_id: string;
+  daily_ads_watched: number;
+  active_referrals: number;
+  main_tasks_completed: boolean;
+  partner_tasks_completed: boolean;
+  last_reset_date: string;
+  updated_at: string;
 }
 
 export type ViewType = 'home' | 'games' | 'game' | 'tasks' | 'ads' | 'referrals' | 'withdraw' | 'admin' | 'challenge' | 'history' | 'payment' | 'profile';

@@ -673,6 +673,130 @@ Open the Mini App to withdraw your earnings.
       });
     }
 
+    // Handle withdraw approval notification (called from admin panel)
+    if (req.url.includes('/notify-withdraw-approve') && body.user_telegram_id && body.withdraw_data) {
+      const w = body.withdraw_data;
+      const explorerUrl = w.currency === 'USDT'
+        ? `https://bscscan.com/tx/${w.tx_id}`
+        : `https://tonviewer.com/tx/${w.tx_id}`;
+
+      await sendMessage(botToken, body.user_telegram_id, `
+✅ <b>Withdrawal Approved!</b>
+
+👤 <b>User:</b> ${w.user_name || 'Unknown'}
+🔢 <b>Number of withdraw:</b> #${w.withdraw_number}
+💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}
+💳 <b>Method:</b> ${w.currency === 'TON' ? 'TON (GRAM)' : 'USDT BEP20'}
+💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}
+✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${w.currency === 'TON' ? 'TON (GRAM)' : 'USDT BEP20'}
+🔗 <b>TX ID:</b> <code>${w.tx_id}</code>
+      `, {
+        inline_keyboard: [
+          [{ text: "🔍 View Transaction", url: explorerUrl }],
+          [{ text: "💳 Payment Channel", url: "https://t.me/braincashpayment" }],
+          [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
+        ],
+      });
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle withdraw rejection notification (called from admin panel)
+    if (req.url.includes('/notify-withdraw-reject') && body.user_telegram_id && body.withdraw_data) {
+      const w = body.withdraw_data;
+      await sendMessage(botToken, body.user_telegram_id, `
+❌ <b>Withdrawal Rejected</b>
+
+🔢 <b>Number of withdraw:</b> #${w.withdraw_number}
+💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}
+💳 <b>Method:</b> ${w.currency === 'TON' ? 'TON (GRAM)' : 'USDT BEP20'}
+❌ <b>Reason:</b> ${w.reject_reason || 'Not specified'}
+
+💰 <b>Your points have been refunded.</b>
+      `, {
+        inline_keyboard: [
+          [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
+        ],
+      });
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle new withdrawal request notification to admin
+    if (req.url.includes('/notify-admin-withdraw') && body.withdraw_data) {
+      const w = body.withdraw_data;
+      await sendMessage(botToken, ADMIN_TELEGRAM_ID, `
+🧠💰 <b>New Withdrawal Request</b>
+
+👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})
+🔢 <b>Number of withdraw:</b> #${w.withdraw_number}
+💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}
+💳 <b>Method:</b> ${w.currency === 'TON' ? 'TON (GRAM)' : 'USDT BEP20'}
+💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}
+✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${w.currency === 'TON' ? 'TON (GRAM)' : 'USDT BEP20'}
+📍 <b>Address:</b> <code>${w.wallet_address}</code>
+      `, {
+        inline_keyboard: [
+          [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
+        ],
+      });
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle partner task approval notification
+    if (req.url.includes('/notify-partner-approve') && body.user_telegram_id) {
+      await sendMessage(botToken, body.user_telegram_id, `
+🤝 <b>Partner Task Approved!</b>
+
+✅ Your partner task submission has been approved.
+It will now appear as a Partner Task in the app.
+
+Thank you for partnering with Brain Cash!
+      `, {
+        inline_keyboard: [
+          [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
+        ],
+      });
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle referral notification
+    if (req.url.includes('/notify-referral') && body.user_telegram_id && body.referral_data) {
+      const r = body.referral_data;
+      await sendMessage(botToken, body.user_telegram_id, `
+🎉 <b>New Referral!</b>
+
+👤 <b>Referred user:</b> ${r.referred_name || 'Anonymous'}
+📊 <b>Status:</b> ${r.status || 'Pending'}
+💰 <b>Your bonus:</b> +${r.bonus || 20} pts
+
+Keep inviting friends to earn more!
+      `, {
+        inline_keyboard: [
+          [{ text: "🧠 Open Brain Cash", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
+        ],
+      });
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Handle chat member updates (for task auto-verification)
     if (body.my_chat_member || body.chat_member) {
       const update = body.my_chat_member || body.chat_member;
