@@ -273,10 +273,10 @@ async function getOrCreateUser(
           await supabase.from('referrals').insert({
             referrer_id: referrer.id,
             referred_id: user.id,
-            join_bonus: 50,
+            join_bonus: 20,
             task_bonus: 0,
             ad_bonus: 0,
-            total_commission: 50,
+            total_commission: 20,
           });
 
           // Update user's referred_by
@@ -288,8 +288,27 @@ async function getOrCreateUser(
           // Award join bonus to referrer ONCE
           await supabase.rpc('add_points', {
             user_id: referrer.id,
-            amount: 50,
+            amount: 20,
           });
+
+          // Notify referrer about new referral
+          try {
+            await sendMessage(botToken, referral.referrer_id || referrer.id, `
+🎉 <b>New Referral!</b>
+
+👤 <b>Referred user:</b> ${telegramUser.first_name || 'Anonymous'}
+📊 <b>Status:</b> Pending
+💰 <b>Your bonus:</b> +20 pts
+
+Keep inviting friends to earn more!
+            `, {
+              inline_keyboard: [
+                [{ text: "🧠 Open Brain Cash", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
+              ],
+            });
+          } catch (e) {
+            console.error('Failed to send referral notification:', e);
+          }
         }
       }
     }
@@ -347,11 +366,11 @@ async function checkAndCompleteTask(supabase: ReturnType<typeof getSupabaseClien
           // Give referrer task bonus ONCE
           await supabase.rpc('add_points', {
             user_id: referral.referrer_id,
-            amount: 50,
+            amount: 40,
           });
           await supabase
             .from('referrals')
-            .update({ task_bonus: 50, total_commission: 50 })
+            .update({ task_bonus: 40, total_commission: 40 + (referral.join_bonus || 20) })
             .eq('referred_id', userId);
         }
 
@@ -444,6 +463,7 @@ Deno.serve(async (req: Request) => {
       const welcomePhotoUrl = `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`;
 
       // Send welcome photo with caption
+      const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}`;
       const welcomeCaption = `
 🧠 <b>Welcome to Brain Cash!</b>
 
@@ -451,12 +471,12 @@ Play games, watch ads, complete tasks and earn real cash rewards!
 
 💰 <b>500 Points = $0.05 USDT</b>
 📺 Watch ads to earn 4-8 points
-🎮 Play 7+ puzzle games
-👥 Invite friends for 50 pts + 10% commission
+🎮 Play 8+ puzzle games
+👥 Invite friends for 120 pts + 5% lifetime commission
 💳 Withdraw to USDT or TON (GRAM)
 
 <b>Your referral link:</b>
-https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}
+<code>${referralLink}</code>
 
 📢 <b>Join our community:</b>
 • Channel: @brain_cach_channel
@@ -522,22 +542,32 @@ https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}
       const user = await getOrCreateUser(supabase, telegramUser);
       const referralCode = user?.referral_code || ('BC' + telegramUser.id.toString(36).toUpperCase());
 
+      const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}`;
       await sendMessage(botToken, chatId, `
 👥 <b>Referral Program</b>
 
 🔗 <b>Your Referral Link:</b>
-https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}
+<code>${referralLink}</code>
 
 🎁 <b>Rewards:</b>
-• +50 pts when friend joins
-• +50 pts when friend completes tasks
-• +50 pts when friend watches 10 ads
-• 10% lifetime commission on all earnings
+• +20 pts when friend joins
+• +40 pts when friend completes main tasks
+• +70 pts when friend watches 10 ads
+• 5% lifetime commission on all earnings
+• Total per active referral: 120 pts
+
+📊 <b>Referral Challenges (lifetime):</b>
+• 3 active refs = 50 pts
+• 5 active refs = 75 pts
+• 10 active refs = 150 pts
+• 50 active refs = 500 pts
+• 100 active refs = 1500 pts
 
 <i>Share your link and start earning!</i>
       `, {
         inline_keyboard: [
-          [{ text: "📤 Share Link", switch_inline_query: `Join Brain Cash and earn crypto! Use my link: https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}` }],
+          [{ text: "📋 Copy Referral Link", copy_text: { text: referralLink } }],
+          [{ text: "📤 Share Link", switch_inline_query: `Join Brain Cash and earn crypto! Use my link: ${referralLink}` }],
           [{ text: "🧠 Open Mini App", web_app: { url: "https://t.me/Brain_cashbot/braincash" } }],
         ],
       });
