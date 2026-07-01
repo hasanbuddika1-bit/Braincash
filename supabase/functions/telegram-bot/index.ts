@@ -202,9 +202,9 @@ async function getOrCreateUser(
     .from('users')
     .select('*')
     .eq('telegram_id', telegramUser.id)
-    .single();
+    .maybeSingle();
 
-  if (error?.code === 'PGRST116' || !user) {
+  if (!user) {
     // User doesn't exist, create new one
     const referralCode = 'BC' + telegramUser.id.toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
 
@@ -224,9 +224,9 @@ async function getOrCreateUser(
         is_banned: false,
       })
       .select()
-      .single();
+      .maybeSingle();
 
-    if (createError) {
+    if (createError || !newUser) {
       console.error('Error creating user:', createError);
       return null;
     }
@@ -253,11 +253,11 @@ async function getOrCreateUser(
     if (referredBy && referredBy.startsWith('ref_')) {
       const referrerCode = referredBy.replace('ref_', '');
 
-      const { data: referrer } = await supabase
+      const { data: referrer, error: refError } = await supabase
         .from('users')
         .select('id')
         .eq('referral_code', referrerCode)
-        .single();
+        .maybeSingle();
 
       if (referrer && referrer.id !== user.id) {
         // Check if this referrer hasn't already referred this user
@@ -266,7 +266,7 @@ async function getOrCreateUser(
           .select('id')
           .eq('referrer_id', referrer.id)
           .eq('referred_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (!existingReferral) {
           // Add referral record - ONLY ONCE
@@ -293,7 +293,7 @@ async function getOrCreateUser(
 
           // Notify referrer about new referral
           try {
-            await sendMessage(botToken, referral.referrer_id || referrer.id, `
+            await sendMessage(botToken, referrer.id, `
 🎉 <b>New Referral!</b>
 
 👤 <b>Referred user:</b> ${telegramUser.first_name || 'Anonymous'}
@@ -439,7 +439,7 @@ Deno.serve(async (req: Request) => {
       .from('settings')
       .select('value')
       .eq('key', 'mini_app_url')
-      .single();
+      .maybeSingle();
 
     const miniAppBaseUrl = settings?.value || (Deno.env.get("MINI_APP_URL") || "https://braincash.app");
     const miniAppUrl = "https://t.me/Brain_cashbot/braincash";
@@ -459,7 +459,15 @@ Deno.serve(async (req: Request) => {
 
       const user = await getOrCreateUser(supabase, telegramUser, startParam);
 
-      const referralCode = user?.referral_code || ('BC' + telegramUser.id.toString(36).toUpperCase());
+      if (!user) {
+        await sendMessage(botToken, chatId, "❌ Error: Could not create or find your account. Please try again later.");
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const referralCode = user.referral_code;
       const welcomePhotoUrl = `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`;
 
       // Send welcome photo with caption
@@ -509,7 +517,11 @@ Play games, watch ads, complete tasks and earn real cash rewards!
       }
 
       const user = await getOrCreateUser(supabase, telegramUser);
-      const points = user?.points || 0;
+      if (!user) {
+        await sendMessage(botToken, chatId, "❌ Error: Could not access your account.");
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const points = user.points;
       const usdValue = (points * 0.0001).toFixed(4);
 
       await sendMessage(botToken, chatId, `
@@ -540,7 +552,11 @@ Play games, watch ads, complete tasks and earn real cash rewards!
       }
 
       const user = await getOrCreateUser(supabase, telegramUser);
-      const referralCode = user?.referral_code || ('BC' + telegramUser.id.toString(36).toUpperCase());
+      if (!user) {
+        await sendMessage(botToken, chatId, "❌ Error: Could not access your account.");
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const referralCode = user.referral_code;
 
       const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}`;
       await sendMessage(botToken, chatId, `
