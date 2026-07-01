@@ -96,8 +96,8 @@ export function ProfileView() {
   }
 
   function copyReferral() {
-    if (!user?.telegram_id) return;
-    const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}`;
+    if (!user?.referral_code) return;
+    const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     haptic('success');
@@ -222,11 +222,11 @@ export function ProfileView() {
           <p className="text-gray-500 text-xs mb-1.5">Your Referral Link</p>
           <div className="flex items-center gap-2">
             <div className="flex-1 py-2.5 px-3 rounded-xl bg-black/30 font-mono text-xs text-green-400 truncate border border-green-500/30">
-              {user?.telegram_id ? `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.telegram_id}` : 'Connect Telegram to get link'}
+              {user?.referral_code ? `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}` : 'Connect Telegram to get link'}
             </div>
             <button
               onClick={copyReferral}
-              disabled={!user?.telegram_id}
+              disabled={!user?.referral_code}
               className={`p-2.5 rounded-xl transition-all flex-shrink-0 ${copied ? 'bg-green-500/20 text-green-400' : 'bg-gradient-to-br from-green-600 to-green-brand text-white hover:from-green-500 hover:to-green-400'}`}
             >
               {copied ? <Check size={18} /> : <Copy size={18} />}

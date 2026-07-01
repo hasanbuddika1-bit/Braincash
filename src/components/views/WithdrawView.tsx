@@ -735,7 +735,7 @@ export function WithdrawView() {
         <button
           onClick={() => {
             haptic('light');
-            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash_bot/app') || window.open('https://t.me/braincash_bot/app', '_blank');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
           }}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
         >

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
-import { Gift, Users, TrendingUp, Copy, Check, Share2, Crown, Target, Tv, Percent, AlertTriangle, Trophy, Zap, ExternalLink, Award } from 'lucide-react';
+import { Gift, Users, TrendingUp, Copy, Check, Share2, Crown, Target, Tv, Percent, AlertTriangle, Trophy, ExternalLink, Award } from 'lucide-react';
 import type { Referral, User } from '../../types';
 
 const REFERRAL_BONUSES = {
@@ -119,7 +119,7 @@ export function ReferralsView() {
   const copyReferralCode = () => {
     if (!user) return;
     haptic('light');
-    const link = `https://t.me/braincash_bot/app?startapp=ref_${user.referral_code}`;
+    const link = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
     navigator.clipboard?.writeText(link);
     setCopied(true);
     showSuccess('Copied!', 'Referral link copied to clipboard.');
@@ -129,7 +129,7 @@ export function ReferralsView() {
   const shareReferralLink = () => {
     if (!user) return;
     haptic('light');
-    const link = `https://t.me/braincash_bot/app?startapp=ref_${user.referral_code}`;
+    const link = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
     const shareText = `🧠💰 Join Brain Cash - Play games, complete tasks, and earn real crypto! Use my referral link to get bonus points:`;
 
     if (window.Telegram?.WebApp) {
@@ -191,14 +191,12 @@ export function ReferralsView() {
             </button>
           </div>
           <div className="flex gap-3">
-            <button onClick={shareReferralLink} className="flex-1 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }}>
-              <Share2 size={18} /> Share Invite Link
+            <button onClick={copyReferralCode} className="flex-1 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }}>
+              {copied ? <Check size={18} /> : <Copy size={18} />}
+              {copied ? 'Copied!' : 'Copy Referral Link'}
             </button>
-            <button onClick={() => {
-              haptic('light');
-              window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash_bot/app') || window.open('https://t.me/braincash_bot/app', '_blank');
-            }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-600 to-gold-500 text-white font-bold flex items-center justify-center gap-2">
-              <Zap size={18} /> Open Brain Cash
+            <button onClick={shareReferralLink} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-600 to-gold-500 text-white font-bold flex items-center justify-center gap-2">
+              <Share2 size={18} /> Share Invite Link
             </button>
           </div>
         </div>
@@ -378,18 +376,6 @@ export function ReferralsView() {
         )}
       </div>
 
-      {/* Open Brain Cash button */}
-      <div className="mt-6">
-        <button onClick={() => {
-          haptic('light');
-          if (user) {
-            const link = `https://t.me/braincash_bot/app?startapp=ref_${user.referral_code}`;
-            window.Telegram?.WebApp?.openTelegramLink?.(link) || window.open(link, '_blank');
-          }
-        }} className="w-full py-3 rounded-xl bg-gradient-to-r from-green-600 to-gold-500 text-white font-bold flex items-center justify-center gap-2">
-          <Zap size={18} /> Open Brain Cash (Your Referral Link)
-        </button>
-      </div>
     </div>
   );
 }
