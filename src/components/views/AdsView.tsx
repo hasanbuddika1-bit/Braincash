@@ -431,7 +431,7 @@ export async function showInterstitialOnOpen(): Promise<void> {
   if (now - lastInterstitial < INTERSTITIAL_COOLDOWN) return;
   lastInterstitial = now;
   try {
-    await showAdsgramAd('35763');
+    await showAdsgramAd('int-35763');
   } catch {
     // Silent fail for interstitials
   }
@@ -448,7 +448,7 @@ export function useInterstitialOnHome() {
     lastHomeAd.current = now;
     // Show Adsgram interstitial after 2-3s on home page
     const timer = setTimeout(() => {
-      showAdsgramAd('35763').catch(() => {});
+      showAdsgramAd('int-35763').catch(() => {});
     }, 2500);
     return () => clearTimeout(timer);
   }, [user?.id]);

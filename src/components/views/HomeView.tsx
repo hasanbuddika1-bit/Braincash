@@ -13,7 +13,7 @@ export function HomeView() {
     if (now - lastHomeAd.current < 3000) return;
     lastHomeAd.current = now;
     const timer = setTimeout(() => {
-      showAdsgramAd('35763').catch(() => {});
+      showAdsgramAd('int-35763').catch(() => {});
     }, 2500);
     return () => clearTimeout(timer);
   }, [user?.id]);

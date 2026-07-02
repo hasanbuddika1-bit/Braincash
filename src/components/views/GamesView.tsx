@@ -185,7 +185,7 @@ export function GamesView() {
 
     try {
       if (network === 'adsgram') {
-        await showAdsgramAd('35763');
+        await showAdsgramAd('int-35763');
       } else if (network === 'monetag') {
         await showMonetagAd('11230846');
       } else {
