@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { showAdsgramAd } from '../../lib/adManager';
 import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown, ExternalLink } from 'lucide-react';
 
 export function HomeView() {
   const { user, leaderboard, setCurrentView, games, haptic } = useApp();
+  const lastHomeAd = useRef(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const now = Date.now();
+    if (now - lastHomeAd.current < 3000) return;
+    lastHomeAd.current = now;
+    const timer = setTimeout(() => {
+      showAdsgramAd('35763').catch(() => {});
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [user?.id]);
 
   const pointsToUSD = (points: number) => {
     return (points * 0.0001).toFixed(2);

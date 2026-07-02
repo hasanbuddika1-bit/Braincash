@@ -15,6 +15,8 @@ import { PaymentView } from './components/views/PaymentView';
 import { ProfileView } from './components/views/ProfileView';
 import { ArrowLeft } from 'lucide-react';
 import { VIEW_LABELS, type ViewType } from './types';
+import { showInterstitialOnOpen } from './components/views/AdsView';
+import { useEffect, useRef } from 'react';
 
 // Views where the tab bar is intentionally hidden (full-screen game/challenge)
 const HIDE_TAB_VIEWS = new Set(['game', 'challenge']);
@@ -23,7 +25,18 @@ const HIDE_TAB_VIEWS = new Set(['game', 'challenge']);
 const SHOW_BACK_VIEWS: Set<ViewType> = new Set(['games', 'ads', 'referrals', 'withdraw', 'admin', 'challenge', 'history', 'payment', 'profile', 'tasks', 'game']);
 
 function App() {
-  const { loading, currentView, selectedGame, goBack, canGoBack, haptic } = useApp();
+  const { loading, currentView, selectedGame, goBack, canGoBack, haptic, user } = useApp();
+  const appAdShown = useRef(false);
+
+  useEffect(() => {
+    if (user && !appAdShown.current) {
+      appAdShown.current = true;
+      const timer = setTimeout(() => {
+        showInterstitialOnOpen();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [user?.id]);
 
   if (loading) {
     return <LoadingScreen />;

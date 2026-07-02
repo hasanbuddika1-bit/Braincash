@@ -4,7 +4,7 @@ import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import {
   Users, DollarSign, TrendingUp, Gift, Settings, CheckCircle, XCircle, Clock,
-  BarChart3, Bell, RefreshCw, AlertTriangle, Globe, Handshake, ExternalLink, Send, X,
+  BarChart3, Bell, RefreshCw, AlertTriangle, Globe, Handshake, ExternalLink, Send, X, Tv, Save,
 } from 'lucide-react';
 import type { Withdrawal, User, Task, PartnerSubmission } from '../../types';
 
@@ -14,7 +14,7 @@ const WITHDRAW_FEE_PERCENT = 5;
 
 export function AdminView() {
   const { user, haptic } = useApp();
-  const [tab, setTab] = useState<'stats' | 'users' | 'withdrawals' | 'tasks' | 'partner'>('stats');
+  const [tab, setTab] = useState<'stats' | 'users' | 'withdrawals' | 'tasks' | 'partner' | 'ads'>('stats');
 
   const isAdmin = user?.is_admin || user?.telegram_id === ADMIN_TELEGRAM_ID;
 
@@ -45,6 +45,7 @@ export function AdminView() {
           { id: 'withdrawals', icon: <DollarSign size={18} />, label: 'Withdrawals' },
           { id: 'tasks', icon: <Gift size={18} />, label: 'Tasks' },
           { id: 'partner', icon: <Handshake size={18} />, label: 'Partner' },
+          { id: 'ads', icon: <Tv size={18} />, label: 'Ads' },
         ].map((t) => (
           <button key={t.id} onClick={() => { haptic('light'); setTab(t.id as typeof tab); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${tab === t.id ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-white/10 text-gray-400'}`}>
@@ -58,6 +59,7 @@ export function AdminView() {
       {tab === 'withdrawals' && <AdminWithdrawals />}
       {tab === 'tasks' && <AdminTasks />}
       {tab === 'partner' && <AdminPartner />}
+      {tab === 'ads' && <AdminAds />}
     </div>
   );
 }
@@ -694,6 +696,142 @@ function AdminPartner() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── AdminAds: Ad Network Management ───────────────────────────────────────────
+
+function AdminAds() {
+  const { haptic } = useApp();
+  const { success, error } = useToast();
+  const [configs, setConfigs] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [stats, setStats] = useState<Record<string, { today: number; total: number; points: number }>>({});
+
+  const loadConfigs = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('settings').select('key, value').in('key', [
+      'adsgram_block_id', 'adsgram_daily_limit', 'adsgram_points_per_ad', 'adsgram_cooldown_seconds',
+      'monetag_zone_id', 'monetag_daily_limit', 'monetag_points_per_ad', 'monetag_cooldown_seconds',
+      'gigapub_script_id', 'gigapub_daily_limit', 'gigapub_points_per_ad', 'gigapub_cooldown_seconds',
+    ]);
+    const map: Record<string, string> = {};
+    (data || []).forEach((s: { key: string; value: string }) => { map[s.key] = s.value; });
+    setConfigs(map);
+
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+    const { data: todayData } = await supabase.from('ad_views').select('ad_provider, reward').gte('viewed_at', startOfDay);
+    const { data: allData } = await supabase.from('ad_views').select('ad_provider, reward');
+
+    const statMap: Record<string, { today: number; total: number; points: number }> = {
+      adsgram: { today: 0, total: 0, points: 0 },
+      monetag: { today: 0, total: 0, points: 0 },
+      gigapub: { today: 0, total: 0, points: 0 },
+    };
+    (todayData || []).forEach((r: { ad_provider: string; reward: number }) => {
+      if (statMap[r.ad_provider]) { statMap[r.ad_provider].today++; statMap[r.ad_provider].points += r.reward; }
+    });
+    (allData || []).forEach((r: { ad_provider: string; reward: number }) => {
+      if (statMap[r.ad_provider]) statMap[r.ad_provider].total++;
+    });
+    setStats(statMap);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadConfigs(); }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    haptic('light');
+    const updates = Object.entries(configs).map(([key, value]) =>
+      supabase.from('settings').update({ value, updated_at: new Date().toISOString() }).eq('key', key)
+    );
+    try {
+      await Promise.all(updates);
+      success('Saved', 'Ad network settings updated.');
+      haptic('success');
+    } catch {
+      error('Error', 'Failed to save settings.');
+      haptic('error');
+    }
+    setSaving(false);
+  };
+
+  const networks = [
+    { id: 'adsgram', name: 'Adsgram AI', logo: '🤖', fields: [
+      { key: 'adsgram_block_id', label: 'Block ID', value: configs.adsgram_block_id || '35763' },
+      { key: 'adsgram_daily_limit', label: 'Daily Limit', value: configs.adsgram_daily_limit || '10' },
+      { key: 'adsgram_points_per_ad', label: 'Points per Ad', value: configs.adsgram_points_per_ad || '10' },
+      { key: 'adsgram_cooldown_seconds', label: 'Cooldown (seconds)', value: configs.adsgram_cooldown_seconds || '5' },
+    ]},
+    { id: 'monetag', name: 'Monetag', logo: '📊', fields: [
+      { key: 'monetag_zone_id', label: 'Zone ID', value: configs.monetag_zone_id || '11230846' },
+      { key: 'monetag_daily_limit', label: 'Daily Limit', value: configs.monetag_daily_limit || '10' },
+      { key: 'monetag_points_per_ad', label: 'Points per Ad', value: configs.monetag_points_per_ad || '5' },
+      { key: 'monetag_cooldown_seconds', label: 'Cooldown (seconds)', value: configs.monetag_cooldown_seconds || '5' },
+    ]},
+    { id: 'gigapub', name: 'Gigapub', logo: '🚀', fields: [
+      { key: 'gigapub_script_id', label: 'Script ID', value: configs.gigapub_script_id || '7151' },
+      { key: 'gigapub_daily_limit', label: 'Daily Limit', value: configs.gigapub_daily_limit || '10' },
+      { key: 'gigapub_points_per_ad', label: 'Points per Ad', value: configs.gigapub_points_per_ad || '5' },
+      { key: 'gigapub_cooldown_seconds', label: 'Cooldown (seconds)', value: configs.gigapub_cooldown_seconds || '5' },
+    ]},
+  ];
+
+  if (loading) return <div className="loader mx-auto" />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-white font-bold text-lg flex items-center gap-2"><Tv size={20} /> Ad Networks</h2>
+        <button onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-xl font-bold flex items-center gap-2" style={{ background: 'linear-gradient(90deg, #00c853, #fbbf24)', color: '#080814' }}>
+          <Save size={16} /> {saving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+
+      {networks.map((net) => (
+        <div key={net.id} className="glass-card p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-700/50 to-blue-700/50 flex items-center justify-center text-2xl">{net.logo}</div>
+            <div className="flex-1">
+              <h3 className="text-white font-bold">{net.name}</h3>
+              <p className="text-gray-400 text-xs">
+                Today: {stats[net.id]?.today || 0} ads | Total: {stats[net.id]?.total || 0} ads | Points: {stats[net.id]?.points || 0}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {net.fields.map((f) => (
+              <div key={f.key}>
+                <label className="text-gray-400 text-xs mb-1 block">{f.label}</label>
+                <input
+                  type="text"
+                  value={configs[f.key] || f.value}
+                  onChange={(e) => setConfigs({ ...configs, [f.key]: e.target.value })}
+                  className="w-full py-2 px-3 rounded-lg bg-white/10 text-white text-sm border border-white/10 focus:border-gold-500 outline-none"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-2 flex items-center gap-2"><BarChart3 size={18} /> Ad Statistics</h3>
+        <div className="grid grid-cols-3 gap-3 mt-3">
+          {networks.map((net) => (
+            <div key={net.id} className="text-center p-3 rounded-xl bg-white/5">
+              <div className="text-2xl mb-1">{net.logo}</div>
+              <p className="text-white font-bold">{stats[net.id]?.today || 0}</p>
+              <p className="text-gray-400 text-xs">today</p>
+              <p className="text-gold-400 text-sm mt-1">{stats[net.id]?.points || 0} pts</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

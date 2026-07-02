@@ -4,12 +4,13 @@ import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft, Trophy, HelpCircle, X, Star, Zap, Heart, Play, Target, Award, CheckCircle } from 'lucide-react';
 
+import { showAdsgramAd, showMonetagAd, showGigapubAd, pickRandomNetwork, type AdNetwork } from '../../lib/adManager';
+
 const MAX_CHANCES = 5;
-const AD_PROVIDERS = [
-  { id: 'adgamer', name: 'AdGamer', logo: '🎮' },
+const AD_PROVIDERS: { id: AdNetwork; name: string; logo: string }[] = [
+  { id: 'adsgram', name: 'Adsgram AI', logo: '🤖' },
   { id: 'monetag', name: 'Monetag', logo: '📊' },
   { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
-  { id: 'monetix', name: 'Monetix', logo: '💰' },
 ];
 
 const GAME_CHALLENGE_TIERS = [
@@ -165,13 +166,38 @@ export function GamesView() {
     }
   }
 
-  const handleGameClick = (game: typeof games[0]) => {
+  const [showGameAd, setShowGameAd] = useState(false);
+  const [gameAdProvider, setGameAdProvider] = useState<AdNetwork | null>(null);
+
+  const handleGameClick = async (game: typeof games[0]) => {
     haptic('light');
     const chances = gameChances[game.id] ?? MAX_CHANCES;
     if (chances <= 0) {
       haptic('error');
       return;
     }
+
+    // Show random ad from 3 networks before game starts
+    const network = pickRandomNetwork();
+    setGameAdProvider(network);
+    setShowGameAd(true);
+    haptic('light');
+
+    try {
+      if (network === 'adsgram') {
+        await showAdsgramAd('35763');
+      } else if (network === 'monetag') {
+        await showMonetagAd('11230846');
+      } else {
+        await showGigapubAd('7151');
+      }
+    } catch {
+      // Silent fail - proceed to game anyway
+    } finally {
+      setShowGameAd(false);
+      setGameAdProvider(null);
+    }
+
     setSelectedGame(game);
     setCurrentView('game');
   };
@@ -310,6 +336,24 @@ export function GamesView() {
           );
         })}
       </div>
+
+      {/* Game Ad Overlay */}
+      {showGameAd && gameAdProvider && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in">
+          <div className="glass-card p-8 text-center max-w-sm w-[90%]">
+            <div className="text-6xl mb-4 animate-pulse">
+              {gameAdProvider === 'adsgram' ? '🤖' : gameAdProvider === 'monetag' ? '📊' : '🚀'}
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              {gameAdProvider === 'adsgram' ? 'Adsgram AI' : gameAdProvider === 'monetag' ? 'Monetag' : 'Gigapub'}
+            </h3>
+            <p className="text-gray-400 mb-4">Loading ad...</p>
+            <div className="w-full h-4 rounded-full overflow-hidden mb-4" style={{ background: 'rgba(255,255,255,0.1)' }}>
+              <div className="h-full rounded-full animate-pulse" style={{ width: '60%', background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
