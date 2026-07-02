@@ -19,16 +19,17 @@ export interface AdViewResult {
   network: AdNetwork;
 }
 
+// SDK loaded flags
 let adsgramLoaded = false;
+let adsgramController: any = null;
 let monetagLoaded = false;
 let gigapubLoaded = false;
 
 declare global {
   interface Window {
+    Adsgram?: any;
     show_11230846?: (options?: { type?: string }) => Promise<void>;
     showGiga?: () => Promise<void>;
-    ADSGRAM?: unknown;
-    adsgramQueue?: ((ad: { done: () => void; error: (e: string) => void }) => void)[];
   }
 }
 
@@ -93,73 +94,106 @@ export async function canWatchAd(userId: string, network: AdNetwork, config: AdN
   return { canWatch: true, watchedToday };
 }
 
-function loadAdsgramScript(blockId: string): Promise<void> {
+// ── SDK Loaders ──────────────────────────────────────────────────────────
+
+function loadScript(src: string, attrs?: Record<string, string>): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (adsgramLoaded) { resolve(); return; }
+    // Check if already loaded
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      if (existing.getAttribute('data-loaded') === 'true') { resolve(); return; }
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error(`Failed to load: ${src}`)));
+      return;
+    }
     const s = document.createElement('script');
-    s.src = 'https://lib.adsgram.io/js/sdk/adsgram.js';
+    s.src = src;
     s.async = true;
-    s.onload = () => {
-      adsgramLoaded = true;
-      resolve();
-    };
-    s.onerror = () => reject(new Error('Failed to load Adsgram SDK'));
+    if (attrs) Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
+    s.onload = () => { s.setAttribute('data-loaded', 'true'); resolve(); };
+    s.onerror = () => reject(new Error(`Failed to load: ${src}`));
     document.head.appendChild(s);
   });
 }
 
-function loadMonetagScript(zoneId: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (monetagLoaded) { resolve(); return; }
-    const s = document.createElement('script');
-    s.src = '//libtl.com/sdk.js';
-    s.async = true;
-    s.setAttribute('data-zone', zoneId);
-    s.setAttribute('data-sdk', `show_${zoneId}`);
-    s.onload = () => {
-      monetagLoaded = true;
-      resolve();
-    };
-    s.onerror = () => reject(new Error('Failed to load Monetag SDK'));
-    document.head.appendChild(s);
-  });
+async function ensureAdsgram(blockId: string): Promise<void> {
+  // Wait for SDK to be available (loaded via index.html script tag)
+  let tries = 0;
+  while (!window.Adsgram && tries < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  if (!window.Adsgram) {
+    // Fallback: load dynamically
+    await loadScript('https://sad.adsgram.ai/js/sad.min.js');
+  }
+  if (!adsgramController && window.Adsgram) {
+    adsgramController = window.Adsgram.init({ blockId });
+  }
 }
 
-function loadGigapubScript(scriptId: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (gigapubLoaded) { resolve(); return; }
-    const s = document.createElement('script');
-    s.src = `https://ad.gigapub.tech/script?id=${scriptId}`;
-    s.async = true;
-    s.onload = () => {
-      gigapubLoaded = true;
-      resolve();
-    };
-    s.onerror = () => reject(new Error('Failed to load Gigapub SDK'));
-    document.head.appendChild(s);
-  });
+async function ensureMonetag(zoneId: string): Promise<void> {
+  // Wait for SDK to be available (loaded via index.html script tag)
+  let tries = 0;
+  while (!window[`show_${zoneId}`] && tries < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  if (!window[`show_${zoneId}`]) {
+    // Fallback: load dynamically
+    await loadScript('https://libtl.com/sdk.js', {
+      'data-zone': zoneId,
+      'data-sdk': `show_${zoneId}`,
+    });
+    // Wait for function to appear
+    tries = 0;
+    while (!window[`show_${zoneId}`] && tries < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+  }
 }
+
+async function ensureGigapub(scriptId: string): Promise<void> {
+  // Wait for SDK to be available (loaded via index.html script tag)
+  let tries = 0;
+  while (!window.showGiga && tries < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  if (!window.showGiga) {
+    // Fallback: load dynamically
+    await loadScript(`https://ad.gigapub.tech/script?id=${scriptId}`);
+    tries = 0;
+    while (!window.showGiga && tries < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+  }
+}
+
+// ── Ad Show Functions ────────────────────────────────────────────────────
 
 export async function showAdsgramAd(blockId: string): Promise<void> {
-  await loadAdsgramScript(blockId);
-  const sdk = window.ADSGRAM;
-  if (!sdk) throw new Error('Adsgram SDK not initialized');
-  const ad = await sdk.init({ blockId });
-  await ad.show();
+  await ensureAdsgram(blockId);
+  if (!adsgramController) throw new Error('Adsgram SDK not initialized');
+  await adsgramController.show();
 }
 
 export async function showMonetagAd(zoneId: string): Promise<void> {
-  await loadMonetagScript(zoneId);
-  const fn = (window as unknown as Record<string, unknown>)[`show_${zoneId}`] as ((opts?: { type?: string }) => Promise<void>) | undefined;
+  await ensureMonetag(zoneId);
+  const fn = window[`show_${zoneId}`];
   if (!fn) throw new Error('Monetag SDK not initialized');
-  await fn({ type: 'interstitial' });
+  await fn();
 }
 
 export async function showGigapubAd(scriptId: string): Promise<void> {
-  await loadGigapubScript(scriptId);
+  await ensureGigapub(scriptId);
   if (!window.showGiga) throw new Error('Gigapub SDK not initialized');
   await window.showGiga();
 }
+
+// ── Record Ad View ──────────────────────────────────────────────────────
 
 export async function recordAdView(userId: string, network: AdNetwork, reward: number, adType: string = 'rewarded'): Promise<void> {
   await supabase.from('ad_views').insert({

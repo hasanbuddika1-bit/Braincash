@@ -271,7 +271,7 @@ export function AdsView() {
 
     try {
       if (network === 'adsgram') {
-        await showAdsgramAd('35763');
+        await showAdsgramAd('35762');
       } else if (network === 'monetag') {
         await showMonetagAd('11230846');
       } else if (network === 'gigapub') {

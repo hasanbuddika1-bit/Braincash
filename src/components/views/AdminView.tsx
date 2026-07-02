@@ -762,7 +762,7 @@ function AdminAds() {
 
   const networks = [
     { id: 'adsgram', name: 'Adsgram AI', logo: '🤖', fields: [
-      { key: 'adsgram_block_id', label: 'Block ID', value: configs.adsgram_block_id || '35763' },
+      { key: 'adsgram_block_id', label: 'Block ID (Rewarded)', value: configs.adsgram_block_id || '35762' },
       { key: 'adsgram_daily_limit', label: 'Daily Limit', value: configs.adsgram_daily_limit || '10' },
       { key: 'adsgram_points_per_ad', label: 'Points per Ad', value: configs.adsgram_points_per_ad || '10' },
       { key: 'adsgram_cooldown_seconds', label: 'Cooldown (seconds)', value: configs.adsgram_cooldown_seconds || '5' },
