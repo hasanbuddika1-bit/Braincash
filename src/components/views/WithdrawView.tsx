@@ -438,8 +438,8 @@ export function WithdrawView() {
             <Info className="text-blue-400" size={14} />
             <span className="text-gray-400">
               {withdrawCount === 0 ? 'First withdraw: 500 pts ($0.05)' : `Min: ${minWithdrawPoints} pts ($${minWithdrawUSD})`}
-              {' • Max: 
-        </div>
+              {' • Max: $' + MAX_WITHDRAW_USD}
+            </span>
       </div>
 
       {/* Requirements Card */}
@@ -651,7 +651,7 @@ export function WithdrawView() {
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -979,7 +979,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -1307,7 +1307,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -1635,7 +1635,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -1963,7 +1963,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -2291,7 +2291,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -2619,7 +2619,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -2947,7 +2947,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -3275,7 +3275,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -3603,7 +3603,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -3931,7 +3931,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -4259,7 +4259,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -4587,7 +4587,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -4915,7 +4915,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -5243,7 +5243,7 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
@@ -5571,7 +5571,5254 @@ function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; l
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}}
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+          </button>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="glass-card p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <ArrowUpRight className="text-neon-purple" size={20} />
+          Withdrawal History
+        </h3>
+
+        {withdrawals.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3 opacity-50">💸</div>
+            <p className="text-gray-400">No withdrawals yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  w.status === 'completed' ? 'bg-green-500/20' :
+                  w.status === 'rejected' ? 'bg-red-500/20' :
+                  'bg-yellow-500/20'
+                }`}>
+                  {w.currency === 'USDT' ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                      <span className="text-white font-black text-xs">₮</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    ${w.amount.toFixed(4)} {w.currency}
+                    {w.withdraw_number && <span className="text-gray-500 text-xs ml-2">#{w.withdraw_number}</span>}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate max-w-[150px]">
+                    {w.wallet_address.slice(0, 8)}...{w.wallet_address.slice(-6)}
+                  </p>
+                  {w.reject_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {w.reject_reason}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    {statusIcons[w.status]}
+                    <span className={`text-sm ${statusColors[w.status]} capitalize`}>{w.status}</span>
+                  </div>
+                  <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleDateString()}</p>
+                </div>
+                {w.tx_id && (
+                  <a
+                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment channel & mini app buttons */}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/braincash') || window.open('https://t.me/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Payment Channel
+        </button>
+        <button
+          onClick={() => {
+            haptic('light');
+            window.Telegram?.WebApp?.openTelegramLink?.('https://t.me/Brain_cashbot/braincash') || window.open('https://t.me/Brain_cashbot/braincash', '_blank');
+          }}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Zap size={18} />
+          Open Mini App
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RequirementRow({ icon, label, value, done }: { icon: React.ReactNode; label: string; value: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${done ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        {done ? <CheckCircle className="text-green-400" size={20} /> : <span className={done ? 'text-green-400' : 'text-gray-400'}>{icon}</span>}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm ${done ? 'text-green-400' : 'text-gray-300'}`}>{label}</p>
+      </div>
+      <span className={`text-sm font-bold ${done ? 'text-green-400' : 'text-yellow-400'}`}>{value}</span>
+    </div>
+  );
+}
+ + MAX_WITHDRAW_USD}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements Card */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Lock className="text-gold-400" size={20} />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-3">
+          {/* Daily ads */}
+          <RequirementRow
+            icon={<TrendingUp size={18} />}
+            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
+            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+          />
+          {/* Active referrals */}
+          <RequirementRow
+            icon={<Users size={18} />}
+            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
+            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
+            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+          />
+          {/* Main tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all main tasks"
+            value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.mainTasksCompleted}
+          />
+          {/* Partner tasks */}
+          <RequirementRow
+            icon={<Target size={18} />}
+            label="Complete all partner tasks"
+            value={requirements.partnerTasksCompleted ? 'Done' : 'Pending'}
+            done={requirements.partnerTasksCompleted}
+          />
+        </div>
+
+        {/* Processing bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-xs">Overall Progress</span>
+            <span className="text-gold-400 text-xs font-bold">
+              {[
+                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.mainTasksCompleted,
+                requirements.partnerTasksCompleted,
+              ].filter(Boolean).length}/4
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${([
+                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
+                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.mainTasksCompleted,
+                  requirements.partnerTasksCompleted,
+                ].filter(Boolean).length / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending withdrawal warning */}
+      {pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-yellow-400" size={24} />
+            <div>
+              <p className="text-yellow-400 font-semibold">Pending Withdrawal</p>
+              <p className="text-gray-400 text-sm">You have a pending withdrawal. Wait for it to be approved before requesting another.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Out Button (gated) */}
+      {!pendingWithdrawal && (
+        <button
+          onClick={handleCashOutClick}
+          disabled={!allRequirementsMet || !hasMinPoints}
+          className={`btn-neon-gold w-full mb-6 ${(!allRequirementsMet || !hasMinPoints) ? 'opacity-50' : ''}`}
+        >
+          {allRequirementsMet && hasMinPoints ? (
+            <span className="flex items-center justify-center gap-2">
+              <Zap size={20} />
+              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+            </span>
+          ) : !allRequirementsMet ? (
+            'Complete Requirements First'
+          ) : (
+            `Need ${minWithdrawPoints} pts minimum`
+          )}
+        </button>
+      )}
+
+      {/* Withdrawal Form (only shown after ad flow) */}
+      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+        <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Wallet className="text-neon-blue" size={20} />
+            Withdrawal Request
+          </h3>
+
+          {/* Points Input */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Points to Withdraw</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter points"
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+              />
+              <button
+                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
+              >
+                MAX
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mt-1">
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+            </p>
+          </div>
+
+          {/* Currency Selection with logos */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { haptic('light'); setCurrency('USDT'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* USDT BEP20 logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                  <span className="text-white font-black text-sm">₮</span>
+                </div>
+                <p className="text-white font-semibold">USDT</p>
+                <p className="text-gray-400 text-xs">BEP20</p>
+              </button>
+              <button
+                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
+                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                }`}
+              >
+                {/* TON logo */}
+                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
+                  </svg>
+                </div>
+                <p className="text-white font-semibold">Gram (ex TON)</p>
+                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Wallet Address */}
+          <div className="mb-4">
+            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder={`Enter your ${currency} wallet address`}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+            />
+          </div>
+
+          {/* Fee Breakdown */}
+          {inputUSD > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">USD Value</span>
+                <span className="text-white">${inputUSD.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-red-400">-${fee.toFixed(4)}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+                <span className="text-white font-semibold">Net (after fee)</span>
+                <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
+              </div>
+              <div className="text-center text-gray-500 text-xs">
+                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleWithdraw}
+            disabled={!isValid || loading}
+            className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
           </button>
         </div>
       )}
