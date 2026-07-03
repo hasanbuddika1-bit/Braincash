@@ -5,7 +5,6 @@ import { TabBar } from './components/TabBar';
 import { HomeView } from './components/views/HomeView';
 import { GamesView, GamePlayView } from './components/views/GamesView';
 import { TasksView } from './components/views/TasksView';
-import { AdsView } from './components/views/AdsView';
 import { ReferralsView } from './components/views/ReferralsView';
 import { WithdrawView } from './components/views/WithdrawView';
 import { AdminView } from './components/views/AdminView';
@@ -15,7 +14,6 @@ import { PaymentView } from './components/views/PaymentView';
 import { ProfileView } from './components/views/ProfileView';
 import { ArrowLeft } from 'lucide-react';
 import { VIEW_LABELS, type ViewType } from './types';
-import { showInterstitialOnOpen } from './components/views/AdsView';
 import { useEffect, useRef } from 'react';
 
 // Views where the tab bar is intentionally hidden (full-screen game/challenge)
@@ -31,10 +29,6 @@ function App() {
   useEffect(() => {
     if (user && !appAdShown.current) {
       appAdShown.current = true;
-      const timer = setTimeout(() => {
-        showInterstitialOnOpen();
-      }, 2000);
-      return () => clearTimeout(timer);
     }
   }, [user?.id]);
 
@@ -97,7 +91,7 @@ function App() {
         {currentView === 'games'     && <GamesView />}
         {currentView === 'game'      && selectedGame && <GamePlayView />}
         {currentView === 'tasks'     && <TasksView />}
-        {currentView === 'ads'       && <AdsView />}
+        {currentView === 'ads'       && <div className="p-4 text-center text-gray-400">Ads loading...</div>}
         {currentView === 'referrals' && <ReferralsView />}
         {currentView === 'withdraw'  && <WithdrawView />}
         {currentView === 'admin'     && <AdminView />}
