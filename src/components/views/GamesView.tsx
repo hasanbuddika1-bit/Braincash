@@ -4,7 +4,7 @@ import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft, Trophy, HelpCircle, X, Star, Zap, Heart, Play, Target, Award, CheckCircle } from 'lucide-react';
 
-import { showAdsgramAd, showMonetagAd, showGigapubAd, pickRandomNetwork, type AdNetwork } from '../../lib/adManager';
+import { showAdsgramAd, showMonetagAd, showGigapubAd, showRandomAd, showAdFromNetwork, pickRandomNetwork, type AdNetwork } from '../../lib/adManager';
 
 const MAX_CHANCES = 5;
 const AD_PROVIDERS: { id: AdNetwork; name: string; logo: string }[] = [
@@ -184,13 +184,7 @@ export function GamesView() {
     haptic('light');
 
     try {
-      if (network === 'adsgram') {
-        await showAdsgramAd('int-35763');
-      } else if (network === 'monetag') {
-        await showMonetagAd('11230846');
-      } else {
-        await showGigapubAd('7151');
-      }
+      await showAdFromNetwork(network);
     } catch {
       // Silent fail - proceed to game anyway
     } finally {
@@ -448,31 +442,36 @@ export function GamePlayView() {
   function startAdRefill() {
     haptic('light');
     setAdPlaying(true);
-    setAdTimer(5);
+    setAdTimer(15);
+    // Show real ad from random network
+    showRandomAd()
+      .then(() => { /* ad completed */ })
+      .catch(() => { /* ad failed, still give chance */ })
+      .finally(() => {
+        setAdPlaying(false);
+        setAdTimer(0);
+        // Refill 1 chance
+        const newChances = chancesLeft + 1;
+        setChancesLeft(newChances);
+        setShowAdRefill(false);
+        haptic('success');
+        // Save to DB
+        if (user && selectedGame) {
+          const today = new Date().toISOString().split('T')[0];
+          supabase
+            .from('game_chances')
+            .update({ chances_left: newChances, last_refill_date: today })
+            .eq('user_id', user.id)
+            .eq('game_id', selectedGame.id)
+            .then();
+        }
+      });
   }
 
   useEffect(() => {
     if (adPlaying && adTimer > 0) {
       const t = setTimeout(() => setAdTimer(at => at - 1), 1000);
       return () => clearTimeout(t);
-    } else if (adPlaying && adTimer === 0) {
-      setAdPlaying(false);
-      // Refill 1 chance
-      const newChances = chancesLeft + 1;
-      setChancesLeft(newChances);
-      setShowAdRefill(false);
-      haptic('success');
-      // Save to DB
-      if (user && selectedGame) {
-        const today = new Date().toISOString().split('T')[0];
-        supabase
-          .from('game_chances')
-          .update({ chances_left: newChances, last_refill_date: today })
-          .eq('user_id', user.id)
-          .eq('game_id', selectedGame.id)
-          .then();
-      }
-      setCurrentAdIdx((currentAdIdx + 1) % AD_PROVIDERS.length);
     }
   }, [adPlaying, adTimer]);
 
@@ -589,7 +588,7 @@ function useGameReward(onRoundComplete?: () => void) {
       try {
         await supabase.from('game_sessions').insert({
           user_id: user.id,
-          game_id: user.id,
+          game_id: selectedGame?.id || user.id,
           score: typeof score === 'number' ? score : 0,
           reward,
         });
@@ -604,6 +603,8 @@ function useGameReward(onRoundComplete?: () => void) {
 
   const claimReward = useCallback(async () => {
     if (pendingReward !== null) {
+      // Show random ad before claiming reward
+      try { await showRandomAd(); } catch { /* proceed anyway */ }
       await addPoints(pendingReward);
       showSuccess(`+${pendingReward} Points!`, 'Reward claimed!');
       setPendingReward(null);

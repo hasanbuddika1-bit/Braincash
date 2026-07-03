@@ -209,3 +209,44 @@ export function pickRandomNetwork(exclude?: AdNetwork): AdNetwork {
   const pool = exclude ? all.filter(n => n !== exclude) : all;
   return pool[Math.floor(Math.random() * pool.length)];
 }
+
+// Show a random ad from any of the 3 networks
+export async function showRandomAd(): Promise<AdNetwork> {
+  const network = pickRandomNetwork();
+  if (network === 'adsgram') {
+    await showAdsgramAd('int-35763');
+  } else if (network === 'monetag') {
+    await showMonetagAd('11230846');
+  } else {
+    await showGigapubAd('7151');
+  }
+  return network;
+}
+
+// Show a rewarded Adsgram ad (30s, block 35762)
+export async function showRewardedAd(): Promise<void> {
+  await showAdsgramAd('35762');
+}
+
+// Show an interstitial Adsgram ad (15s, block int-35763)
+export async function showInterstitialAd(): Promise<void> {
+  await showAdsgramAd('int-35763');
+}
+
+// Get the block ID for a network
+export function getNetworkBlockId(network: AdNetwork): string {
+  if (network === 'adsgram') return 'int-35763';
+  if (network === 'monetag') return '11230846';
+  return '7151';
+}
+
+// Show ad from a specific network
+export async function showAdFromNetwork(network: AdNetwork): Promise<void> {
+  if (network === 'adsgram') {
+    await showAdsgramAd('int-35763');
+  } else if (network === 'monetag') {
+    await showMonetagAd('11230846');
+  } else {
+    await showGigapubAd('7151');
+  }
+}

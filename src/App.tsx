@@ -25,7 +25,7 @@ const HIDE_TAB_VIEWS = new Set(['game', 'challenge']);
 const SHOW_BACK_VIEWS: Set<ViewType> = new Set(['games', 'ads', 'referrals', 'withdraw', 'admin', 'challenge', 'history', 'payment', 'profile', 'tasks', 'game']);
 
 function App() {
-  const { loading, currentView, selectedGame, goBack, canGoBack, haptic, user } = useApp();
+  const { loading, currentView, selectedGame, goBack, canGoBack, haptic, user, error } = useApp();
   const appAdShown = useRef(false);
 
   useEffect(() => {
@@ -40,6 +40,29 @@ function App() {
 
   if (loading) {
     return <LoadingScreen />;
+  }
+
+  // Show error/suspended/maintenance screen
+  if (error && !user) {
+    const isMaintenance = error.startsWith('maintenance:');
+    const message = isMaintenance ? error.replace('maintenance:', '') : error;
+    return (
+      <div className="min-h-screen text-white relative flex items-center justify-center px-4">
+        <AnimatedBackground />
+        <div className="relative z-10 max-w-md w-full text-center">
+          <div className="text-6xl mb-4">{isMaintenance ? '🔧' : '🚫'}</div>
+          <h1 className="text-2xl font-bold font-['Orbitron'] mb-4">
+            {isMaintenance ? 'Maintenance Mode' : 'Account Suspended'}
+          </h1>
+          <p className="text-gray-300 whitespace-pre-line">{message}</p>
+          {!isMaintenance && (
+            <p className="text-gray-500 text-sm mt-4">
+              If you believe this is an error, please contact support.
+            </p>
+          )}
+        </div>
+      </div>
+    );
   }
 
   const showBackButton = SHOW_BACK_VIEWS.has(currentView) && canGoBack;

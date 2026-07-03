@@ -76,10 +76,10 @@ export function TasksView() {
 
         if (referral) {
           if (task.task_section === 'main') {
-            await supabase.rpc('add_points', { user_id: referral.referrer_id, amount: 50 });
+            await supabase.rpc('add_points', { user_id: referral.referrer_id, amount: 40 });
             await supabase
               .from('referrals')
-              .update({ task_bonus: 50, total_commission: 50, referred_task_count: 1 })
+              .update({ task_bonus: 40, total_commission: 40 + (referral.join_bonus || 20), referred_task_count: 1 })
               .eq('referred_id', user.id);
           }
         }

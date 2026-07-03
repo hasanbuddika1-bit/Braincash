@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { showAdsgramAd } from '../../lib/adManager';
 import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown, ExternalLink } from 'lucide-react';
@@ -6,6 +6,7 @@ import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Game
 export function HomeView() {
   const { user, leaderboard, setCurrentView, games, haptic } = useApp();
   const lastHomeAd = useRef(0);
+  const [timeToReset, setTimeToReset] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -17,6 +18,22 @@ export function HomeView() {
     }, 2500);
     return () => clearTimeout(timer);
   }, [user?.id]);
+
+  // Daily reset countdown
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      const diff = tomorrow.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeToReset(`${hours}h ${minutes}m ${seconds}s`);
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const pointsToUSD = (points: number) => {
     return (points * 0.0001).toFixed(2);
@@ -95,6 +112,7 @@ export function HomeView() {
                 <span className="badge-gold text-purple-900 text-xs">+30 Bonus</span>
               </h3>
               <p className="text-gray-400 text-sm">Complete all 3 challenges today!</p>
+              <p className="text-yellow-400 text-xs mt-1 flex items-center gap-1"><Clock size={12} /> Resets in: {timeToReset}</p>
             </div>
           </div>
           <ChevronRight className="text-gold-400 group-hover:translate-x-1 transition-transform" size={24} />
@@ -245,7 +263,7 @@ export function HomeView() {
           <ActionButton
             icon={<Users className="text-purple-400" />}
             title="Invite Friends"
-            subtitle="Get 150 pts + 10% commission"
+            subtitle="Get 120 pts + 5% lifetime commission"
             badge="+150 pts"
             onClick={() => setCurrentView('referrals')}
           />

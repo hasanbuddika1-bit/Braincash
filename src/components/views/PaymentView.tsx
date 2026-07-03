@@ -14,65 +14,32 @@ import {
 } from 'lucide-react';
 
 const PACKAGES = [
-  { points: 500, price: 0.05, bonus: 50, popular: false },
-  { points: 1000, price: 0.10, bonus: 100, popular: false },
-  { points: 2500, price: 0.25, bonus: 300, popular: true },
-  { points: 5000, price: 0.50, bonus: 750, popular: false },
-  { points: 10000, price: 1.00, bonus: 2000, popular: false },
+  { points: 500, price: 0.05, bonus: 0, popular: false },
+  { points: 1000, price: 0.10, bonus: 0, popular: false },
+  { points: 2500, price: 0.25, bonus: 0, popular: true },
+  { points: 5000, price: 0.50, bonus: 0, popular: false },
+  { points: 10000, price: 1.00, bonus: 0, popular: false },
 ];
 
 export function PaymentView() {
   const { user, haptic, addPoints } = useApp();
   const [selectedPackage, setSelectedPackage] = useState<typeof PACKAGES[0] | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'ton'>('usdt');
+  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'gram'>('usdt');
   const [copied, setCopied] = useState(false);
-  const [tonPrice, setTonPrice] = useState(7.5);
+  const [tonPrice, setTonPrice] = useState(7.5); // Gram (ex TON) price
   const [showQR, setShowQR] = useState(false);
 
-  const DEPOSIT_WALLET_USDT = '0x1234567890abcdef1234567890abcdef12345678'; // Replace with actual wallet
-  const DEPOSIT_WALLET_TON = 'EQD1234567890abcdef1234567890abcdef'; // Replace with actual wallet
-
-  useEffect(() => {
-    fetchPrices();
-  }, []);
-
-  async function fetchPrices() {
-    try {
-      const response = await fetch(
-        'https://api.coingecko.com/api/v3/simple/price?ids=tether,the-open-network&vs_currencies=usd'
-      );
-      const data = await response.json();
-      setTonPrice(data['the-open-network']?.usd || 7.5);
-    } catch {
-      // Use default
-    }
-  }
-
-  const copyAddress = () => {
-    const address = paymentMethod === 'usdt' ? DEPOSIT_WALLET_USDT : DEPOSIT_WALLET_TON;
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    haptic('success');
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const ADMIN_CHAT_URL = 'https://t.me/braincashco';
 
   const handlePurchase = () => {
     if (!selectedPackage) return;
-
     haptic('light');
-
-    if (window.Telegram?.WebApp?.openInvoice) {
-      // Use Telegram Stars for payments
-      const telegramPrice = selectedPackage.price * 100; // Convert to Telegram Stars
-      window.Telegram.WebApp.openInvoice(`t.me/$${telegramPrice}`, (status) => {
-        if (status === 'paid') {
-          addPoints(selectedPackage.points + selectedPackage.bonus);
-          haptic('success');
-        }
-      });
+    // Open admin chat with purchase details
+    const msg = `Hello! I want to buy ${selectedPackage.points} points for ${selectedPackage.price.toFixed(2)} ${paymentMethod === 'usdt' ? 'USDT (BEP20)' : 'Gram (ex TON)'}`;
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(`${ADMIN_CHAT_URL}?start=${encodeURIComponent(msg)}`);
     } else {
-      // Show crypto payment
-      setShowQR(true);
+      window.open(`${ADMIN_CHAT_URL}?start=${encodeURIComponent(msg)}`, '_blank');
     }
   };
 
@@ -84,7 +51,7 @@ export function PaymentView() {
           <span className="text-4xl">💳</span>
           Buy Points
         </h1>
-        <p className="text-purple-300 mt-2">Get bonus points on every purchase!</p>
+        <p className="text-purple-300 mt-2">Purchase points to boost your earnings!</p>
       </div>
 
       {/* Current Balance */}
@@ -139,7 +106,7 @@ export function PaymentView() {
                 </div>
                 <div className="text-right">
                   <p className="text-gold-400 font-bold text-xl">${pkg.price.toFixed(2)}</p>
-                  <p className="text-gray-500 text-xs">USDT/TON</p>
+                  <p className="text-gray-500 text-xs">USDT / Gram</p>
                 </div>
               </div>
             </button>
@@ -173,16 +140,16 @@ export function PaymentView() {
             <button
               onClick={() => {
                 haptic('light');
-                setPaymentMethod('ton');
+                setPaymentMethod('gram');
               }}
               className={`p-4 rounded-xl border-2 transition-all ${
-                paymentMethod === 'ton'
+                paymentMethod === 'gram'
                   ? 'border-blue-400 bg-blue-400/10'
                   : 'border-white/10 bg-white/5 hover:border-white/20'
               }`}
             >
               <div className="text-3xl mb-2">🚀</div>
-              <p className="text-white font-semibold">TON</p>
+              <p className="text-white font-semibold">Gram (ex TON)</p>
               <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
             </button>
           </div>
@@ -219,45 +186,16 @@ export function PaymentView() {
         </ul>
       </div>
 
-      {/* QR Modal */}
-      {showQR && selectedPackage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 animate-fade-in">
-          <div className="modal-content text-center max-w-sm w-[90%]">
-            <div className="text-5xl mb-4">💳</div>
-            <h3 className="text-xl font-bold text-white mb-2">
-              Send {selectedPackage.price.toFixed(2)} {paymentMethod.toUpperCase()}
-            </h3>
-            <p className="text-gray-400 text-sm mb-4">
-              to the address below
-            </p>
-
-            <div className="bg-white p-4 rounded-xl mb-4 inline-block">
-              <QrCode size={150} className="text-purple-900" />
-            </div>
-
-            <div className="glass-card p-3 mb-4">
-              <p className="text-gray-400 text-xs mb-1">Wallet Address</p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs text-white break-all">
-                  {paymentMethod === 'usdt' ? DEPOSIT_WALLET_USDT : DEPOSIT_WALLET_TON}
-                </code>
-                <button onClick={copyAddress} className="text-gold-400">
-                  {copied ? <Check size={20} /> : <Copy size={20} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-yellow-400 mb-4">
-              <Clock size={16} />
-              <span className="text-sm">Payment expires in 30 minutes</span>
-            </div>
-
-            <button onClick={() => setShowQR(false)} className="btn-neon w-full">
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Payment Info */}
+      <div className="glass-card p-4 mb-6">
+        <h3 className="text-white font-bold mb-2">💳 How to Buy</h3>
+        <p className="text-gray-400 text-sm">
+          Click "Buy Now" to open a chat with our admin. Send the payment and your points will be added manually.
+        </p>
+        <p className="text-gray-500 text-xs mt-2">
+          Payment methods: USDT (BEP20) or Gram (ex TON)
+        </p>
+      </div>
     </div>
   );
 }

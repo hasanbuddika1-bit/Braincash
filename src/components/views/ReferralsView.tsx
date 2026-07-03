@@ -161,6 +161,18 @@ export function ReferralsView() {
       setClaimedTiers([...claimedTiers, tier.activeRefs]);
       showSuccess(`+${tier.reward} Points!`, `Referral challenge (${tier.activeRefs} active refs) claimed!`);
       haptic('success');
+
+      // Send bot notification
+      try {
+        const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+        await fetch(botUrl, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_telegram_id: user.telegram_id,
+            tier_data: { active_refs: tier.activeRefs, reward: tier.reward },
+          }),
+        });
+      } catch (e) { console.error('Bot notification failed:', e); }
     } catch (err) {
       console.error('Error claiming referral challenge:', err);
     }

@@ -253,9 +253,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           data.is_admin = true;
         }
         // Check if user is suspended/banned
-        if (data.is_banned) {
-          // Find the first account created from the same IP to show as reference
-          let suspendedInfo = 'Your account has been suspended.';
+        if (data.is_banned || data.is_suspended) {
+          let suspendedInfo = data.is_suspended
+            ? '🚫 Your account has been suspended.'
+            : '🚫 Your account has been banned.';
           if (data.registration_ip) {
             const { data: firstUser } = await supabase
               .from('users')
@@ -265,16 +266,62 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               .limit(1)
               .maybeSingle();
             if (firstUser && firstUser.telegram_id !== data.telegram_id) {
-              suspendedInfo = `Your account has been suspended. First account from your IP: ${firstUser.username || firstUser.first_name || firstUser.telegram_id}`;
+              suspendedInfo += `\n\nFirst account from your IP: @${firstUser.username || firstUser.first_name || firstUser.telegram_id}`;
             }
           }
           if (data.suspension_reason) {
-            suspendedInfo += ` Reason: ${data.suspension_reason}`;
+            suspendedInfo += `\n\nReason: ${data.suspension_reason}`;
           }
           setUser(null);
           setError(suspendedInfo);
           return;
         }
+
+        // Check maintenance mode (non-admin users see maintenance screen)
+        if (!data.is_admin && data.telegram_id !== ADMIN_TELEGRAM_ID) {
+          const { data: maintSetting } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'maintenance_mode')
+            .maybeSingle();
+          if (maintSetting?.value === 'true') {
+            const { data: msgSetting } = await supabase
+              .from('settings')
+              .select('value')
+              .eq('key', 'maintenance_message')
+              .maybeSingle();
+            setUser(null);
+            setError('maintenance:' + (msgSetting?.value || 'We are performing scheduled maintenance. Please check back soon!'));
+            return;
+          }
+        }
+
+        // IP duplicate detection on login
+        if (data.registration_ip && !data.is_admin) {
+          try {
+            await supabase.rpc('detect_duplicate_ip', {
+              new_user_id: data.id,
+              ip_address: data.registration_ip,
+            });
+          } catch (e) { console.error('IP detection failed:', e); }
+        }
+
+        // Send first-time welcome via bot
+        if (!data.welcome_sent) {
+          try {
+            const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+            await fetch(botUrl, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_telegram_id: data.telegram_id,
+                referral_code: data.referral_code,
+                action: 'welcome',
+              }),
+            });
+            await supabase.from('users').update({ welcome_sent: true }).eq('id', data.id);
+          } catch (e) { console.error('Welcome notification failed:', e); }
+        }
+
         setUser(data);
       }
     } catch (err) {
@@ -408,6 +455,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         total_earned: user.total_earned + amount,
         last_active: new Date().toISOString(),
       });
+
+      // 5% lifetime referral commission
+      try {
+        await supabase.rpc('update_referral_commission', {
+          referred_user_id: user.id,
+          amount: amount,
+        });
+      } catch (e) { console.error('Referral commission failed:', e); }
 
       // Record activity
       await recordActivity('points_earned', { amount, source: 'app' });
