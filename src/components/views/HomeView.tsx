@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { showAdsgramAd } from '../../lib/adManager';
 import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown, ExternalLink } from 'lucide-react';
 
 export function HomeView() {
-  const { user, leaderboard, setCurrentView, games, haptic } = useApp();
+  const { user, leaderboard, setCurrentView, games, haptic, currentView } = useApp();
   const lastHomeAd = useRef(0);
   const [timeToReset, setTimeToReset] = useState('');
 
+  // Show interstitial ad when home view is opened/navigated to
   useEffect(() => {
     if (!user) return;
     const now = Date.now();
@@ -17,6 +18,15 @@ export function HomeView() {
       showAdsgramAd('int-35763').catch(() => {});
     }, 2500);
     return () => clearTimeout(timer);
+  }, [user?.id, currentView]);
+
+  // Also show ad when user taps anywhere on home (excluding buttons)
+  const handleHomeTouch = useCallback(() => {
+    if (!user) return;
+    const now = Date.now();
+    if (now - lastHomeAd.current < 10000) return; // 10s cooldown
+    lastHomeAd.current = now;
+    showAdsgramAd('int-35763').catch(() => {});
   }, [user?.id]);
 
   // Daily reset countdown
@@ -43,7 +53,7 @@ export function HomeView() {
   const topPlayers = leaderboard.slice(0, 5);
 
   return (
-    <div className="px-4 pb-24 pt-4">
+    <div className="px-4 pb-24 pt-4" onClick={handleHomeTouch}>
       {/* Header with 3D Brain Mascot */}
       <div className="flex items-center justify-between mb-6">
         <button

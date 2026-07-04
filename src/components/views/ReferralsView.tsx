@@ -168,6 +168,7 @@ export function ReferralsView() {
         await fetch(botUrl, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            action: 'notify-referral-tier',
             user_telegram_id: user.telegram_id,
             tier_data: { active_refs: tier.activeRefs, reward: tier.reward },
           }),

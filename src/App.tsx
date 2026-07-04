@@ -5,6 +5,7 @@ import { TabBar } from './components/TabBar';
 import { HomeView } from './components/views/HomeView';
 import { GamesView, GamePlayView } from './components/views/GamesView';
 import { TasksView } from './components/views/TasksView';
+import { AdsView } from './components/views/AdsView';
 import { ReferralsView } from './components/views/ReferralsView';
 import { WithdrawView } from './components/views/WithdrawView';
 import { AdminView } from './components/views/AdminView';
@@ -91,7 +92,7 @@ function App() {
         {currentView === 'games'     && <GamesView />}
         {currentView === 'game'      && selectedGame && <GamePlayView />}
         {currentView === 'tasks'     && <TasksView />}
-        {currentView === 'ads'       && <div className="p-4 text-center text-gray-400">Ads loading...</div>}
+        {currentView === 'ads'       && <AdsView />}
         {currentView === 'referrals' && <ReferralsView />}
         {currentView === 'withdraw'  && <WithdrawView />}
         {currentView === 'admin'     && <AdminView />}

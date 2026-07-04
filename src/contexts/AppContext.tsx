@@ -202,6 +202,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (fetchError && fetchError.code === 'PGRST116') {
+        // Fetch user IP address
+        let userIp = '';
+        try {
+          const ipRes = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipRes.json();
+          userIp = ipData.ip || '';
+        } catch { /* IP fetch failed, continue without */ }
+
         const referralCode = 'BC' + Math.random().toString(36).substring(2, 8).toUpperCase();
         const { data: newUser, error: createError } = await supabase
           .from('users')
@@ -213,6 +221,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             photo_url: tgUser.photo_url,
             referral_code: referralCode,
             is_admin: isAdmin,
+            registration_ip: userIp,
+            ip_address: userIp,
           })
           .select()
           .single();

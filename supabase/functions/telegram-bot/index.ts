@@ -59,14 +59,6 @@ async function sendPhoto(botToken: string, chatId: number | string, photoUrl: st
   })).json();
 }
 
-async function sendPhotoToChat(botToken: string, chatId: number | string, photoFileId: string, caption: string, keyboard?: object) {
-  const body: Record<string, unknown> = { chat_id: chatId, photo: photoFileId, caption, parse_mode: 'HTML' };
-  if (keyboard) body.reply_markup = keyboard;
-  return (await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-  })).json();
-}
-
 async function answerCallbackQuery(botToken: string, callbackId: string, text?: string) {
   await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -120,7 +112,16 @@ async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, t
     const botToken = await getBotToken(supabase);
     if (botToken) {
       try {
-        await sendMessage(botToken, ADMIN_TELEGRAM_ID, `🆕 <b>New User Registration</b>\n\n👤 <b>User:</b> ${telegramUser.first_name || 'Unknown'}\n📱 <b>Username:</b> @${telegramUser.username || 'N/A'}\n🆔 <b>Telegram ID:</b> ${telegramUser.id}`);
+        // Get IP from request headers is not possible here, use registration_ip from DB
+        const userIp = user.registration_ip || user.ip_address || 'N/A';
+        await sendMessage(botToken, ADMIN_TELEGRAM_ID,
+          `🆕 <b>New User Registration</b>\n\n` +
+          `👤 <b>User:</b> ${telegramUser.first_name || 'Unknown'}\n` +
+          `📱 <b>Username:</b> @${telegramUser.username || 'N/A'}\n` +
+          `🆔 <b>Telegram ID:</b> ${telegramUser.id}\n` +
+          `🌐 <b>IP Address:</b> <code>${userIp}</code>\n` +
+          `🔗 <b>Referral Code:</b> ${referralCode}`
+        );
       } catch (e) { console.error('Failed to send admin notification:', e); }
     }
 
@@ -183,16 +184,16 @@ Deno.serve(async (req: Request) => {
     // ── Action endpoints (called from frontend) ──────────────────────────
     try {
       const bodyData = JSON.parse(bodyText);
-      const url = req.url;
+      const action = bodyData.action;
 
       // Check membership
-      if (bodyData.action === 'check_membership') {
+      if (action === 'check_membership') {
         const isMember = await getChatMember(botToken, bodyData.chat_id, bodyData.user_id);
         return new Response(JSON.stringify({ is_member: isMember?.status === 'member' || isMember?.status === 'administrator' || isMember?.status === 'creator' }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Check bot admin status
-      if (bodyData.action === 'check_bot_admin') {
+      if (action === 'check_bot_admin') {
         const admins = await getChatAdmins(botToken, bodyData.chat_id);
         const botId = (await (await fetch(`https://api.telegram.org/bot${botToken}/getMe`)).json())?.result?.id;
         const isBotAdmin = admins.some((a: any) => a.user.id === botId && (a.status === 'administrator' || a.status === 'creator'));
@@ -200,7 +201,7 @@ Deno.serve(async (req: Request) => {
       }
 
       // Broadcast message to all users + community channel
-      if (bodyData.action === 'broadcast') {
+      if (action === 'broadcast') {
         const { message, image_url, button_text, button_url, admin_id } = bodyData;
         const keyboard = button_text && button_url ? { inline_keyboard: [[{ text: button_text, url: button_url }]] } : undefined;
 
@@ -226,81 +227,133 @@ Deno.serve(async (req: Request) => {
       }
 
       // Notify withdraw request to admin
-      if (url.includes('/notify-admin-withdraw') && bodyData.withdraw_data) {
+      if (action === 'notify-admin-withdraw' && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
         const method = w.currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT (BEP20)';
-        await sendMessage(botToken, ADMIN_TELEGRAM_ID, `🧠💰 <b>New Withdrawal Request</b>\n\n👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})\n🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n💳 <b>Method:</b> ${method}\n💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}\n✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n📍 <b>Address:</b> <code>${w.wallet_address}</code>`, {
-          inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]],
-        });
+        await sendMessage(botToken, ADMIN_TELEGRAM_ID,
+          `🧠💰 <b>New Withdrawal Request</b>\n\n` +
+          `👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})\n` +
+          `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
+          `💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n` +
+          `💳 <b>Method:</b> ${method}\n` +
+          `💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}\n` +
+          `✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n` +
+          `📍 <b>Address:</b> <code>${w.wallet_address}</code>`,
+          { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+        );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Notify withdraw approval to user
-      if (url.includes('/notify-withdraw-approve') && bodyData.user_telegram_id && bodyData.withdraw_data) {
+      // Notify withdraw approval to user + payment channel
+      if (action === 'notify-withdraw-approve' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
         const method = w.currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT (BEP20)';
         const explorerUrl = w.currency === 'GRAM' ? `https://tonviewer.com/tx/${w.tx_id}` : `https://bscscan.com/tx/${w.tx_id}`;
-        await sendMessage(botToken, bodyData.user_telegram_id, `✅ <b>Withdrawal Approved!</b>\n\n👤 <b>User:</b> ${w.user_name || 'Unknown'}\n🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n💳 <b>Method:</b> ${method}\n💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}\n✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n🔗 <b>TX ID:</b> <code>${w.tx_id}</code>`, {
-          inline_keyboard: [
+
+        // Send to user
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `✅ <b>Withdrawal Approved!</b>\n\n` +
+          `👤 <b>User:</b> ${w.user_name || 'Unknown'}\n` +
+          `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
+          `💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n` +
+          `💳 <b>Method:</b> ${method}\n` +
+          `💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}\n` +
+          `✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n` +
+          `🔗 <b>TX ID:</b> <code>${w.tx_id}</code>`,
+          { inline_keyboard: [
             [{ text: "🔍 View Transaction", url: explorerUrl }],
             [{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }],
-          ],
-        });
+          ]}
+        );
 
-        // Also send to payment channel
+        // Send to payment channel
         try {
-          await sendMessage(botToken, PAYMENT_CHANNEL.replace('https://t.me/', '@'), `✅ <b>Withdrawal Approved</b>\n\n👤 <b>User:</b> ${w.user_name || 'Unknown'}\n💵 <b>Amount:</b> ${w.amount.toFixed(4)}\n💳 <b>Method:</b> ${method}\n💸 <b>Fee:</b> ${w.fee.toFixed(4)}\n✅ <b>Net balance:</b> ${w.net_amount.toFixed(4)} ${method}\n🔗 <b>TX ID:</b> <code>${w.tx_id}</code>`, {
-            inline_keyboard: [[{ text: "🔍 View Transaction", url: explorerUrl }]],
-          });
+          await sendMessage(botToken, PAYMENT_CHANNEL.replace('https://t.me/', '@'),
+            `✅ <b>Withdrawal Approved</b>\n\n` +
+            `👤 <b>User:</b> ${w.user_name || 'Unknown'}\n` +
+            `💵 <b>Amount:</b> ${w.amount.toFixed(4)}\n` +
+            `💳 <b>Method:</b> ${method}\n` +
+            `💸 <b>Fee:</b> ${w.fee.toFixed(4)}\n` +
+            `✅ <b>Net balance:</b> ${w.net_amount.toFixed(4)} ${method}\n` +
+            `🔗 <b>TX ID:</b> <code>${w.tx_id}</code>`,
+            { inline_keyboard: [[{ text: "🔍 View Transaction", url: explorerUrl }]] }
+          );
         } catch (e) { console.error('Payment channel send failed:', e); }
 
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Notify withdraw rejection to user
-      if (url.includes('/notify-withdraw-reject') && bodyData.user_telegram_id && bodyData.withdraw_data) {
+      if (action === 'notify-withdraw-reject' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
         const method = w.currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT (BEP20)';
-        await sendMessage(botToken, bodyData.user_telegram_id, `❌ <b>Withdrawal Rejected</b>\n\n🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n💳 <b>Method:</b> ${method}\n❌ <b>Reason:</b> ${w.reject_reason || 'Not specified'}\n\n💰 <b>Your points have been refunded.</b>`, {
-          inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]],
-        });
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `❌ <b>Withdrawal Rejected</b>\n\n` +
+          `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
+          `💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n` +
+          `💳 <b>Method:</b> ${method}\n` +
+          `❌ <b>Reason:</b> ${w.reject_reason || 'Not specified'}\n\n` +
+          `💰 <b>Your points have been refunded.</b>`,
+          { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+        );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Notify referral tier milestone
-      if (url.includes('/notify-referral-tier') && bodyData.user_telegram_id && bodyData.tier_data) {
+      if (action === 'notify-referral-tier' && bodyData.user_telegram_id && bodyData.tier_data) {
         const t = bodyData.tier_data;
-        await sendMessage(botToken, bodyData.user_telegram_id, `🏆 <b>Referral Milestone Reached!</b>\n\n🎉 You've reached <b>${t.active_refs} active referrals</b>!\n💰 <b>Reward:</b> +${t.reward} pts\n\nKeep inviting more friends to earn bigger rewards!`, {
-          inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]],
-        });
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `🏆 <b>Referral Milestone Reached!</b>\n\n` +
+          `🎉 You've reached <b>${t.active_refs} active referrals</b>!\n` +
+          `💰 <b>Reward:</b> +${t.reward} pts\n\n` +
+          `Keep inviting more friends to earn bigger rewards!`,
+          { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+        );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Notify first-time mini app open welcome
-      if (url.includes('/notify-welcome') && bodyData.user_telegram_id) {
-        await sendMessage(botToken, bodyData.user_telegram_id, `🧠 <b>Welcome to Brain Cash!</b>\n\nPlay games, watch ads, complete tasks and earn real cash rewards!\n\n💰 500 Points = $0.05 USDT\n📺 Watch ads to earn points\n🎮 Play 8+ puzzle games\n👥 Invite friends for 120 pts + 5% lifetime commission\n💳 Withdraw to USDT or Gram (ex TON)\n\n<b>Your referral link:</b>\n<code>https://t.me/Brain_cashbot/braincash?startapp=ref_${bodyData.referral_code}</code>`, {
-          inline_keyboard: [
+      // First-time mini app open welcome
+      if (action === 'welcome' && bodyData.user_telegram_id) {
+        const referralCode = bodyData.referral_code || '';
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `🧠 <b>Welcome to Brain Cash!</b>\n\n` +
+          `Play games, watch ads, complete tasks and earn real cash rewards!\n\n` +
+          `💰 500 Points = $0.05 USDT\n` +
+          `📺 Watch ads to earn points\n` +
+          `🎮 Play 8+ puzzle games\n` +
+          `👥 Invite friends for 120 pts + 5% lifetime commission\n` +
+          `💳 Withdraw to USDT or Gram (ex TON)\n\n` +
+          `<b>Your referral link:</b>\n` +
+          `<code>https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}</code>`,
+          { inline_keyboard: [
             [{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }],
             [{ text: "📢 Join Community", url: COMMUNITY_CHANNEL }, { text: "💳 Payment Channel", url: PAYMENT_CHANNEL }],
-          ],
-        });
+          ]}
+        );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Notify partner task approval
-      if (url.includes('/notify-partner-approve') && bodyData.user_telegram_id) {
-        await sendMessage(botToken, bodyData.user_telegram_id, `🤝 <b>Partner Task Approved!</b>\n\n✅ Your partner task submission has been approved.\nIt will now appear as a Partner Task in the app.`, {
-          inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]],
-        });
+      if (action === 'notify-partner-approve' && bodyData.user_telegram_id) {
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `🤝 <b>Partner Task Approved!</b>\n\n` +
+          `✅ Your partner task submission has been approved.\n` +
+          `It will now appear as a Partner Task in the app.`,
+          { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+        );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Notify referral (generic)
-      if (url.includes('/notify-referral') && bodyData.user_telegram_id && bodyData.referral_data) {
+      if (action === 'notify-referral' && bodyData.user_telegram_id && bodyData.referral_data) {
         const r = bodyData.referral_data;
-        await sendMessage(botToken, bodyData.user_telegram_id, `🎉 <b>New Referral!</b>\n\n👤 <b>Referred user:</b> ${r.referred_name || 'Anonymous'}\n💰 <b>Your bonus:</b> +${r.bonus || 20} pts\n\nKeep inviting friends to earn more!`, {
-          inline_keyboard: [[{ text: "🧠 Open Brain Cash", web_app: { url: MINI_APP_URL } }]],
-        });
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `🎉 <b>New Referral!</b>\n\n` +
+          `👤 <b>Referred user:</b> ${r.referred_name || 'Anonymous'}\n` +
+          `💰 <b>Your bonus:</b> +${r.bonus || 20} pts\n\n` +
+          `Keep inviting friends to earn more!`,
+          { inline_keyboard: [[{ text: "🧠 Open Brain Cash", web_app: { url: MINI_APP_URL } }]] }
+        );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -323,7 +376,17 @@ Deno.serve(async (req: Request) => {
 
       const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
       const welcomePhotoUrl = `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`;
-      const welcomeCaption = `🧠 <b>Welcome to Brain Cash!</b>\n\nPlay games, watch ads, complete tasks and earn real cash rewards!\n\n💰 <b>500 Points = $0.05 USDT</b>\n📺 Watch ads to earn 4-8 points\n🎮 Play 8+ puzzle games\n👥 Invite friends for 120 pts + 5% lifetime commission\n💳 Withdraw to USDT or Gram (ex TON)\n\n<b>Your referral link:</b>\n<code>${referralLink}</code>\n\n📢 <b>Join our community:</b>\n• Channel: @brain_cach_channel\n• Payments: @braincashpayment`;
+      const welcomeCaption = `🧠 <b>Welcome to Brain Cash!</b>\n\n` +
+        `Play games, watch ads, complete tasks and earn real cash rewards!\n\n` +
+        `💰 <b>500 Points = $0.05 USDT</b>\n` +
+        `📺 Watch ads to earn 4-8 points\n` +
+        `🎮 Play 8+ puzzle games\n` +
+        `👥 Invite friends for 120 pts + 5% lifetime commission\n` +
+        `💳 Withdraw to USDT or Gram (ex TON)\n\n` +
+        `<b>Your referral link:</b>\n<code>${referralLink}</code>\n\n` +
+        `📢 <b>Join our community:</b>\n` +
+        `• Channel: @brain_cach_channel\n` +
+        `• Payments: @braincashpayment`;
 
       const photoResult = await sendPhoto(botToken, chatId, welcomePhotoUrl, welcomeCaption, getMainKeyboard());
       if (!photoResult.ok) await sendMessage(botToken, chatId, welcomeCaption, getMainKeyboard());

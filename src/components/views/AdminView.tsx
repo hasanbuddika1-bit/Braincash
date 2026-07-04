@@ -44,6 +44,7 @@ export function AdminView() {
         {[
           { id: 'stats', icon: <BarChart3 size={18} />, label: 'Stats' },
           { id: 'users', icon: <Users size={18} />, label: 'Users' },
+          { id: 'suspended', icon: <Ban size={18} />, label: 'Suspended' },
           { id: 'withdrawals', icon: <DollarSign size={18} />, label: 'Withdrawals' },
           { id: 'tasks', icon: <Gift size={18} />, label: 'Tasks' },
           { id: 'partner', icon: <Handshake size={18} />, label: 'Partner' },
@@ -60,6 +61,7 @@ export function AdminView() {
 
       {tab === 'stats' && <AdminStats />}
       {tab === 'users' && <AdminUsers />}
+      {tab === 'suspended' && <AdminSuspended />}
       {tab === 'withdrawals' && <AdminWithdrawals />}
       {tab === 'tasks' && <AdminTasks />}
       {tab === 'partner' && <AdminPartner />}
@@ -266,6 +268,82 @@ function AdminUsers() {
   );
 }
 
+// ── AdminSuspended ──────────────────────────────────────────────────────────
+
+function AdminSuspended() {
+  const [suspendedUsers, setSuspendedUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { haptic } = useApp();
+  const { showSuccess } = useToast();
+
+  useEffect(() => { loadSuspended(); }, []);
+
+  async function loadSuspended() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('is_suspended', true)
+      .order('suspended_at', { ascending: false });
+    setSuspendedUsers(data || []);
+    setLoading(false);
+  }
+
+  async function unsuspendUser(userId: string) {
+    haptic('light');
+    await supabase.from('users').update({
+      is_suspended: false,
+      suspended_at: null,
+      suspension_reason: null,
+    }).eq('id', userId);
+    showSuccess('User Unsuspended', 'User can now access the app again.');
+    loadSuspended();
+  }
+
+  if (loading) return <div className="p-4 text-center text-gray-400">Loading...</div>;
+
+  return (
+    <div>
+      <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+        <Ban className="text-red-400" size={20} />
+        Suspended Users ({suspendedUsers.length})
+      </h2>
+      {suspendedUsers.length === 0 ? (
+        <div className="text-center py-8 text-gray-400">No suspended users</div>
+      ) : (
+        <div className="space-y-3">
+          {suspendedUsers.map(u => (
+            <div key={u.id} className="glass-card p-4" style={{ border: '1px solid rgba(239,68,68,0.3)' }}>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <Ban className="text-red-400" size={20} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">{u.first_name || u.username || 'Unknown'}</p>
+                  <p className="text-gray-400 text-xs">ID: {u.telegram_id}</p>
+                  <p className="text-gray-400 text-xs">IP: {u.registration_ip || u.ip_address || 'N/A'}</p>
+                  {u.suspension_reason && (
+                    <p className="text-red-400 text-xs mt-1">Reason: {u.suspension_reason}</p>
+                  )}
+                  {u.suspended_at && (
+                    <p className="text-gray-500 text-xs">Suspended: {new Date(u.suspended_at).toLocaleString()}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => unsuspendUser(u.id)}
+                  className="px-3 py-2 bg-green-500/20 text-green-400 rounded-xl font-semibold text-sm flex items-center gap-1"
+                >
+                  <UserCheck size={16} /> Unsuspend
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── AdminWithdrawals ────────────────────────────────────────────────────────
 
 function AdminWithdrawals() {
@@ -300,6 +378,7 @@ function AdminWithdrawals() {
       await fetch(botUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'notify-withdraw-approve',
           user_telegram_id: w.users?.telegram_id,
           withdraw_data: {
             user_name: w.users?.first_name || w.users?.username || 'Unknown',
@@ -342,6 +421,7 @@ function AdminWithdrawals() {
       await fetch(botUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'notify-withdraw-reject',
           user_telegram_id: w.users?.telegram_id,
           withdraw_data: {
             withdraw_number: w.withdraw_number,
