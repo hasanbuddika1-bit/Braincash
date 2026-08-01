@@ -306,16 +306,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // IP duplicate detection on login
-        if (data.registration_ip && !data.is_admin) {
-          try {
-            await supabase.rpc('detect_duplicate_ip', {
-              new_user_id: data.id,
-              ip_address: data.registration_ip,
-            });
-          } catch (e) { console.error('IP detection failed:', e); }
-        }
-
         // Send first-time welcome via bot
         if (!data.welcome_sent) {
           try {

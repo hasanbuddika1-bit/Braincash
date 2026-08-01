@@ -174,10 +174,29 @@ async function ensureGigapub(scriptId: string): Promise<void> {
 
 // ── Ad Show Functions ────────────────────────────────────────────────────
 
-export async function showAdsgramAd(blockId: string): Promise<void> {
+export async function showAdsgramAd(blockId: string): Promise<{ watchedSeconds: number; completed: boolean }> {
   await ensureAdsgram(blockId);
   if (!adsgramController) throw new Error('Adsgram SDK not initialized');
-  await adsgramController.show();
+
+  const startTime = Date.now();
+  let completed = false;
+  let adError: string | null = null;
+
+  await new Promise<void>((resolve) => {
+    adsgramController.show().then(() => {
+      completed = true;
+      resolve();
+    }).catch((err: any) => {
+      adError = err?.message || 'Ad show failed';
+      resolve();
+    });
+
+    // Safety timeout: resolve after 120s max
+    setTimeout(() => resolve(), 120000);
+  });
+
+  const watchedSeconds = Math.floor((Date.now() - startTime) / 1000);
+  return { watchedSeconds, completed: completed && !adError };
 }
 
 export async function showMonetagAd(zoneId: string): Promise<void> {

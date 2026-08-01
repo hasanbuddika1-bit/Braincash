@@ -212,15 +212,24 @@ Deno.serve(async (req: Request) => {
           else await sendMessage(botToken, COMMUNITY_CHANNEL.replace('https://t.me/', '@'), message, keyboard);
         } catch (e) { console.error('Channel send failed:', e); }
 
-        // Send to all users
+        // Send to all users in batches of 50 with Promise.all
         const { data: users } = await supabase.from('users').select('telegram_id').neq('is_banned', true).is('is_suspended', false);
         let sent = 0, failed = 0;
-        for (const u of users || []) {
-          try {
-            if (image_url) await sendPhoto(botToken, u.telegram_id, image_url, message, keyboard);
-            else await sendMessage(botToken, u.telegram_id, message, keyboard);
-            sent++;
-          } catch { failed++; }
+        const userList = users || [];
+        const batchSize = 50;
+        for (let i = 0; i < userList.length; i += batchSize) {
+          const batch = userList.slice(i, i + batchSize);
+          const results = await Promise.allSettled(batch.map(async (u: { telegram_id: number }) => {
+            try {
+              if (image_url) await sendPhoto(botToken, u.telegram_id, image_url, message, keyboard);
+              else await sendMessage(botToken, u.telegram_id, message, keyboard);
+              return true;
+            } catch { return false; }
+          }));
+          for (const r of results) {
+            if (r.status === 'fulfilled' && r.value) sent++;
+            else failed++;
+          }
         }
 
         await supabase.from('broadcast_log').insert({ admin_id, message, image_url, button_text, button_url, sent_count: sent, failed_count: failed });

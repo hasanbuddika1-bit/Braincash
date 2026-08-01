@@ -73,13 +73,18 @@ export function AdsView() {
     setCurrentNetwork('adsgram');
     setAdTimer(REWARD_AD_SECONDS);
 
+    let adResult: { watchedSeconds: number; completed: boolean } | null = null;
     try {
-      await showAdsgramAd(REWARD_BLOCK_ID);
+      adResult = await showAdsgramAd(REWARD_BLOCK_ID);
     } catch (e) {
       console.error('Adsgram ad failed:', e);
     }
 
-    // Countdown timer
+    // Use actual watched seconds from SDK, clamp to [0, REWARD_AD_SECONDS]
+    const actualSeconds = adResult ? Math.min(adResult.watchedSeconds, REWARD_AD_SECONDS) : 0;
+    const adCompleted = adResult?.completed === true;
+
+    // Countdown timer for visual feedback
     const startTime = Date.now();
     const timerInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -90,14 +95,18 @@ export function AdsView() {
         setWatching(false);
         setAdType(null);
         setCurrentNetwork(null);
-        // Record and reward
-        const reward = cfg.pointsPerAd;
-        recordAdView(user.id, 'adsgram', reward, 'rewarded');
-        addPoints(reward);
-        setAdCounts(prev => ({ ...prev, adsgram: prev.adsgram + 1 }));
-        setTotalEarnedToday(prev => prev + reward);
-        showSuccess(`+${reward} Points!`, 'Rewarded ad completed!');
-        haptic('success');
+        // Only reward if the ad actually completed
+        if (adCompleted && actualSeconds >= 5) {
+          const reward = cfg.pointsPerAd;
+          recordAdView(user.id, 'adsgram', reward, 'rewarded');
+          addPoints(reward);
+          setAdCounts(prev => ({ ...prev, adsgram: prev.adsgram + 1 }));
+          setTotalEarnedToday(prev => prev + reward);
+          showSuccess(`+${reward} Points!`, 'Rewarded ad completed!');
+          haptic('success');
+        } else {
+          showError('Ad Not Completed', 'Please watch the full ad to earn rewards.');
+        }
       } else {
         setAdTimer(remaining);
       }
