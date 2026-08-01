@@ -87,12 +87,13 @@ function getMainKeyboard() {
 }
 
 async function getBotToken(supabase: ReturnType<typeof getSupabaseClient>): Promise<string | null> {
-  let token = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  if (token) return token;
   try {
     const { data } = await supabase.from('settings').select('value').eq('key', 'bot_token').maybeSingle();
-    return data?.value || null;
-  } catch { return null; }
+    if (data?.value && data.value.includes(':')) return data.value;
+  } catch {}
+  const envToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+  if (envToken && envToken.includes(':')) return envToken;
+  return null;
 }
 
 async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, telegramUser: { id: number; first_name?: string; last_name?: string; username?: string; }, referredBy?: string) {
