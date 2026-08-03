@@ -10,32 +10,40 @@ import type { Withdrawal } from '../../types';
 import { showRandomAd } from '../../lib/adManager';
 
 const POINTS_TO_USD = 0.0001;
-const FIRST_WITHDRAW_POINTS = 500;
-const FIRST_WITHDRAW_USD = 0.05;
-const SECOND_WITHDRAW_USD = 0.10;
-const MAX_WITHDRAW_USD = 0.20;
-const WITHDRAW_FEE = 0.01;
-const WITHDRAW_FEE_PERCENT = 5;
-const REQUIRED_DAILY_ADS = 20;
-const REQUIRED_ACTIVE_REFERRALS = 2;
-const ADS_TO_WATCH_FOR_WITHDRAW = 3;
 
-const AD_PROVIDERS = [
-  { id: 'adgamer', name: 'AdGamer', logo: '🎮' },
-  { id: 'monetag', name: 'Monetag', logo: '📊' },
-  { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
-  { id: 'monetix', name: 'Monetix', logo: '💰' },
-];
+interface WithdrawConfig {
+  required_daily_ads: number;
+  required_active_referrals: number;
+  ads_to_watch_for_withdraw: number;
+  first_withdraw_points: number;
+  first_withdraw_usd: number;
+  second_withdraw_usd: number;
+  max_withdraw: number;
+  min_withdraw: number;
+  withdraw_fee: number;
+  withdraw_fee_percent: number;
+}
+
+const DEFAULT_CONFIG: WithdrawConfig = {
+  required_daily_ads: 20,
+  required_active_referrals: 2,
+  ads_to_watch_for_withdraw: 3,
+  first_withdraw_points: 500,
+  first_withdraw_usd: 0.05,
+  second_withdraw_usd: 0.10,
+  max_withdraw: 0.20,
+  min_withdraw: 0.05,
+  withdraw_fee: 0.01,
+  withdraw_fee_percent: 5,
+};
 
 export function WithdrawView() {
   const { user, withdrawals, refreshWithdrawals, refreshUser, haptic, setCurrentView } = useApp();
   const { success: showSuccess, error: showError } = useToast();
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState<'USDT' | 'GRAM'>('USDT');
   const [walletAddress, setWalletAddress] = useState('');
   const [loading, setLoading] = useState(false);
-  const [tonPrice, setTonPrice] = useState(7.5); // Gram (ex TON) price
-  const [usdtPrice, setUsdtPrice] = useState(1);
+  const [config, setConfig] = useState<WithdrawConfig>(DEFAULT_CONFIG);
   const [showAdFlow, setShowAdFlow] = useState(false);
   const [adsWatched, setAdsWatched] = useState(0);
   const [currentAdIdx, setCurrentAdIdx] = useState(0);
@@ -50,24 +58,40 @@ export function WithdrawView() {
   const [pendingWithdrawal, setPendingWithdrawal] = useState(false);
 
   useEffect(() => {
-    fetchPrices();
+    loadConfig();
     loadRequirements();
     checkPendingWithdrawal();
   }, [user?.id]);
 
-  async function fetchPrices() {
+  async function loadConfig() {
     try {
-      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether,the-open-network&vs_currencies=usd');
-      const data = await response.json();
-      setUsdtPrice(data.tether?.usd || 1);
-      setTonPrice(data['the-open-network']?.usd || 7.5);
-    } catch {}
+      const { data } = await supabase
+        .from('withdraw_requirements_config')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setConfig({
+          required_daily_ads: data.required_daily_ads || 20,
+          required_active_referrals: data.required_active_referrals || 2,
+          ads_to_watch_for_withdraw: data.ads_to_watch_for_withdraw || 3,
+          first_withdraw_points: data.first_withdraw_points || 500,
+          first_withdraw_usd: Number(data.first_withdraw_usd) || 0.05,
+          second_withdraw_usd: Number(data.second_withdraw_usd) || 0.10,
+          max_withdraw: Number(data.max_withdraw) || 0.20,
+          min_withdraw: Number(data.min_withdraw) || 0.05,
+          withdraw_fee: Number(data.withdraw_fee) || 0.01,
+          withdraw_fee_percent: Number(data.withdraw_fee_percent) || 5,
+        });
+      }
+    } catch (err) {
+      console.error('Error loading withdraw config:', err);
+    }
   }
 
   async function loadRequirements() {
     if (!user || !supabase) return;
     try {
-      // Get today's ad views count
       const today = new Date().toISOString().split('T')[0];
       const { count: adCount } = await supabase
         .from('ad_views')
@@ -75,7 +99,6 @@ export function WithdrawView() {
         .eq('user_id', user.id)
         .gte('viewed_at', today + 'T00:00:00');
 
-      // Get active referrals count
       const { data: refs } = await supabase
         .from('referrals')
         .select('referred_id, referred_ad_count, referred_task_count, task_bonus')
@@ -85,7 +108,6 @@ export function WithdrawView() {
         (r.referred_ad_count || 0) >= 10 && (r.referred_task_count || 0) > 0
       ).length;
 
-      // Check main tasks completed
       const { data: mainCompletions } = await supabase
         .from('task_completions')
         .select('task_id, tasks!inner(task_section)')
@@ -97,13 +119,11 @@ export function WithdrawView() {
         return task?.task_section === 'main';
       }).length;
 
-      // Check partner tasks completed
       const partnerDone = (mainCompletions || []).filter(c => {
         const task = c.tasks as unknown as { task_section: string };
         return task?.task_section === 'partner';
       }).length;
 
-      // Get total main and partner tasks
       const { data: mainTasks } = await supabase
         .from('tasks')
         .select('id')
@@ -139,29 +159,27 @@ export function WithdrawView() {
   const usdValue = userPoints * POINTS_TO_USD;
   const withdrawCount = user?.withdraw_count || 0;
 
-  // Determine minimum withdraw amount based on withdraw count
-  const minWithdrawUSD = withdrawCount === 0 ? FIRST_WITHDRAW_USD : SECOND_WITHDRAW_USD;
-  const minWithdrawPoints = withdrawCount === 0 ? FIRST_WITHDRAW_POINTS : Math.round(SECOND_WITHDRAW_USD / POINTS_TO_USD);
+  const minWithdrawUSD = withdrawCount === 0 ? config.first_withdraw_usd : config.second_withdraw_usd;
+  const minWithdrawPoints = withdrawCount === 0 ? config.first_withdraw_points : Math.round(config.second_withdraw_usd / POINTS_TO_USD);
 
   function calculateNet(usdAmount: number) {
-    const fee = WITHDRAW_FEE + (usdAmount * WITHDRAW_FEE_PERCENT / 100);
+    const fee = config.withdraw_fee + (usdAmount * config.withdraw_fee_percent / 100);
     return usdAmount - fee;
   }
 
   const inputAmount = parseFloat(amount) || 0;
   const inputUSD = amount ? inputAmount * POINTS_TO_USD : 0;
-  const fee = inputUSD ? WITHDRAW_FEE + (inputUSD * WITHDRAW_FEE_PERCENT / 100) : 0;
+  const fee = inputUSD ? config.withdraw_fee + (inputUSD * config.withdraw_fee_percent / 100) : 0;
   const netAmount = inputUSD ? inputUSD - fee : 0;
 
-  // Check all requirements
   const allRequirementsMet =
-    requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS &&
-    requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS &&
+    requirements.dailyAdsWatched >= config.required_daily_ads &&
+    requirements.activeReferrals >= config.required_active_referrals &&
     requirements.mainTasksCompleted &&
     requirements.partnerTasksCompleted;
 
   const hasMinPoints = userPoints >= minWithdrawPoints;
-  const withinMax = inputUSD <= MAX_WITHDRAW_USD;
+  const withinMax = inputUSD <= config.max_withdraw;
   const isValid = inputUSD >= minWithdrawUSD && netAmount > 0 && walletAddress.length > 10 && withinMax;
 
   function handleCashOutClick() {
@@ -187,7 +205,6 @@ export function WithdrawView() {
     haptic('light');
     setAdPlaying(true);
     setAdTimer(15);
-    // Show real ad from random network
     showRandomAd()
       .then(() => { /* ad completed */ })
       .catch(() => { /* ad failed, still count */ })
@@ -197,7 +214,7 @@ export function WithdrawView() {
         const newCount = adsWatched + 1;
         setAdsWatched(newCount);
         haptic('success');
-        if (newCount >= ADS_TO_WATCH_FOR_WITHDRAW) {
+        if (newCount >= config.ads_to_watch_for_withdraw) {
           setShowAdFlow(false);
           showSuccess('Ads Watched!', 'You can now make a withdrawal request.');
         }
@@ -219,16 +236,14 @@ export function WithdrawView() {
 
     try {
       const pointsToDeduct = Math.round(inputAmount);
-      const currencyAmount = currency === 'USDT' ? netAmount : netAmount / tonPrice;
       const newWithdrawNumber = withdrawCount + 1;
 
-      // Create withdrawal request
       const { error: withdrawError } = await supabase.from('withdrawals').insert({
         user_id: user.id,
         amount: netAmount,
         fee,
-        net_amount: currencyAmount,
-        currency,
+        net_amount: netAmount,
+        currency: 'USDT',
         wallet_address: walletAddress,
         status: 'pending',
         withdraw_number: newWithdrawNumber,
@@ -236,7 +251,6 @@ export function WithdrawView() {
 
       if (withdrawError) throw withdrawError;
 
-      // Deduct points and update withdraw count
       const { error: updateError } = await supabase
         .from('users')
         .update({
@@ -249,15 +263,13 @@ export function WithdrawView() {
 
       if (updateError) throw updateError;
 
-      // Send notification to user
       await supabase.from('notifications').insert({
         user_id: user.id,
         title: 'Withdrawal Requested',
-        message: `Your withdrawal #${newWithdrawNumber} of $${netAmount.toFixed(4)} ${currency} is pending review.`,
+        message: `Your withdrawal #${newWithdrawNumber} of $${netAmount.toFixed(4)} USDT is pending review.`,
         type: 'withdrawal',
       });
 
-      // Send bot notification to admin
       try {
         const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
         await fetch(botUrl, {
@@ -271,23 +283,21 @@ export function WithdrawView() {
               withdraw_number: newWithdrawNumber,
               amount: netAmount,
               fee,
-              net_amount: currencyAmount,
-              currency,
+              net_amount: netAmount,
+              currency: 'USDT',
               wallet_address: walletAddress,
             },
           }),
         });
       } catch (e) { console.error('Bot notification failed:', e); }
 
-      // Refresh
       await refreshWithdrawals();
       await refreshUser();
 
-      // Reset form
       setAmount('');
       setWalletAddress('');
 
-      showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of $${netAmount.toFixed(4)} ${currency} is pending review.`);
+      showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of $${netAmount.toFixed(4)} USDT is pending review.`);
       haptic('success');
     } catch (error) {
       console.error('Withdrawal error:', error);
@@ -312,23 +322,27 @@ export function WithdrawView() {
     completed: <CheckCircle className="text-green-400" size={16} />,
   };
 
-  // ── Ad watching flow overlay ──
+  const AD_PROVIDERS = [
+    { id: 'adgamer', name: 'AdGamer', logo: '🎮' },
+    { id: 'monetag', name: 'Monetag', logo: '📊' },
+    { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
+  ];
+
   if (showAdFlow) {
-    const currentAd = AD_PROVIDERS[currentAdIdx];
+    const currentAd = AD_PROVIDERS[currentAdIdx % AD_PROVIDERS.length];
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
         <div className="w-full max-w-sm">
-          {/* Progress bar */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white font-bold">Watch Ads to Withdraw</span>
-              <span className="text-gold-400 font-bold">{adsWatched}/{ADS_TO_WATCH_FOR_WITHDRAW}</span>
+              <span className="text-gold-400 font-bold">{adsWatched}/{config.ads_to_watch_for_withdraw}</span>
             </div>
             <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
-                  width: `${(adsWatched / ADS_TO_WATCH_FOR_WITHDRAW) * 100}%`,
+                  width: `${(adsWatched / config.ads_to_watch_for_withdraw) * 100}%`,
                   background: 'linear-gradient(90deg, #00c853, #fbbf24, #00c853)',
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 2s linear infinite',
@@ -337,9 +351,8 @@ export function WithdrawView() {
             </div>
           </div>
 
-          {/* Ad blocks */}
           <div className="grid grid-cols-3 gap-3 mb-6">
-            {Array.from({ length: ADS_TO_WATCH_FOR_WITHDRAW }).map((_, i) => (
+            {Array.from({ length: config.ads_to_watch_for_withdraw }).map((_, i) => (
               <div
                 key={i}
                 className={`aspect-square rounded-2xl flex flex-col items-center justify-center border-2 transition-all ${
@@ -362,8 +375,7 @@ export function WithdrawView() {
             ))}
           </div>
 
-          {/* Ad player area */}
-          {!adPlaying && adsWatched < ADS_TO_WATCH_FOR_WITHDRAW && (
+          {!adPlaying && adsWatched < config.ads_to_watch_for_withdraw && (
             <div className="glass-card p-8 text-center">
               <div className="text-5xl mb-4">{currentAd.logo}</div>
               <p className="text-white font-bold text-lg mb-2">{currentAd.name}</p>
@@ -378,7 +390,6 @@ export function WithdrawView() {
             </div>
           )}
 
-          {/* Ad playing */}
           {adPlaying && (
             <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(0,212,255,0.2))' }}>
               <div className="text-5xl mb-4 animate-bounce-slow">{currentAd.logo}</div>
@@ -389,7 +400,7 @@ export function WithdrawView() {
                 <div
                   className="h-full rounded-full transition-all duration-1000"
                   style={{
-                    width: `${((5 - adTimer) / 5) * 100}%`,
+                    width: `${((15 - adTimer) / 15) * 100}%`,
                     background: 'linear-gradient(90deg, #00c853, #fbbf24)',
                   }}
                 />
@@ -397,7 +408,6 @@ export function WithdrawView() {
             </div>
           )}
 
-          {/* Cancel button */}
           <button
             onClick={() => { haptic('light'); setShowAdFlow(false); }}
             className="w-full mt-4 py-3 rounded-xl bg-white/10 text-gray-400 font-semibold"
@@ -411,13 +421,12 @@ export function WithdrawView() {
 
   return (
     <div className="px-4 pb-24 pt-4">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-['Orbitron'] text-white flex items-center gap-3">
           <span className="text-4xl">💸</span>
           Withdraw
         </h1>
-        <p className="text-purple-300 mt-2">Convert your points to crypto!</p>
+        <p className="text-purple-300 mt-2">Convert your points to USDT!</p>
       </div>
 
       {/* Balance Card */}
@@ -437,8 +446,8 @@ export function WithdrawView() {
           <div className="flex items-center gap-2 text-sm">
             <Info className="text-blue-400" size={14} />
             <span className="text-gray-400">
-              {withdrawCount === 0 ? 'First withdraw: 500 pts ($0.05)' : `Min: ${minWithdrawPoints} pts ($${minWithdrawUSD})`}
-              {' • Max: $' + MAX_WITHDRAW_USD}
+              {withdrawCount === 0 ? `First withdraw: ${config.first_withdraw_points} pts ($${config.first_withdraw_usd})` : `Min: ${minWithdrawPoints} pts ($${minWithdrawUSD})`}
+              {' • Max: $' + config.max_withdraw}
             </span>
           </div>
         </div>
@@ -452,28 +461,24 @@ export function WithdrawView() {
         </h3>
 
         <div className="space-y-3">
-          {/* Daily ads */}
           <RequirementRow
             icon={<TrendingUp size={18} />}
-            label={`Watch ${REQUIRED_DAILY_ADS} daily ads`}
-            value={`${requirements.dailyAdsWatched}/${REQUIRED_DAILY_ADS}`}
-            done={requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS}
+            label={`Watch ${config.required_daily_ads} daily ads`}
+            value={`${requirements.dailyAdsWatched}/${config.required_daily_ads}`}
+            done={requirements.dailyAdsWatched >= config.required_daily_ads}
           />
-          {/* Active referrals */}
           <RequirementRow
             icon={<Users size={18} />}
-            label={`Get ${REQUIRED_ACTIVE_REFERRALS} active referrals`}
-            value={`${requirements.activeReferrals}/${REQUIRED_ACTIVE_REFERRALS}`}
-            done={requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS}
+            label={`Get ${config.required_active_referrals} active referrals`}
+            value={`${requirements.activeReferrals}/${config.required_active_referrals}`}
+            done={requirements.activeReferrals >= config.required_active_referrals}
           />
-          {/* Main tasks */}
           <RequirementRow
             icon={<Target size={18} />}
             label="Complete all main tasks"
             value={requirements.mainTasksCompleted ? 'Done' : 'Pending'}
             done={requirements.mainTasksCompleted}
           />
-          {/* Partner tasks */}
           <RequirementRow
             icon={<Target size={18} />}
             label="Complete all partner tasks"
@@ -482,14 +487,13 @@ export function WithdrawView() {
           />
         </div>
 
-        {/* Processing bar */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 text-xs">Overall Progress</span>
             <span className="text-gold-400 text-xs font-bold">
               {[
-                requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
-                requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                requirements.dailyAdsWatched >= config.required_daily_ads,
+                requirements.activeReferrals >= config.required_active_referrals,
                 requirements.mainTasksCompleted,
                 requirements.partnerTasksCompleted,
               ].filter(Boolean).length}/4
@@ -500,8 +504,8 @@ export function WithdrawView() {
               className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${([
-                  requirements.dailyAdsWatched >= REQUIRED_DAILY_ADS,
-                  requirements.activeReferrals >= REQUIRED_ACTIVE_REFERRALS,
+                  requirements.dailyAdsWatched >= config.required_daily_ads,
+                  requirements.activeReferrals >= config.required_active_referrals,
                   requirements.mainTasksCompleted,
                   requirements.partnerTasksCompleted,
                 ].filter(Boolean).length / 4) * 100}%`,
@@ -527,7 +531,7 @@ export function WithdrawView() {
         </div>
       )}
 
-      {/* Cash Out Button (gated) */}
+      {/* Cash Out Button */}
       {!pendingWithdrawal && (
         <button
           onClick={handleCashOutClick}
@@ -537,7 +541,7 @@ export function WithdrawView() {
           {allRequirementsMet && hasMinPoints ? (
             <span className="flex items-center justify-center gap-2">
               <Zap size={20} />
-              Cash Out (Watch {ADS_TO_WATCH_FOR_WITHDRAW} Ads)
+              Cash Out (Watch {config.ads_to_watch_for_withdraw} Ads)
             </span>
           ) : !allRequirementsMet ? (
             'Complete Requirements First'
@@ -547,8 +551,8 @@ export function WithdrawView() {
         </button>
       )}
 
-      {/* Withdrawal Form (only shown after ad flow) */}
-      {adsWatched >= ADS_TO_WATCH_FOR_WITHDRAW && !pendingWithdrawal && (
+      {/* Withdrawal Form */}
+      {adsWatched >= config.ads_to_watch_for_withdraw && !pendingWithdrawal && (
         <div className="glass-card p-4 mb-6 animate-fade-in" style={{ border: '1px solid rgba(0,200,83,0.3)' }}>
           <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
             <Wallet className="text-neon-blue" size={20} />
@@ -565,63 +569,40 @@ export function WithdrawView() {
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter points"
                 className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                max={Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD))}
+                max={Math.min(userPoints, Math.round(config.max_withdraw / POINTS_TO_USD))}
               />
               <button
-                onClick={() => setAmount(Math.min(userPoints, Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)).toString())}
+                onClick={() => setAmount(Math.min(userPoints, Math.round(config.max_withdraw / POINTS_TO_USD)).toString())}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-400 text-sm font-semibold"
               >
                 MAX
               </button>
             </div>
             <p className="text-gray-500 text-xs mt-1">
-              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(MAX_WITHDRAW_USD / POINTS_TO_USD)} pts (${MAX_WITHDRAW_USD})
+              Min: {minWithdrawPoints} pts (${minWithdrawUSD}) • Max: {Math.round(config.max_withdraw / POINTS_TO_USD)} pts (${config.max_withdraw})
             </p>
           </div>
 
-          {/* Currency Selection with logos */}
+          {/* Currency - USDT BEP20 only */}
           <div className="mb-4">
             <label className="text-gray-400 text-sm mb-2 block">Currency</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => { haptic('light'); setCurrency('USDT'); }}
-                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
-                  currency === 'USDT' ? 'border-gold-400 bg-gold-400/10' : 'border-white/10 bg-white/5'
-                }`}
-              >
-                {/* USDT BEP20 logo */}
-                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
-                  <span className="text-white font-black text-sm">₮</span>
-                </div>
-                <p className="text-white font-semibold">USDT</p>
-                <p className="text-gray-400 text-xs">BEP20</p>
-              </button>
-              <button
-                onClick={() => { haptic('light'); setCurrency('GRAM'); }}
-                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center ${
-                  currency === 'GRAM' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
-                }`}
-              >
-                {/* TON logo */}
-                <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#0098EA' }}>
-                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
-                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 4.5l5.5 2.75v5.5L12 17.5l-5.5-2.75v-5.5L12 6.5z"/>
-                  </svg>
-                </div>
-                <p className="text-white font-semibold">Gram (ex TON)</p>
-                <p className="text-gray-400 text-xs">${tonPrice.toFixed(2)}</p>
-              </button>
+            <div className="p-4 rounded-xl border-2 border-gold-400 bg-gold-400/10 flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full mb-2 flex items-center justify-center" style={{ background: '#26A17B' }}>
+                <span className="text-white font-black text-sm">₮</span>
+              </div>
+              <p className="text-white font-semibold">USDT</p>
+              <p className="text-gray-400 text-xs">BEP20</p>
             </div>
           </div>
 
           {/* Wallet Address */}
           <div className="mb-4">
-            <label className="text-gray-400 text-sm mb-2 block">Wallet Address</label>
+            <label className="text-gray-400 text-sm mb-2 block">USDT BEP20 Wallet Address</label>
             <input
               type="text"
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value)}
-              placeholder={`Enter your ${currency} wallet address`}
+              placeholder="Enter your USDT BEP20 wallet address"
               className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
             />
           </div>
@@ -634,7 +615,7 @@ export function WithdrawView() {
                 <span className="text-white">${inputUSD.toFixed(4)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">Withdraw Fee (${WITHDRAW_FEE} + {WITHDRAW_FEE_PERCENT}%)</span>
+                <span className="text-gray-400">Withdraw Fee (${config.withdraw_fee} + {config.withdraw_fee_percent}%)</span>
                 <span className="text-red-400">-${fee.toFixed(4)}</span>
               </div>
               <div className="border-t border-white/10 pt-2 flex items-center justify-between">
@@ -642,7 +623,7 @@ export function WithdrawView() {
                 <span className="text-gold-400 font-bold">${netAmount.toFixed(4)}</span>
               </div>
               <div className="text-center text-gray-500 text-xs">
-                ≈ {currency === 'USDT' ? netAmount.toFixed(4) : (netAmount / tonPrice).toFixed(4)} {currency}
+                ≈ {netAmount.toFixed(4)} USDT
               </div>
             </div>
           )}
@@ -653,7 +634,7 @@ export function WithdrawView() {
             disabled={!isValid || loading}
             className={`btn-neon-gold w-full ${(!isValid || loading) ? 'opacity-50' : ''}`}
           >
-            {loading ? 'Processing...' : `Withdraw ${currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT BEP20'}`}
+            {loading ? 'Processing...' : 'Withdraw USDT BEP20'}
           </button>
         </div>
       )}
@@ -679,17 +660,9 @@ export function WithdrawView() {
                   w.status === 'rejected' ? 'bg-red-500/20' :
                   'bg-yellow-500/20'
                 }`}>
-                  {w.currency === 'USDT' ? (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
-                      <span className="text-white font-black text-xs">₮</span>
-                    </div>
-                  ) : (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#0098EA' }}>
-                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
-                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
-                      </svg>
-                    </div>
-                  )}
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#26A17B' }}>
+                    <span className="text-white font-black text-xs">₮</span>
+                  </div>
                 </div>
                 <div className="flex-1">
                   <p className="text-white font-semibold">
@@ -712,7 +685,7 @@ export function WithdrawView() {
                 </div>
                 {w.tx_id && (
                   <a
-                    href={`https://${w.currency === 'USDT' ? 'bscscan.com' : 'tonviewer.com'}/tx/${w.tx_id}`}
+                    href={`https://bscscan.com/tx/${w.tx_id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-400"

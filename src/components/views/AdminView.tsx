@@ -16,7 +16,7 @@ const POINTS_TO_USD = 0.0001;
 
 export function AdminView() {
   const { user, haptic } = useApp();
-  const [tab, setTab] = useState<'stats' | 'users' | 'withdrawals' | 'tasks' | 'partner' | 'ads' | 'broadcast' | 'settings'>('stats');
+  const [tab, setTab] = useState<'stats' | 'users' | 'withdrawals' | 'tasks' | 'partner' | 'ads' | 'broadcast' | 'withdraw' | 'settings'>('stats');
 
   const isAdmin = user?.is_admin || user?.telegram_id === ADMIN_TELEGRAM_ID;
 
@@ -50,6 +50,7 @@ export function AdminView() {
           { id: 'partner', icon: <Handshake size={18} />, label: 'Partner' },
           { id: 'ads', icon: <Tv size={18} />, label: 'Ads' },
           { id: 'broadcast', icon: <Megaphone size={18} />, label: 'Broadcast' },
+          { id: 'withdraw', icon: <DollarSign size={18} />, label: 'Withdraw' },
           { id: 'settings', icon: <Wrench size={18} />, label: 'Settings' },
         ].map((t) => (
           <button key={t.id} onClick={() => { haptic('light'); setTab(t.id as typeof tab); }}
@@ -67,6 +68,7 @@ export function AdminView() {
       {tab === 'partner' && <AdminPartner />}
       {tab === 'ads' && <AdminAds />}
       {tab === 'broadcast' && <AdminBroadcast />}
+      {tab === 'withdraw' && <AdminWithdrawSettings />}
       {tab === 'settings' && <AdminSettings />}
     </div>
   );
@@ -821,6 +823,288 @@ function AdminBroadcast() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── AdminWithdrawSettings ───────────────────────────────────────────────────
+
+function AdminWithdrawSettings() {
+  const [config, setConfig] = useState({
+    required_daily_ads: 20,
+    required_active_referrals: 2,
+    ads_to_watch_for_withdraw: 3,
+    first_withdraw_points: 500,
+    first_withdraw_usd: 0.05,
+    second_withdraw_usd: 0.10,
+    max_withdraw: 0.20,
+    min_withdraw: 0.05,
+    withdraw_fee: 0.01,
+    withdraw_fee_percent: 5,
+  });
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const { haptic } = useApp();
+  const { showSuccess, showError } = useToast();
+
+  useEffect(() => { loadConfig(); }, []);
+
+  async function loadConfig() {
+    try {
+      const { data } = await supabase
+        .from('withdraw_requirements_config')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setConfig({
+          required_daily_ads: data.required_daily_ads || 20,
+          required_active_referrals: data.required_active_referrals || 2,
+          ads_to_watch_for_withdraw: data.ads_to_watch_for_withdraw || 3,
+          first_withdraw_points: data.first_withdraw_points || 500,
+          first_withdraw_usd: Number(data.first_withdraw_usd) || 0.05,
+          second_withdraw_usd: Number(data.second_withdraw_usd) || 0.10,
+          max_withdraw: Number(data.max_withdraw) || 0.20,
+          min_withdraw: Number(data.min_withdraw) || 0.05,
+          withdraw_fee: Number(data.withdraw_fee) || 0.01,
+          withdraw_fee_percent: Number(data.withdraw_fee_percent) || 5,
+        });
+      }
+      setLoaded(true);
+    } catch (err) {
+      console.error('Error loading withdraw config:', err);
+      showError('Error', 'Failed to load withdraw settings');
+    }
+  }
+
+  async function saveConfig() {
+    haptic('light');
+    setLoading(true);
+    try {
+      const { data: existing } = await supabase
+        .from('withdraw_requirements_config')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from('withdraw_requirements_config')
+          .update({
+            required_daily_ads: config.required_daily_ads,
+            required_active_referrals: config.required_active_referrals,
+            ads_to_watch_for_withdraw: config.ads_to_watch_for_withdraw,
+            first_withdraw_points: config.first_withdraw_points,
+            first_withdraw_usd: config.first_withdraw_usd,
+            second_withdraw_usd: config.second_withdraw_usd,
+            max_withdraw: config.max_withdraw,
+            min_withdraw: config.min_withdraw,
+            withdraw_fee: config.withdraw_fee,
+            withdraw_fee_percent: config.withdraw_fee_percent,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('withdraw_requirements_config')
+          .insert({
+            required_daily_ads: config.required_daily_ads,
+            required_active_referrals: config.required_active_referrals,
+            ads_to_watch_for_withdraw: config.ads_to_watch_for_withdraw,
+            first_withdraw_points: config.first_withdraw_points,
+            first_withdraw_usd: config.first_withdraw_usd,
+            second_withdraw_usd: config.second_withdraw_usd,
+            max_withdraw: config.max_withdraw,
+            min_withdraw: config.min_withdraw,
+            withdraw_fee: config.withdraw_fee,
+            withdraw_fee_percent: config.withdraw_fee_percent,
+          });
+        if (error) throw error;
+      }
+
+      // Also update the settings table for backward compatibility
+      const settings = [
+        { key: 'min_withdraw', value: config.min_withdraw.toString() },
+        { key: 'withdraw_fee', value: config.withdraw_fee.toString() },
+        { key: 'withdraw_fee_percent', value: config.withdraw_fee_percent.toString() },
+        { key: 'max_withdraw', value: config.max_withdraw.toString() },
+        { key: 'required_daily_ads', value: config.required_daily_ads.toString() },
+        { key: 'required_active_referrals', value: config.required_active_referrals.toString() },
+        { key: 'ads_to_watch_for_withdraw', value: config.ads_to_watch_for_withdraw.toString() },
+        { key: 'first_withdraw_points', value: config.first_withdraw_points.toString() },
+        { key: 'first_withdraw_usd', value: config.first_withdraw_usd.toString() },
+        { key: 'second_withdraw_usd', value: config.second_withdraw_usd.toString() },
+      ];
+      for (const s of settings) {
+        await supabase.from('settings').upsert(s, { onConflict: 'key' });
+      }
+
+      showSuccess('Saved', 'Withdraw settings updated successfully');
+    } catch (err) {
+      console.error('Error saving withdraw config:', err);
+      showError('Error', 'Failed to save withdraw settings');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function updateField(field: string, value: string) {
+    const numValue = parseFloat(value) || 0;
+    setConfig(prev => ({ ...prev, [field]: numValue }));
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+        <h3 className="text-white font-bold flex items-center gap-2 mb-4">
+          <DollarSign size={18} className="text-gold-400" />
+          Withdraw Requirements
+        </h3>
+
+        <div className="space-y-4">
+          {/* Daily Ads */}
+          <div>
+            <label className="text-gray-400 text-sm mb-1 block">Required Daily Ads Watched</label>
+            <input
+              type="number"
+              value={config.required_daily_ads}
+              onChange={e => updateField('required_daily_ads', e.target.value)}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+            />
+            <p className="text-gray-500 text-xs mt-1">User must watch this many ads today before withdrawing</p>
+          </div>
+
+          {/* Active Referrals */}
+          <div>
+            <label className="text-gray-400 text-sm mb-1 block">Required Active Referrals</label>
+            <input
+              type="number"
+              value={config.required_active_referrals}
+              onChange={e => updateField('required_active_referrals', e.target.value)}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+            />
+            <p className="text-gray-500 text-xs mt-1">User must have this many active referrals</p>
+          </div>
+
+          {/* Ads to watch for withdraw */}
+          <div>
+            <label className="text-gray-400 text-sm mb-1 block">Ads to Watch for Each Withdrawal</label>
+            <input
+              type="number"
+              value={config.ads_to_watch_for_withdraw}
+              onChange={e => updateField('ads_to_watch_for_withdraw', e.target.value)}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+            />
+            <p className="text-gray-500 text-xs mt-1">Number of ads user must watch right before making a withdrawal</p>
+          </div>
+
+          {/* First Withdraw */}
+          <div className="p-3 rounded-xl bg-gold-500/10 border border-gold-500/20">
+            <p className="text-gold-400 font-semibold text-sm mb-3">First Withdrawal</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-gray-400 text-xs mb-1 block">Points Required</label>
+                <input
+                  type="number"
+                  value={config.first_withdraw_points}
+                  onChange={e => updateField('first_withdraw_points', e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-gray-400 text-xs mb-1 block">USD Amount</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={config.first_withdraw_usd}
+                  onChange={e => updateField('first_withdraw_usd', e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Second Withdraw */}
+          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+            <p className="text-blue-400 font-semibold text-sm mb-3">Second+ Withdrawal</p>
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">Min USD Amount</label>
+              <input
+                type="number"
+                step="0.01"
+                value={config.second_withdraw_usd}
+                onChange={e => updateField('second_withdraw_usd', e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+              />
+            </div>
+          </div>
+
+          {/* Min/Max Withdraw */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Min Withdraw (USD)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={config.min_withdraw}
+                onChange={e => updateField('min_withdraw', e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Max Withdraw (USD)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={config.max_withdraw}
+                onChange={e => updateField('max_withdraw', e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+              />
+            </div>
+          </div>
+
+          {/* Fees */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Fixed Fee (USD)</label>
+              <input
+                type="number"
+                step="0.001"
+                value={config.withdraw_fee}
+                onChange={e => updateField('withdraw_fee', e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Percentage Fee (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={config.withdraw_fee_percent}
+                onChange={e => updateField('withdraw_fee_percent', e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+              />
+            </div>
+          </div>
+
+          {/* Currency notice */}
+          <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+            <CheckCircle className="text-green-400" size={18} />
+            <p className="text-green-400 text-sm">Currency: USDT (BEP20) only. Gram/TON has been removed.</p>
+          </div>
+
+          {/* Save Button */}
+          <button
+            onClick={saveConfig}
+            disabled={loading || !loaded}
+            className="btn-neon-gold w-full flex items-center justify-center gap-2"
+          >
+            <Save size={18} />
+            {loading ? 'Saving...' : 'Save Withdraw Settings'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
