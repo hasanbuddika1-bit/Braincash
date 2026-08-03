@@ -382,24 +382,30 @@ Deno.serve(async (req: Request) => {
       if (!telegramUser) return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
       const user = await getOrCreateUser(supabase, telegramUser, startParam);
-      if (!user) { await sendMessage(botToken, chatId, "❌ Error: Could not create or find your account."); return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+      if (!user) {
+        await sendMessage(botToken, chatId, "❌ Error: Could not create or find your account.");
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
 
       const referralLink = `https://t.me/Brain_cashbot/braincash?startapp=ref_${user.referral_code}`;
-      const welcomePhotoUrl = `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`;
-      const welcomeCaption = `🧠 <b>Welcome to Brain Cash!</b>\n\n` +
+      const welcomeText = `🧠 <b>Welcome to Brain Cash!</b>\n\n` +
         `Play games, watch ads, complete tasks and earn real cash rewards!\n\n` +
         `💰 <b>500 Points = $0.05 USDT</b>\n` +
-        `📺 Watch ads to earn 4-8 points\n` +
+        `📺 Watch ads to earn points\n` +
         `🎮 Play 8+ puzzle games\n` +
-        `👥 Invite friends for 120 pts + 5% lifetime commission\n` +
+        `👥 Invite friends: 120 pts + 5% lifetime commission\n` +
         `💳 Withdraw to USDT or Gram (ex TON)\n\n` +
-        `<b>Your referral link:</b>\n<code>${referralLink}</code>\n\n` +
-        `📢 <b>Join our community:</b>\n` +
-        `• Channel: @brain_cach_channel\n` +
-        `• Payments: @braincashpayment`;
+        `🔗 <b>Your referral link:</b>\n<code>${referralLink}</code>`;
 
-      const photoResult = await sendPhoto(botToken, chatId, welcomePhotoUrl, welcomeCaption, getMainKeyboard());
-      if (!photoResult.ok) await sendMessage(botToken, chatId, welcomeCaption, getMainKeyboard());
+      // Try photo first, always fall back to text message
+      let sent = false;
+      try {
+        const photoResult = await sendPhoto(botToken, chatId, `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`, welcomeText, getMainKeyboard());
+        if (photoResult.ok) sent = true;
+      } catch { /* photo failed */ }
+      if (!sent) {
+        await sendMessage(botToken, chatId, welcomeText, getMainKeyboard());
+      }
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

@@ -243,12 +243,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             .single();
 
             if (referrer) {
-            // Block referral if new user has no username or IP
-            const hasValidUsername = newUser.username && newUser.username.toLowerCase() !== 'unknown';
-            const hasValidIP = userIp && userIp !== '';
-            if (!hasValidUsername || !hasValidIP) {
-              await supabase.from('users').update({ referral_blocked: true }).eq('id', newUser.id);
-            } else {
               await supabase.from('referrals').insert({
                 referrer_id: referrer.id,
                 referred_id: newUser.id,
@@ -259,7 +253,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
               await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
             }
-          }
         }
       } else if (fetchError) {
         throw fetchError;
@@ -269,6 +262,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           await supabase.from('users').update({ is_admin: true }).eq('id', data.id);
           data.is_admin = true;
         }
+
+        // Detect and update IP for existing users missing registration_ip
+        if (!data.registration_ip) {
+          try {
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            const detectedIp = ipData.ip || '';
+            if (detectedIp) {
+              await supabase.from('users').update({ registration_ip: detectedIp, ip_address: detectedIp }).eq('id', data.id);
+              data.registration_ip = detectedIp;
+              data.ip_address = detectedIp;
+            }
+          } catch { /* IP detection failed, continue */ }
+        }
+
         // Check if user is suspended/banned
         if (data.is_banned || data.is_suspended) {
           let suspendedInfo = data.is_suspended
