@@ -242,16 +242,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             .eq('referral_code', referrerCode)
             .single();
 
-          if (referrer) {
-            await supabase.from('referrals').insert({
-              referrer_id: referrer.id,
-              referred_id: newUser.id,
-              join_bonus: 20,
-              task_bonus: 0,
-              total_commission: 20,
-            });
-            await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
-            await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
+            if (referrer) {
+            // Block referral if new user has no username or IP
+            const hasValidUsername = newUser.username && newUser.username.toLowerCase() !== 'unknown';
+            const hasValidIP = userIp && userIp !== '';
+            if (!hasValidUsername || !hasValidIP) {
+              await supabase.from('users').update({ referral_blocked: true }).eq('id', newUser.id);
+            } else {
+              await supabase.from('referrals').insert({
+                referrer_id: referrer.id,
+                referred_id: newUser.id,
+                join_bonus: 20,
+                task_bonus: 0,
+                total_commission: 20,
+              });
+              await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
+              await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
+            }
           }
         }
       } else if (fetchError) {

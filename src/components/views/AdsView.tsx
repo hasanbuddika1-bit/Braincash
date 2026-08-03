@@ -8,14 +8,12 @@ import {
   type AdNetwork, type AdNetworkConfig,
 } from '../../lib/adManager';
 import {
-  Tv, Play, Clock, CheckCircle, Gift, Zap, TrendingUp, Award,
+  Play, Clock, CheckCircle, Gift, Zap, TrendingUp, Award,
   Flame, ChevronRight, Lock,
 } from 'lucide-react';
 
 const REWARD_BLOCK_ID = '35762';
-const INTERSTITIAL_BLOCK_ID = 'int-35763';
 const REWARD_AD_SECONDS = 30;
-const INTERSTITIAL_AD_SECONDS = 15;
 
 export function AdsView() {
   const { user, haptic, addPoints, setCurrentView } = useApp();
@@ -26,7 +24,7 @@ export function AdsView() {
   });
   const [watching, setWatching] = useState(false);
   const [adTimer, setAdTimer] = useState(0);
-  const [adType, setAdType] = useState<'reward' | 'interstitial' | null>(null);
+  const [adType, setAdType] = useState<'reward' | null>(null);
   const [currentNetwork, setCurrentNetwork] = useState<AdNetwork | null>(null);
   const [totalEarnedToday, setTotalEarnedToday] = useState(0);
 
@@ -62,6 +60,15 @@ export function AdsView() {
     if (!user || !configs || watching) return;
     haptic('light');
 
+    // Check user eligibility (must have valid username and IP)
+    try {
+      const { data: elig } = await supabase.rpc('check_user_eligibility', { target_user_id: user.id });
+      if (elig && !elig.eligible) {
+        showError('Not Eligible', 'You need a valid username and IP address to earn rewards.');
+        return;
+      }
+    } catch { /* allow if check fails */ }
+
     const cfg = configs.adsgram;
     if (adCounts.adsgram >= cfg.dailyLimit) {
       showError('Daily Limit', `You've reached the daily limit of ${cfg.dailyLimit} Adsgram ads.`);
@@ -80,11 +87,10 @@ export function AdsView() {
       console.error('Adsgram ad failed:', e);
     }
 
-    // Use actual watched seconds from SDK, clamp to [0, REWARD_AD_SECONDS]
+    // Ad is now closed - start countdown AFTER ad closes
     const actualSeconds = adResult ? Math.min(adResult.watchedSeconds, REWARD_AD_SECONDS) : 0;
     const adCompleted = adResult?.completed === true;
 
-    // Countdown timer for visual feedback
     const startTime = Date.now();
     const timerInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -95,7 +101,6 @@ export function AdsView() {
         setWatching(false);
         setAdType(null);
         setCurrentNetwork(null);
-        // Only reward if the ad actually completed
         if (adCompleted && actualSeconds >= 5) {
           const reward = cfg.pointsPerAd;
           recordAdView(user.id, 'adsgram', reward, 'rewarded');
@@ -113,46 +118,19 @@ export function AdsView() {
     }, 1000);
   }, [user, configs, watching, adCounts, haptic, addPoints, showSuccess, showError]);
 
-  const watchInterstitialAd = useCallback(async () => {
-    if (!user || !configs || watching) return;
-    haptic('light');
-
-    setWatching(true);
-    setAdType('interstitial');
-    setCurrentNetwork('adsgram');
-    setAdTimer(INTERSTITIAL_AD_SECONDS);
-
-    try {
-      await showAdsgramAd(INTERSTITIAL_BLOCK_ID);
-    } catch (e) {
-      console.error('Adsgram interstitial failed:', e);
-    }
-
-    const startTime = Date.now();
-    const timerInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = INTERSTITIAL_AD_SECONDS - elapsed;
-      if (remaining <= 0) {
-        clearInterval(timerInterval);
-        setAdTimer(0);
-        setWatching(false);
-        setAdType(null);
-        setCurrentNetwork(null);
-        const reward = 5;
-        recordAdView(user.id, 'adsgram', reward, 'interstitial');
-        addPoints(reward);
-        showSuccess(`+${reward} Points!`, 'Interstitial ad completed!');
-        haptic('success');
-      } else {
-        setAdTimer(remaining);
-      }
-    }, 1000);
-  }, [user, configs, watching, haptic, addPoints, showSuccess]);
-
   // Watch ad from any network
   const watchNetworkAd = useCallback(async (network: AdNetwork) => {
     if (!user || !configs || watching) return;
     haptic('light');
+
+    // Check user eligibility (must have valid username and IP)
+    try {
+      const { data: elig } = await supabase.rpc('check_user_eligibility', { target_user_id: user.id });
+      if (elig && !elig.eligible) {
+        showError('Not Eligible', 'You need a valid username and IP address to earn rewards.');
+        return;
+      }
+    } catch { /* allow if check fails */ }
 
     const cfg = configs[network];
     if (adCounts[network] >= cfg.dailyLimit) {
@@ -198,7 +176,7 @@ export function AdsView() {
 
   // Ad watching overlay
   if (watching && adType) {
-    const seconds = adType === 'reward' ? REWARD_AD_SECONDS : INTERSTITIAL_AD_SECONDS;
+    const seconds = REWARD_AD_SECONDS;
     const networkName = currentNetwork === 'adsgram' ? 'Adsgram AI' : currentNetwork === 'monetag' ? 'Monetag' : 'Gigapub';
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
@@ -290,35 +268,6 @@ export function AdsView() {
         </div>
       </div>
 
-      {/* Interstitial Ad Block (15s) */}
-      <div className="glass-card p-6 mb-6 relative overflow-hidden" style={{ border: '2px solid rgba(0,212,255,0.3)' }}>
-        <div className="absolute top-0 right-0 text-6xl opacity-10">📺</div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-              <Tv className="text-white" size={24} />
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-lg">Interstitial Ad</h3>
-              <p className="text-gray-400 text-sm flex items-center gap-1">
-                <Clock size={12} /> {INTERSTITIAL_AD_SECONDS}s watch time
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-white/5">
-            <span className="text-gray-400 text-sm">Reward: <span className="text-gold-400 font-bold">+5 pts</span></span>
-            <span className="text-gray-400 text-sm">Unlimited watches</span>
-          </div>
-          <button
-            onClick={watchInterstitialAd}
-            className="w-full py-4 rounded-2xl font-bold text-white flex items-center justify-center gap-2 transition-all active:scale-95"
-            style={{ background: 'linear-gradient(90deg, #0098EA, #00d4ff)', boxShadow: '0 0 20px rgba(0,212,255,0.3)' }}
-          >
-            <Play size={20} /> Watch Interstitial Ad ({INTERSTITIAL_AD_SECONDS}s)
-          </button>
-        </div>
-      </div>
-
       {/* All Networks */}
       <div className="glass-card p-4 mb-6">
         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
@@ -365,7 +314,6 @@ export function AdsView() {
             <p className="text-white font-semibold text-sm mb-1">How it works</p>
             <p className="text-gray-400 text-xs">
               Watch ads to earn points. Rewarded ads give more points but have a daily limit.
-              Interstitial ads give fewer points but can be watched unlimited times.
               Points can be used to play games and withdraw as crypto.
             </p>
           </div>

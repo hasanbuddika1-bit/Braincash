@@ -233,7 +233,7 @@ export function pickRandomNetwork(exclude?: AdNetwork): AdNetwork {
 export async function showRandomAd(): Promise<AdNetwork> {
   const network = pickRandomNetwork();
   if (network === 'adsgram') {
-    await showAdsgramAd('int-35763');
+    await showAdsgramAd('35762');
   } else if (network === 'monetag') {
     await showMonetagAd('11230846');
   } else {
@@ -247,14 +247,9 @@ export async function showRewardedAd(): Promise<void> {
   await showAdsgramAd('35762');
 }
 
-// Show an interstitial Adsgram ad (15s, block int-35763)
-export async function showInterstitialAd(): Promise<void> {
-  await showAdsgramAd('int-35763');
-}
-
 // Get the block ID for a network
 export function getNetworkBlockId(network: AdNetwork): string {
-  if (network === 'adsgram') return 'int-35763';
+  if (network === 'adsgram') return '35762';
   if (network === 'monetag') return '11230846';
   return '7151';
 }
@@ -262,7 +257,7 @@ export function getNetworkBlockId(network: AdNetwork): string {
 // Show ad from a specific network
 export async function showAdFromNetwork(network: AdNetwork): Promise<void> {
   if (network === 'adsgram') {
-    await showAdsgramAd('int-35763');
+    await showAdsgramAd('35762');
   } else if (network === 'monetag') {
     await showMonetagAd('11230846');
   } else {

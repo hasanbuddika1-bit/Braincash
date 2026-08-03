@@ -470,6 +470,23 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Fallback for any unrecognized message
+    if (body.message?.text) {
+      const chatId = body.message.chat.id;
+      await sendMessage(botToken, chatId,
+        `🧠 <b>Brain Cash Bot</b>\n\n` +
+        `I'm here to help you earn crypto rewards! Here are the commands:\n\n` +
+        `/start - Open Brain Cash\n` +
+        `/balance - Check your balance\n` +
+        `/referral - Get your referral link\n` +
+        `/withdraw - Withdraw your earnings\n` +
+        `/help - Get help\n\n` +
+        `Or click the button below to open the Mini App!`,
+        getMainKeyboard()
+      );
+      return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Chat member updates
     if (body.my_chat_member || body.chat_member) {
       const update = body.my_chat_member || body.chat_member;
