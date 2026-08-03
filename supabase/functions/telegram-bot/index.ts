@@ -397,15 +397,9 @@ Deno.serve(async (req: Request) => {
         `💳 Withdraw to USDT or Gram (ex TON)\n\n` +
         `🔗 <b>Your referral link:</b>\n<code>${referralLink}</code>`;
 
-      // Try photo first, always fall back to text message
-      let sent = false;
-      try {
-        const photoResult = await sendPhoto(botToken, chatId, `${miniAppBaseUrl}/images/${WELCOME_PHOTO_FILENAME}`, welcomeText, getMainKeyboard());
-        if (photoResult.ok) sent = true;
-      } catch { /* photo failed */ }
-      if (!sent) {
-        await sendMessage(botToken, chatId, welcomeText, getMainKeyboard());
-      }
+      // Always send text message (photo URL hosting is unreliable)
+      const msgResult = await sendMessage(botToken, chatId, welcomeText, getMainKeyboard());
+      if (!msgResult.ok) console.error('sendMessage failed for /start:', JSON.stringify(msgResult));
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import {
-  showAdsgramAd, showMonetagAd, showGigapubAd, showRandomAd,
+  showAdsgramAd, showMonetagAd, showGigapubAd,
   getTodayAdCount, loadAdSettings, recordAdView,
   type AdNetwork, type AdNetworkConfig,
 } from '../../lib/adManager';
 import {
   Play, Clock, CheckCircle, Gift, Zap, TrendingUp, Award,
-  Flame, ChevronRight, Lock,
+  Flame, ChevronRight, Lock, AlertCircle,
 } from 'lucide-react';
 
 const REWARD_BLOCK_ID = '35762';
 const REWARD_AD_SECONDS = 30;
+const NETWORK_AD_SECONDS = 15;
 
 export function AdsView() {
   const { user, haptic, addPoints, setCurrentView } = useApp();
@@ -27,6 +28,7 @@ export function AdsView() {
   const [adType, setAdType] = useState<'reward' | null>(null);
   const [currentNetwork, setCurrentNetwork] = useState<AdNetwork | null>(null);
   const [totalEarnedToday, setTotalEarnedToday] = useState(0);
+  const [adError, setAdError] = useState(false);
 
   useEffect(() => {
     if (user) loadData();
@@ -60,15 +62,6 @@ export function AdsView() {
     if (!user || !configs || watching) return;
     haptic('light');
 
-    // Check user eligibility (must have valid username and IP)
-    try {
-      const { data: elig } = await supabase.rpc('check_user_eligibility', { target_user_id: user.id });
-      if (elig && !elig.eligible) {
-        showError('Not Eligible', 'You need a valid username and IP address to earn rewards.');
-        return;
-      }
-    } catch { /* allow if check fails */ }
-
     const cfg = configs.adsgram;
     if (adCounts.adsgram >= cfg.dailyLimit) {
       showError('Daily Limit', `You've reached the daily limit of ${cfg.dailyLimit} Adsgram ads.`);
@@ -78,59 +71,78 @@ export function AdsView() {
     setWatching(true);
     setAdType('reward');
     setCurrentNetwork('adsgram');
+    setAdError(false);
     setAdTimer(REWARD_AD_SECONDS);
 
-    let adResult: { watchedSeconds: number; completed: boolean } | null = null;
-    try {
-      adResult = await showAdsgramAd(REWARD_BLOCK_ID);
-    } catch (e) {
-      console.error('Adsgram ad failed:', e);
+    let adClosedEarly = false;
+    let adCompleted = false;
+
+    // Start countdown immediately when ad opens
+    const timerPromise = new Promise<void>((resolve) => {
+      const startTime = Date.now();
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = REWARD_AD_SECONDS - elapsed;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          setAdTimer(0);
+          resolve();
+        } else {
+          setAdTimer(remaining);
+        }
+      }, 1000);
+    });
+
+    // Show ad concurrently — promise resolves when ad is closed
+    const adPromise = showAdsgramAd(REWARD_BLOCK_ID)
+      .then((result) => {
+        adCompleted = result?.completed === true;
+        // If timer hasn't finished yet, ad was closed early
+        if (adTimer > 0) {
+          adClosedEarly = true;
+        }
+      })
+      .catch(() => {
+        adClosedEarly = true;
+      });
+
+    // Wait for both: timer finishes AND ad closes
+    await Promise.race([timerPromise, adPromise]);
+
+    // If timer finished first, wait for ad to close
+    if (!adClosedEarly && adTimer <= 0) {
+      await adPromise;
     }
 
-    // Ad is now closed - start countdown AFTER ad closes
-    const actualSeconds = adResult ? Math.min(adResult.watchedSeconds, REWARD_AD_SECONDS) : 0;
-    const adCompleted = adResult?.completed === true;
-
-    const startTime = Date.now();
-    const timerInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = REWARD_AD_SECONDS - elapsed;
-      if (remaining <= 0) {
-        clearInterval(timerInterval);
-        setAdTimer(0);
+    // Determine outcome
+    if (adClosedEarly || !adCompleted) {
+      setAdError(true);
+      haptic('error');
+      setTimeout(() => {
         setWatching(false);
         setAdType(null);
         setCurrentNetwork(null);
-        if (adCompleted && actualSeconds >= 5) {
-          const reward = cfg.pointsPerAd;
-          recordAdView(user.id, 'adsgram', reward, 'rewarded');
-          addPoints(reward);
-          setAdCounts(prev => ({ ...prev, adsgram: prev.adsgram + 1 }));
-          setTotalEarnedToday(prev => prev + reward);
-          showSuccess(`+${reward} Points!`, 'Rewarded ad completed!');
-          haptic('success');
-        } else {
-          showError('Ad Not Completed', 'Please watch the full ad to earn rewards.');
-        }
-      } else {
-        setAdTimer(remaining);
-      }
-    }, 1000);
+        setAdError(false);
+      }, 2500);
+      return;
+    }
+
+    // Success — give reward
+    const reward = cfg.pointsPerAd;
+    recordAdView(user.id, 'adsgram', reward, 'rewarded');
+    addPoints(reward);
+    setAdCounts(prev => ({ ...prev, adsgram: prev.adsgram + 1 }));
+    setTotalEarnedToday(prev => prev + reward);
+    showSuccess(`+${reward} Points!`, 'Rewarded ad completed!');
+    haptic('success');
+    setWatching(false);
+    setAdType(null);
+    setCurrentNetwork(null);
   }, [user, configs, watching, adCounts, haptic, addPoints, showSuccess, showError]);
 
-  // Watch ad from any network
   const watchNetworkAd = useCallback(async (network: AdNetwork) => {
     if (!user || !configs || watching) return;
     haptic('light');
-
-    // Check user eligibility (must have valid username and IP)
-    try {
-      const { data: elig } = await supabase.rpc('check_user_eligibility', { target_user_id: user.id });
-      if (elig && !elig.eligible) {
-        showError('Not Eligible', 'You need a valid username and IP address to earn rewards.');
-        return;
-      }
-    } catch { /* allow if check fails */ }
 
     const cfg = configs[network];
     if (adCounts[network] >= cfg.dailyLimit) {
@@ -141,47 +153,96 @@ export function AdsView() {
     setWatching(true);
     setAdType('reward');
     setCurrentNetwork(network);
-    setAdTimer(15);
+    setAdError(false);
+    setAdTimer(NETWORK_AD_SECONDS);
 
-    try {
-      if (network === 'adsgram') await showAdsgramAd(REWARD_BLOCK_ID);
-      else if (network === 'monetag') await showMonetagAd('11230846');
-      else await showGigapubAd('7151');
-    } catch (e) {
-      console.error(`${network} ad failed:`, e);
+    let adClosedEarly = false;
+
+    // Start countdown immediately
+    const timerPromise = new Promise<void>((resolve) => {
+      const startTime = Date.now();
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = NETWORK_AD_SECONDS - elapsed;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          setAdTimer(0);
+          resolve();
+        } else {
+          setAdTimer(remaining);
+        }
+      }, 1000);
+    });
+
+    // Show ad concurrently
+    const adPromise = (async () => {
+      try {
+        if (network === 'adsgram') await showAdsgramAd(REWARD_BLOCK_ID);
+        else if (network === 'monetag') await showMonetagAd('11230846');
+        else await showGigapubAd('7151');
+      } catch {
+        adClosedEarly = true;
+      }
+    })();
+
+    // Race: if ad closes before timer, it was early
+    await Promise.race([timerPromise, adPromise]);
+
+    // If timer finished first, wait for ad to close
+    if (!adClosedEarly && adTimer <= 0) {
+      await adPromise;
     }
 
-    const startTime = Date.now();
-    const timerInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = 15 - elapsed;
-      if (remaining <= 0) {
-        clearInterval(timerInterval);
-        setAdTimer(0);
+    if (adClosedEarly) {
+      setAdError(true);
+      haptic('error');
+      setTimeout(() => {
         setWatching(false);
         setAdType(null);
         setCurrentNetwork(null);
-        const reward = cfg.pointsPerAd;
-        recordAdView(user.id, network, reward, 'rewarded');
-        addPoints(reward);
-        setAdCounts(prev => ({ ...prev, [network]: prev[network] + 1 }));
-        setTotalEarnedToday(prev => prev + reward);
-        showSuccess(`+${reward} Points!`, `${cfg.name} ad completed!`);
-        haptic('success');
-      } else {
-        setAdTimer(remaining);
-      }
-    }, 1000);
+        setAdError(false);
+      }, 2500);
+      return;
+    }
+
+    // Success
+    const reward = cfg.pointsPerAd;
+    recordAdView(user.id, network, reward, 'rewarded');
+    addPoints(reward);
+    setAdCounts(prev => ({ ...prev, [network]: prev[network] + 1 }));
+    setTotalEarnedToday(prev => prev + reward);
+    showSuccess(`+${reward} Points!`, `${cfg.name} ad completed!`);
+    haptic('success');
+    setWatching(false);
+    setAdType(null);
+    setCurrentNetwork(null);
   }, [user, configs, watching, adCounts, haptic, addPoints, showSuccess, showError]);
 
   // Ad watching overlay
   if (watching && adType) {
-    const seconds = REWARD_AD_SECONDS;
+    const seconds = currentNetwork === 'adsgram' && adType === 'reward' ? REWARD_AD_SECONDS : NETWORK_AD_SECONDS;
     const networkName = currentNetwork === 'adsgram' ? 'Adsgram AI' : currentNetwork === 'monetag' ? 'Monetag' : 'Gigapub';
+
+    if (adError) {
+      return (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+          <div className="w-full max-w-sm">
+            <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(0,0,0,0.3))' }}>
+              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="text-red-400" size={32} />
+              </div>
+              <p className="text-white font-bold text-lg mb-2">Ad Closed Too Early</p>
+              <p className="text-gray-400 text-sm">You must watch the full ad to earn rewards. Please try again.</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
         <div className="w-full max-w-sm">
-          <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(0,212,255,0.2))' }}>
+          <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(0,200,83,0.2))' }}>
             <div className="text-5xl mb-4 animate-bounce-slow">
               {adType === 'reward' ? '🎁' : '📺'}
             </div>
