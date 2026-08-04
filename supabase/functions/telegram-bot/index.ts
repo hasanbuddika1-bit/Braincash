@@ -270,6 +270,35 @@ Deno.serve(async (req: Request) => {
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      // Notify admin about withdrawal approval
+      if (action === 'notify-admin-withdraw-approve' && bodyData.withdraw_data) {
+        const w = bodyData.withdraw_data;
+        const method = 'USDT (BEP20)';
+        const explorerUrl = w.tx_id ? `https://bscscan.com/tx/${w.tx_id}` : '';
+        await sendMessage(botToken, ADMIN_TELEGRAM_ID,
+          `✅ <b>Withdrawal Approved</b>
+
+` +
+          `👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})
+` +
+          `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}
+` +
+          `💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}
+` +
+          `💳 <b>Method:</b> ${method}
+` +
+          `💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}
+` +
+          `✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}
+` +
+          `📍 <b>Address:</b> <code>${w.wallet_address}</code>
+` +
+          (w.tx_id ? `🔗 <b>TX ID:</b> <code>${w.tx_id}</code>` : ''),
+          { inline_keyboard: explorerUrl ? [[{ text: "🔍 View Transaction", url: explorerUrl }], [{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] : [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+        );
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       // Notify withdraw approval to user + payment channel
       if (action === 'notify-withdraw-approve' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;

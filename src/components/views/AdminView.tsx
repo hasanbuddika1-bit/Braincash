@@ -395,6 +395,28 @@ function AdminWithdrawals() {
       });
     } catch (e) { console.error('Bot notification failed:', e); }
 
+    // Send notification to admin about the approval
+    try {
+      const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+      await fetch(botUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'notify-admin-withdraw-approve',
+          withdraw_data: {
+            user_name: w.users?.first_name || w.users?.username || 'Unknown',
+            user_telegram_id: w.users?.telegram_id,
+            withdraw_number: w.withdraw_number,
+            amount: w.amount,
+            fee: w.fee,
+            net_amount: w.net_amount,
+            currency: w.currency,
+            wallet_address: w.wallet_address,
+            tx_id: txId,
+          },
+        }),
+      });
+    } catch (e) { console.error('Admin bot notification failed:', e); }
+
     showSuccess('Approved!', 'Withdrawal approved and user notified.');
     loadWithdrawals();
   }
@@ -457,7 +479,7 @@ function AdminWithdrawals() {
               <p className="text-white font-semibold">{w.users?.first_name || w.users?.username || 'Unknown'}</p>
               <p className="text-gray-400 text-xs">#{w.withdraw_number} • ${w.amount.toFixed(4)} {w.currency}</p>
               <p className="text-gray-500 text-xs">Fee: ${w.fee.toFixed(4)} • Net: {w.net_amount.toFixed(4)} {w.currency}</p>
-              <p className="text-gray-500 text-xs">Address: {w.wallet_address?.substring(0, 20)}...</p>
+              <p className="text-gray-500 text-xs break-all">Address: <span className="font-mono text-gray-400">{w.wallet_address}</span></p>
               <p className="text-gray-500 text-xs">{new Date(w.created_at).toLocaleString()}</p>
               {w.tx_id && <p className="text-green-400 text-xs mt-1">TX: {w.tx_id.substring(0, 30)}...</p>}
               {w.reject_reason && <p className="text-red-400 text-xs mt-1">Rejected: {w.reject_reason}</p>}
@@ -696,7 +718,7 @@ function AdminAds() {
   async function handleSave() {
     haptic('light');
     const updates = Object.entries(configs).map(([key, value]) =>
-      supabase.from('settings').update({ value }).eq('key', key)
+      supabase.from('settings').upsert({ key, value: String(value) }, { onConflict: 'key' })
     );
     await Promise.all(updates);
     showSuccess('Saved', 'Ad settings updated');
@@ -1131,13 +1153,13 @@ function AdminSettings() {
     haptic('light');
     const newVal = !maintenanceMode;
     setMaintenanceMode(newVal);
-    await supabase.from('settings').update({ value: newVal.toString() }).eq('key', 'maintenance_mode');
+    await supabase.from('settings').upsert({ key: 'maintenance_mode', value: newVal.toString() }, { onConflict: 'key' });
     showSuccess('Updated', `Maintenance mode ${newVal ? 'enabled' : 'disabled'}`);
   }
 
   async function saveMessage() {
     haptic('light');
-    await supabase.from('settings').update({ value: maintenanceMessage }).eq('key', 'maintenance_message');
+    await supabase.from('settings').upsert({ key: 'maintenance_message', value: maintenanceMessage }, { onConflict: 'key' });
     showSuccess('Saved', 'Maintenance message updated');
   }
 
