@@ -4,10 +4,10 @@ import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import {
   Wallet, ArrowUpRight, Clock, CheckCircle, XCircle, ExternalLink, Info,
-  Lock, Play, AlertCircle, ChevronRight, Heart, Zap, TrendingUp, Users, Target,
+  Lock, Play, AlertCircle, ChevronRight, Heart, Zap, TrendingUp, Users, Target, Shield,
 } from 'lucide-react';
 import type { Withdrawal } from '../../types';
-import { showRandomAd } from '../../lib/adManager';
+import { showAdFromNetwork, type AdNetwork, type AdShowResult } from '../../lib/adManager';
 
 const POINTS_TO_USD = 0.0001;
 
@@ -49,6 +49,9 @@ export function WithdrawView() {
   const [currentAdIdx, setCurrentAdIdx] = useState(0);
   const [adTimer, setAdTimer] = useState(0);
   const [adPlaying, setAdPlaying] = useState(false);
+  const [showVpnPopup, setShowVpnPopup] = useState(false);
+  const [adError, setAdError] = useState(false);
+  const [adErrorMsg, setAdErrorMsg] = useState('');
   const [requirements, setRequirements] = useState({
     dailyAdsWatched: 0,
     activeReferrals: 0,
@@ -201,24 +204,58 @@ export function WithdrawView() {
     setCurrentAdIdx(0);
   }
 
-  function startAdWatch() {
+  async function startAdWatch() {
     haptic('light');
     setAdPlaying(true);
-    setAdTimer(15);
-    showRandomAd()
-      .then(() => { /* ad completed */ })
-      .catch(() => { /* ad failed, still count */ })
-      .finally(() => {
-        setAdPlaying(false);
-        setAdTimer(0);
-        const newCount = adsWatched + 1;
-        setAdsWatched(newCount);
-        haptic('success');
-        if (newCount >= config.ads_to_watch_for_withdraw) {
-          setShowAdFlow(false);
-          showSuccess('Ads Watched!', 'You can now make a withdrawal request.');
-        }
-      });
+    setAdTimer(10);
+    setAdError(false);
+    setAdErrorMsg('');
+
+    const networks: AdNetwork[] = ['adsgram', 'monetag', 'gigapub'];
+    const network = networks[currentAdIdx % networks.length];
+
+    let result: AdShowResult;
+    try {
+      result = await showAdFromNetwork(network);
+    } catch {
+      result = { watchedSeconds: 0, completed: false, opened: false, error: 'Ad failed' };
+    }
+
+    if (!result.opened) {
+      setAdPlaying(false);
+      setAdTimer(0);
+      if (network === 'adsgram') {
+        setShowVpnPopup(true);
+        haptic('warning');
+      } else {
+        setAdError(true);
+        setAdErrorMsg('Ad not available. Please try another network.');
+        haptic('error');
+        setTimeout(() => { setAdError(false); setAdErrorMsg(''); }, 3000);
+      }
+      return;
+    }
+
+    if (!result.completed || result.watchedSeconds < 10) {
+      setAdPlaying(false);
+      setAdTimer(0);
+      setAdError(true);
+      setAdErrorMsg('You must watch the full ad (10 seconds) to continue. Please try again.');
+      haptic('error');
+      setTimeout(() => { setAdError(false); setAdErrorMsg(''); }, 3000);
+      return;
+    }
+
+    setAdPlaying(false);
+    setAdTimer(0);
+    const newCount = adsWatched + 1;
+    setAdsWatched(newCount);
+    setCurrentAdIdx(currentAdIdx + 1);
+    haptic('success');
+    if (newCount >= config.ads_to_watch_for_withdraw) {
+      setShowAdFlow(false);
+      showSuccess('Ads Watched!', 'You can now make a withdrawal request.');
+    }
   }
 
   useEffect(() => {
@@ -328,6 +365,26 @@ export function WithdrawView() {
     { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
   ];
 
+  if (showVpnPopup) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+        <div className="w-full max-w-sm">
+          <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(0,0,0,0.3))' }}>
+            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
+              <Shield className="text-blue-400" size={32} />
+            </div>
+            <p className="text-white font-bold text-lg mb-2">Adsgram AI Not Available</p>
+            <p className="text-gray-400 text-sm mb-6">
+              Adsgram AI ads are not available in your region. Please use a VPN to watch rewarded ads.
+            </p>
+            <button onClick={() => { haptic('light'); setShowVpnPopup(false); }} className="btn-neon-gold w-full mb-3">Got it</button>
+            <button onClick={() => { haptic('light'); setShowVpnPopup(false); startAdWatch(); }} className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold">Try Again</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showAdFlow) {
     const currentAd = AD_PROVIDERS[currentAdIdx % AD_PROVIDERS.length];
     return (
@@ -379,7 +436,13 @@ export function WithdrawView() {
             <div className="glass-card p-8 text-center">
               <div className="text-5xl mb-4">{currentAd.logo}</div>
               <p className="text-white font-bold text-lg mb-2">{currentAd.name}</p>
-              <p className="text-gray-400 text-sm mb-6">Watch this ad to continue</p>
+              <p className="text-gray-400 text-sm mb-6">Watch this ad to continue (10s minimum)</p>
+              {adError && (
+                <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2">
+                  <AlertCircle className="text-red-400" size={18} />
+                  <p className="text-red-400 text-sm">{adErrorMsg}</p>
+                </div>
+              )}
               <button
                 onClick={startAdWatch}
                 className="btn-neon-gold w-full flex items-center justify-center gap-2"

@@ -179,6 +179,22 @@ Deno.serve(async (req: Request) => {
     const botToken = await getBotToken(supabase);
     if (!botToken) return new Response(JSON.stringify({ error: "Bot token not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+    // Set bot commands on first load
+    try {
+      await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          commands: [
+            { command: 'start', description: '🧠 Open Brain Cash Mini App' },
+            { command: 'balance', description: '💰 Check your points balance' },
+            { command: 'withdraw', description: '💸 Withdraw your earnings' },
+            { command: 'help', description: '❓ Get help and instructions' },
+            { command: 'referral', description: '👥 Get your referral link' },
+          ],
+        }),
+      });
+    } catch (e) { console.error('setMyCommands failed:', e); }
+
     const bodyText = await req.clone().text();
     if (!bodyText) return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
@@ -239,7 +255,7 @@ Deno.serve(async (req: Request) => {
       // Notify withdraw request to admin
       if (action === 'notify-admin-withdraw' && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
-        const method = w.currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT (BEP20)';
+        const method = 'USDT (BEP20)';
         await sendMessage(botToken, ADMIN_TELEGRAM_ID,
           `🧠💰 <b>New Withdrawal Request</b>\n\n` +
           `👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})\n` +
@@ -257,8 +273,8 @@ Deno.serve(async (req: Request) => {
       // Notify withdraw approval to user + payment channel
       if (action === 'notify-withdraw-approve' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
-        const method = w.currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT (BEP20)';
-        const explorerUrl = w.currency === 'GRAM' ? `https://tonviewer.com/tx/${w.tx_id}` : `https://bscscan.com/tx/${w.tx_id}`;
+        const method = 'USDT (BEP20)';
+        const explorerUrl = `https://bscscan.com/tx/${w.tx_id}`;
 
         // Send to user
         await sendMessage(botToken, bodyData.user_telegram_id,
@@ -296,7 +312,7 @@ Deno.serve(async (req: Request) => {
       // Notify withdraw rejection to user
       if (action === 'notify-withdraw-reject' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
-        const method = w.currency === 'GRAM' ? 'Gram (ex TON)' : 'USDT (BEP20)';
+        const method = 'USDT (BEP20)';
         await sendMessage(botToken, bodyData.user_telegram_id,
           `❌ <b>Withdrawal Rejected</b>\n\n` +
           `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
@@ -332,7 +348,7 @@ Deno.serve(async (req: Request) => {
           `📺 Watch ads to earn points\n` +
           `🎮 Play 8+ puzzle games\n` +
           `👥 Invite friends for 120 pts + 5% lifetime commission\n` +
-          `💳 Withdraw to USDT or Gram (ex TON)\n\n` +
+          `💳 Withdraw to USDT (BEP20)\n\n` +
           `<b>Your referral link:</b>\n` +
           `<code>https://t.me/Brain_cashbot/braincash?startapp=ref_${referralCode}</code>`,
           { inline_keyboard: [
@@ -367,6 +383,21 @@ Deno.serve(async (req: Request) => {
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      // Notify referral became active (10 ads watched)
+      if (action === 'notify-referral-active' && bodyData.user_telegram_id && bodyData.referral_data) {
+        const r = bodyData.referral_data;
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `🎉 <b>Referral Became Active!</b>\n\n` +
+          `👤 <b>Referred user:</b> ${r.referred_name || 'Anonymous'}\n` +
+          `📺 Watched 10 ads — referral is now active!\n` +
+          `💰 <b>Ad bonus:</b> +${r.ad_bonus || 70} pts\n` +
+          `🏆 <b>Total earned from this referral:</b> ${r.total_earned || 130} pts\n\n` +
+          `Keep inviting more friends to earn bigger rewards!`,
+          { inline_keyboard: [[{ text: "🧠 Open Brain Cash", web_app: { url: MINI_APP_URL } }]] }
+        );
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
     } catch { /* Not JSON action, continue to Telegram update */ }
 
     // ── Telegram Update Handling ──────────────────────────────────────────
@@ -394,7 +425,7 @@ Deno.serve(async (req: Request) => {
         `📺 Watch ads to earn points\n` +
         `🎮 Play 8+ puzzle games\n` +
         `👥 Invite friends: 120 pts + 5% lifetime commission\n` +
-        `💳 Withdraw to USDT or Gram (ex TON)\n\n` +
+        `💳 Withdraw to USDT (BEP20)\n\n` +
         `🔗 <b>Your referral link:</b>\n<code>${referralLink}</code>`;
 
       // Always send text message (photo URL hosting is unreliable)
@@ -435,14 +466,14 @@ Deno.serve(async (req: Request) => {
     // /withdraw
     if (body.message?.text?.startsWith("/withdraw")) {
       const chatId = body.message.chat.id;
-      await sendMessage(botToken, chatId, `💸 <b>Withdraw Your Earnings</b>\n\n💰 <b>Minimum:</b> $0.05 USDT (500 points)\n💱 <b>Currencies:</b> USDT (BEP20), Gram (ex TON)\n📉 <b>Fee:</b> $0.01 + 5%\n\n<i>Open the Mini App to withdraw your earnings.</i>`, getMainKeyboard());
+      await sendMessage(botToken, chatId, `💸 <b>Withdraw Your Earnings</b>\n\n💰 <b>Minimum:</b> $0.05 USDT (500 points)\n💱 <b>Currency:</b> USDT (BEP20) only\n📉 <b>Fee:</b> $0.01 + 5%\n\n<i>Open the Mini App to withdraw your earnings.</i>`, getMainKeyboard());
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // /help
     if (body.message?.text?.startsWith("/help")) {
       const chatId = body.message.chat.id;
-      await sendMessage(botToken, chatId, `❓ <b>Brain Cash Help</b>\n\n🎮 <b>How to Earn:</b>\n• Play games and earn 4-8 points per game\n• Watch ads for instant points\n• Complete Telegram tasks\n• Invite friends for bonus + commission\n\n💰 <b>Points Value:</b>\n500 points = $0.05 USDT\n\n💳 <b>Withdrawal:</b>\nMinimum $0.05 to USDT or Gram (ex TON) wallet\n\n📢 <b>Official Channel:</b> @brain_cach_channel\n💳 <b>Payment Channel:</b> @braincashpayment`, getMainKeyboard());
+      await sendMessage(botToken, chatId, `❓ <b>Brain Cash Help</b>\n\n🎮 <b>How to Earn:</b>\n• Play games and earn 4-8 points per game\n• Watch ads for instant points\n• Complete Telegram tasks\n• Invite friends for bonus + commission\n\n💰 <b>Points Value:</b>\n500 points = $0.05 USDT\n\n💳 <b>Withdrawal:</b>\nMinimum $0.05 to USDT (BEP20) wallet\n\n📢 <b>Official Channel:</b> @brain_cach_channel\n💳 <b>Payment Channel:</b> @braincashpayment`, getMainKeyboard());
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -465,7 +496,7 @@ Deno.serve(async (req: Request) => {
       } else if (callbackData === "history") {
         await sendMessage(botToken, chatId!, `📜 <b>Your History</b>\n\nView your complete transaction history in the Mini App.`, { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] });
       } else if (callbackData === "withdraw") {
-        await sendMessage(botToken, chatId!, `💸 <b>Withdraw</b>\n\n💰 <b>Minimum:</b> $0.05 USDT\n💱 <b>Currencies:</b> USDT (BEP20), Gram (ex TON)\n📉 <b>Fee:</b> $0.01 + 5%\n\nOpen the Mini App to withdraw.`, { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] });
+        await sendMessage(botToken, chatId!, `💸 <b>Withdraw</b>\n\n💰 <b>Minimum:</b> $0.05 USDT\n💱 <b>Currency:</b> USDT (BEP20) only\n📉 <b>Fee:</b> $0.01 + 5%\n\nOpen the Mini App to withdraw.`, { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] });
       }
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

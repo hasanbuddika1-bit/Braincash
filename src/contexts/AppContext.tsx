@@ -477,6 +477,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           referred_user_id: user.id,
           amount: amount,
         });
+
+        // Check if referral just became active (10 ads watched) and pay bonus + notify
+        const { data: referral } = await supabase
+          .from('referrals')
+          .select('referrer_id, referred_ad_count, ad_bonus_paid, join_bonus')
+          .eq('referred_id', user.id)
+          .maybeSingle();
+
+        if (referral && (referral.referred_ad_count || 0) >= 10 && !referral.ad_bonus_paid) {
+          // Pay 70 pts ad bonus to referrer
+          await supabase.rpc('add_points', { user_id: referral.referrer_id, amount: 70 });
+          await supabase
+            .from('referrals')
+            .update({
+              ad_bonus_paid: true,
+              ad_bonus: 70,
+              total_commission: (referral.join_bonus || 20) + 40 + 70,
+            })
+            .eq('referred_id', user.id);
+
+          // Send bot notification to referrer
+          try {
+            const { data: referrerUser } = await supabase
+              .from('users')
+              .select('telegram_id')
+              .eq('id', referral.referrer_id)
+              .maybeSingle();
+
+            if (referrerUser) {
+              const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+              await fetch(botUrl, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'notify-referral-active',
+                  user_telegram_id: referrerUser.telegram_id,
+                  referral_data: {
+                    referred_name: user.first_name || user.username || 'Anonymous',
+                    ad_bonus: 70,
+                    total_earned: (referral.join_bonus || 20) + 40 + 70,
+                  },
+                }),
+              });
+            }
+          } catch (e) { console.error('Referral active notification failed:', e); }
+        }
       } catch (e) { console.error('Referral commission failed:', e); }
 
       // Record activity

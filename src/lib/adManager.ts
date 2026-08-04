@@ -98,7 +98,6 @@ export async function canWatchAd(userId: string, network: AdNetwork, config: AdN
 
 function loadScript(src: string, attrs?: Record<string, string>): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Check if already loaded
     const existing = document.querySelector(`script[src="${src}"]`);
     if (existing) {
       if (existing.getAttribute('data-loaded') === 'true') { resolve(); return; }
@@ -116,67 +115,90 @@ function loadScript(src: string, attrs?: Record<string, string>): Promise<void> 
   });
 }
 
-async function ensureAdsgram(blockId: string): Promise<void> {
-  // Wait for SDK to be available (loaded via index.html script tag)
+async function ensureAdsgram(blockId: string): Promise<boolean> {
   let tries = 0;
   while (!window.Adsgram && tries < 50) {
     await new Promise(r => setTimeout(r, 100));
     tries++;
   }
   if (!window.Adsgram) {
-    // Fallback: load dynamically
-    await loadScript('https://sad.adsgram.ai/js/sad.min.js');
+    try {
+      await loadScript('https://sad.adsgram.ai/js/sad.min.js');
+    } catch {
+      return false;
+    }
   }
   if (!adsgramController && window.Adsgram) {
-    adsgramController = window.Adsgram.init({ blockId });
+    try {
+      adsgramController = window.Adsgram.init({ blockId });
+    } catch {
+      return false;
+    }
   }
+  return adsgramController != null;
 }
 
-async function ensureMonetag(zoneId: string): Promise<void> {
-  // Wait for SDK to be available (loaded via index.html script tag)
+async function ensureMonetag(zoneId: string): Promise<boolean> {
   let tries = 0;
   while (!window[`show_${zoneId}`] && tries < 50) {
     await new Promise(r => setTimeout(r, 100));
     tries++;
   }
   if (!window[`show_${zoneId}`]) {
-    // Fallback: load dynamically
-    await loadScript('https://libtl.com/sdk.js', {
-      'data-zone': zoneId,
-      'data-sdk': `show_${zoneId}`,
-    });
-    // Wait for function to appear
-    tries = 0;
-    while (!window[`show_${zoneId}`] && tries < 30) {
-      await new Promise(r => setTimeout(r, 100));
-      tries++;
+    try {
+      await loadScript('https://libtl.com/sdk.js', {
+        'data-zone': zoneId,
+        'data-sdk': `show_${zoneId}`,
+      });
+      tries = 0;
+      while (!window[`show_${zoneId}`] && tries < 30) {
+        await new Promise(r => setTimeout(r, 100));
+        tries++;
+      }
+    } catch {
+      return false;
     }
   }
+  return window[`show_${zoneId}`] != null;
 }
 
-async function ensureGigapub(scriptId: string): Promise<void> {
-  // Wait for SDK to be available (loaded via index.html script tag)
+async function ensureGigapub(scriptId: string): Promise<boolean> {
   let tries = 0;
   while (!window.showGiga && tries < 50) {
     await new Promise(r => setTimeout(r, 100));
     tries++;
   }
   if (!window.showGiga) {
-    // Fallback: load dynamically
-    await loadScript(`https://ad.gigapub.tech/script?id=${scriptId}`);
-    tries = 0;
-    while (!window.showGiga && tries < 30) {
-      await new Promise(r => setTimeout(r, 100));
-      tries++;
+    try {
+      await loadScript(`https://ad.gigapub.tech/script?id=${scriptId}`);
+      tries = 0;
+      while (!window.showGiga && tries < 30) {
+        await new Promise(r => setTimeout(r, 100));
+        tries++;
+      }
+    } catch {
+      return false;
     }
   }
+  return window.showGiga != null;
 }
 
 // ── Ad Show Functions ────────────────────────────────────────────────────
+// Returns { completed: boolean, watchedSeconds: number, opened: boolean }
+// If ad didn't open (SDK failure), opened = false and completed = false
 
-export async function showAdsgramAd(blockId: string): Promise<{ watchedSeconds: number; completed: boolean }> {
-  await ensureAdsgram(blockId);
-  if (!adsgramController) throw new Error('Adsgram SDK not initialized');
+export interface AdShowResult {
+  watchedSeconds: number;
+  completed: boolean;
+  opened: boolean;
+  error?: string;
+}
+
+export async function showAdsgramAd(blockId: string): Promise<AdShowResult> {
+  const sdkReady = await ensureAdsgram(blockId);
+  if (!sdkReady || !adsgramController) {
+    return { watchedSeconds: 0, completed: false, opened: false, error: 'Adsgram SDK not available' };
+  }
 
   const startTime = Date.now();
   let completed = false;
@@ -190,26 +212,62 @@ export async function showAdsgramAd(blockId: string): Promise<{ watchedSeconds: 
       adError = err?.message || 'Ad show failed';
       resolve();
     });
-
-    // Safety timeout: resolve after 120s max
     setTimeout(() => resolve(), 120000);
   });
 
   const watchedSeconds = Math.floor((Date.now() - startTime) / 1000);
-  return { watchedSeconds, completed: completed && !adError };
+  return { watchedSeconds, completed: completed && !adError, opened: true, error: adError || undefined };
 }
 
-export async function showMonetagAd(zoneId: string): Promise<void> {
-  await ensureMonetag(zoneId);
+export async function showMonetagAd(zoneId: string): Promise<AdShowResult> {
+  const sdkReady = await ensureMonetag(zoneId);
   const fn = window[`show_${zoneId}`];
-  if (!fn) throw new Error('Monetag SDK not initialized');
-  await fn();
+  if (!sdkReady || !fn) {
+    return { watchedSeconds: 0, completed: false, opened: false, error: 'Monetag SDK not available' };
+  }
+
+  const startTime = Date.now();
+  let completed = false;
+  let adError: string | null = null;
+
+  await new Promise<void>((resolve) => {
+    fn().then(() => {
+      completed = true;
+      resolve();
+    }).catch((err: any) => {
+      adError = err?.message || 'Ad show failed';
+      resolve();
+    });
+    setTimeout(() => resolve(), 120000);
+  });
+
+  const watchedSeconds = Math.floor((Date.now() - startTime) / 1000);
+  return { watchedSeconds, completed: completed && !adError, opened: true, error: adError || undefined };
 }
 
-export async function showGigapubAd(scriptId: string): Promise<void> {
-  await ensureGigapub(scriptId);
-  if (!window.showGiga) throw new Error('Gigapub SDK not initialized');
-  await window.showGiga();
+export async function showGigapubAd(scriptId: string): Promise<AdShowResult> {
+  const sdkReady = await ensureGigapub(scriptId);
+  if (!sdkReady || !window.showGiga) {
+    return { watchedSeconds: 0, completed: false, opened: false, error: 'Gigapub SDK not available' };
+  }
+
+  const startTime = Date.now();
+  let completed = false;
+  let adError: string | null = null;
+
+  await new Promise<void>((resolve) => {
+    window.showGiga().then(() => {
+      completed = true;
+      resolve();
+    }).catch((err: any) => {
+      adError = err?.message || 'Ad show failed';
+      resolve();
+    });
+    setTimeout(() => resolve(), 120000);
+  });
+
+  const watchedSeconds = Math.floor((Date.now() - startTime) / 1000);
+  return { watchedSeconds, completed: completed && !adError, opened: true, error: adError || undefined };
 }
 
 // ── Record Ad View ──────────────────────────────────────────────────────
@@ -221,6 +279,10 @@ export async function recordAdView(userId: string, network: AdNetwork, reward: n
     ad_type: adType,
     reward,
   });
+  // Also increment referred_ad_count for referral tracking
+  try {
+    await supabase.rpc('increment_referred_ad_count', { watcher_user_id: userId });
+  } catch (e) { console.error('increment_referred_ad_count failed:', e); }
 }
 
 export function pickRandomNetwork(exclude?: AdNetwork): AdNetwork {
@@ -229,22 +291,30 @@ export function pickRandomNetwork(exclude?: AdNetwork): AdNetwork {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// Show a random ad from any of the 3 networks
-export async function showRandomAd(): Promise<AdNetwork> {
+// Show a random ad from any of the 3 networks - returns result with opened flag
+export async function showRandomAd(): Promise<{ network: AdNetwork; result: AdShowResult }> {
   const network = pickRandomNetwork();
+  let result: AdShowResult;
   if (network === 'adsgram') {
-    await showAdsgramAd('35762');
+    result = await showAdsgramAd('35762');
   } else if (network === 'monetag') {
-    await showMonetagAd('11230846');
+    result = await showMonetagAd('11230846');
   } else {
-    await showGigapubAd('7151');
+    result = await showGigapubAd('7151');
   }
-  return network;
+  return { network, result };
 }
 
-// Show a rewarded Adsgram ad (30s, block 35762)
-export async function showRewardedAd(): Promise<void> {
-  await showAdsgramAd('35762');
+// Show ad from a specific network - returns AdShowResult
+export async function showAdFromNetwork(network: AdNetwork): Promise<AdShowResult> {
+  if (network === 'adsgram') return showAdsgramAd('35762');
+  if (network === 'monetag') return showMonetagAd('11230846');
+  return showGigapubAd('7151');
+}
+
+// Show a rewarded Adsgram ad
+export async function showRewardedAd(): Promise<AdShowResult> {
+  return showAdsgramAd('35762');
 }
 
 // Get the block ID for a network
@@ -252,15 +322,4 @@ export function getNetworkBlockId(network: AdNetwork): string {
   if (network === 'adsgram') return '35762';
   if (network === 'monetag') return '11230846';
   return '7151';
-}
-
-// Show ad from a specific network
-export async function showAdFromNetwork(network: AdNetwork): Promise<void> {
-  if (network === 'adsgram') {
-    await showAdsgramAd('35762');
-  } else if (network === 'monetag') {
-    await showMonetagAd('11230846');
-  } else {
-    await showGigapubAd('7151');
-  }
 }
