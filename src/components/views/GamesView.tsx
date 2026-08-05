@@ -2,16 +2,53 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Trophy, HelpCircle, X, Star, Zap, Heart, Play, Target, Award, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Trophy, HelpCircle, X, Star, Zap, Heart, Play, Target, Award, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 import { showAdsgramAd, showMonetagAd, showGigapubAd, showRandomAd, showAdFromNetwork, pickRandomNetwork, type AdNetwork } from '../../lib/adManager';
 
 const MAX_CHANCES = 5;
+const MIN_AD_SECONDS = 10;
 const AD_PROVIDERS: { id: AdNetwork; name: string; logo: string }[] = [
   { id: 'adsgram', name: 'Adsgram AI', logo: '🤖' },
   { id: 'monetag', name: 'Monetag', logo: '📊' },
   { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
 ];
+
+// ── Ad Error Modal ──────────────────────────────────────────────────────────
+
+interface GameAdErrorProps {
+  message?: string;
+  onRetry: () => void;
+  onClose: () => void;
+}
+
+function GameAdErrorModal({ message, onRetry, onClose }: GameAdErrorProps) {
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/95 px-4">
+      <div className="w-full max-w-sm">
+        <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(0,0,0,0.3))' }}>
+          <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+            <Clock className="text-red-400" size={40} />
+          </div>
+          <p className="text-white font-bold text-xl mb-2">Ad Not Completed</p>
+          <p className="text-gray-400 text-sm mb-6">{message || 'You must watch the full 10 seconds to earn rewards.'}</p>
+          <button
+            onClick={onRetry}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold mb-3"
+          >
+            Try Again
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-xl bg-white/10 text-gray-300 font-semibold"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const GAME_CHALLENGE_TIERS = [
   { rounds: 10, reward: 10 },
@@ -168,32 +205,50 @@ export function GamesView() {
 
   const [showGameAd, setShowGameAd] = useState(false);
   const [gameAdProvider, setGameAdProvider] = useState<AdNetwork | null>(null);
+  const [adError, setAdError] = useState(false);
+  const [adErrorMsg, setAdErrorMsg] = useState('');
+  const [pendingGame, setPendingGame] = useState<typeof games[0] | null>(null);
 
-  const handleGameClick = async (game: typeof games[0]) => {
-    haptic('light');
-    const chances = gameChances[game.id] ?? MAX_CHANCES;
-    if (chances <= 0) {
-      haptic('error');
-      return;
-    }
-
-    // Show random ad from 3 networks before game starts
+  async function playGameAd(game: typeof games[0]) {
     const network = pickRandomNetwork();
     setGameAdProvider(network);
     setShowGameAd(true);
     haptic('light');
 
     try {
-      await showAdFromNetwork(network);
-    } catch {
-      // Silent fail - proceed to game anyway
-    } finally {
+      const result = await showAdFromNetwork(network);
       setShowGameAd(false);
       setGameAdProvider(null);
-    }
 
-    setSelectedGame(game);
-    setCurrentView('game');
+      if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
+        haptic('error');
+        setAdErrorMsg(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
+        setAdError(true);
+        return;
+      }
+
+      // Ad completed successfully - start game
+      haptic('success');
+      setSelectedGame(game);
+      setCurrentView('game');
+    } catch {
+      setShowGameAd(false);
+      setGameAdProvider(null);
+      haptic('error');
+      setAdErrorMsg('Ad failed to load. Please try again.');
+      setAdError(true);
+    }
+  }
+
+  const handleGameClick = (game: typeof games[0]) => {
+    haptic('light');
+    const chances = gameChances[game.id] ?? MAX_CHANCES;
+    if (chances <= 0) {
+      haptic('error');
+      return;
+    }
+    setPendingGame(game);
+    playGameAd(game);
   };
 
   const SUPPORTED_TYPES = ['memory', 'connect', 'color', 'wordguess', 'numberguess', 'wordtype', 'math', 'drawing'];
@@ -331,6 +386,15 @@ export function GamesView() {
         })}
       </div>
 
+      {/* Ad Error Modal */}
+      {adError && (
+        <GameAdErrorModal
+          message={adErrorMsg}
+          onRetry={() => { setAdError(false); if (pendingGame) playGameAd(pendingGame); }}
+          onClose={() => { setAdError(false); setPendingGame(null); }}
+        />
+      )}
+
       {/* Game Ad Overlay */}
       {showGameAd && gameAdProvider && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in">
@@ -443,19 +507,21 @@ export function GamePlayView() {
     haptic('light');
     setAdPlaying(true);
     setAdTimer(15);
-    // Show real ad from random network
     showRandomAd()
-      .then(() => { /* ad completed */ })
-      .catch(() => { /* ad failed, still give chance */ })
-      .finally(() => {
+      .then(({ result }) => {
         setAdPlaying(false);
         setAdTimer(0);
-        // Refill 1 chance
+        if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
+          haptic('error');
+          setAdErrorMsg(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
+          setAdError(true);
+          return;
+        }
+        // Ad completed - give +1 chance
         const newChances = chancesLeft + 1;
         setChancesLeft(newChances);
         setShowAdRefill(false);
         haptic('success');
-        // Save to DB
         if (user && selectedGame) {
           const today = new Date().toISOString().split('T')[0];
           supabase
@@ -465,6 +531,13 @@ export function GamePlayView() {
             .eq('game_id', selectedGame.id)
             .then();
         }
+      })
+      .catch(() => {
+        setAdPlaying(false);
+        setAdTimer(0);
+        haptic('error');
+        setAdErrorMsg('Ad failed to load. Please try again.');
+        setAdError(true);
       });
   }
 
@@ -558,24 +631,42 @@ export function GamePlayView() {
 
       {/* Game Area */}
       <div className="flex-1 overflow-auto">
-        {selectedGame.game_type === 'memory'      && <GameMemory onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'connect'     && <GameTileConnect onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'color'       && <GameColorMatch onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'wordguess'   && <GameWordGuess onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'numberguess' && <GameNumberGuess onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'wordtype'    && <GameWordType onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'math'        && <GameMath onRoundComplete={consumeChance} />}
-        {selectedGame.game_type === 'drawing'     && <GameDrawing onRoundComplete={consumeChance} />}
+        {selectedGame.game_type === 'memory'      && <GameMemory onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'connect'     && <GameTileConnect onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'color'       && <GameColorMatch onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'wordguess'   && <GameWordGuess onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'numberguess' && <GameNumberGuess onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'wordtype'    && <GameWordType onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'math'        && <GameMath onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'drawing'     && <GameDrawing onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
       </div>
 
       {showTutorial && <TutorialOverlay gameType={selectedGame.game_type} onClose={() => setShowTutorial(false)} />}
+
+      {/* Ad Error Modal for reward claim */}
+      {rewardAdError && (
+        <GameAdErrorModal
+          message={rewardAdErrorMsg}
+          onRetry={() => setRewardAdError(false)}
+          onClose={() => setRewardAdError(false)}
+        />
+      )}
+
+      {/* Ad Error Modal for ad refill */}
+      {adError && (
+        <GameAdErrorModal
+          message={adErrorMsg}
+          onRetry={() => { setAdError(false); startAdRefill(); }}
+          onClose={() => { setAdError(false); setShowAdRefill(false); }}
+        />
+      )}
     </div>
   );
 }
 
 // ── useGameReward hook ───────────────────────────────────────────────────────
 
-function useGameReward(onRoundComplete?: () => void) {
+function useGameReward(onRoundComplete?: () => void, onAdError?: (msg: string) => void) {
   const { user, addPoints, haptic } = useApp();
   const { success: showSuccess } = useToast();
   const [pendingReward, setPendingReward] = useState<number | null>(null);
@@ -603,27 +694,37 @@ function useGameReward(onRoundComplete?: () => void) {
 
   const claimReward = useCallback(async () => {
     if (pendingReward !== null) {
-      // Show random ad before claiming reward
-      try { await showRandomAd(); } catch { /* proceed anyway */ }
+      try {
+        const { result } = await showRandomAd();
+        if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
+          haptic('error');
+          onAdError?.(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
+          return;
+        }
+      } catch {
+        haptic('error');
+        onAdError?.('Ad failed to load. Please try again.');
+        return;
+      }
       await addPoints(pendingReward);
       showSuccess(`+${pendingReward} Points!`, 'Reward claimed!');
       setPendingReward(null);
       setPendingScore(undefined);
     }
-  }, [pendingReward, addPoints, showSuccess]);
+  }, [pendingReward, addPoints, showSuccess, onAdError]);
 
   return { completeLevel, claimReward, pendingReward, pendingScore };
 }
 
 // ── GameMemory ───────────────────────────────────────────────────────────────
 
-function GameMemory({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameMemory({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [cards, setCards] = useState<string[]>([]);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete, onAdError);
 
   const emojis = ['🧠', '💎', '💰', '🎮', '🏆', '⭐', '🚀', '💫'];
 
@@ -683,12 +784,12 @@ function GameMemory({ onRoundComplete }: { onRoundComplete?: () => void }) {
 
 // ── GameTileConnect ──────────────────────────────────────────────────────────
 
-function GameTileConnect({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameTileConnect({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [tiles, setTiles] = useState<{ id: number; emoji: string; matched: boolean }[]>([]);
   const [selectedTile, setSelectedTile] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete, onAdError);
 
   const emojis = ['💎', '💰', '🧠', '⚡', '🚀', '⭐', '🎮', '🏆'];
 
@@ -740,7 +841,7 @@ function GameTileConnect({ onRoundComplete }: { onRoundComplete?: () => void }) 
 
 // ── GameColorMatch ───────────────────────────────────────────────────────────
 
-function GameColorMatch({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameColorMatch({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const colors = [
     { name: 'Red', hex: '#ef4444' }, { name: 'Orange', hex: '#f97316' }, { name: 'Yellow', hex: '#eab308' },
     { name: 'Green', hex: '#22c55e' }, { name: 'Blue', hex: '#3b82f6' }, { name: 'Purple', hex: '#a855f7' }, { name: 'Pink', hex: '#ec4899' },
@@ -752,7 +853,7 @@ function GameColorMatch({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [gameOver, setGameOver] = useState(false);
   const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
 
   useEffect(() => { newRound(); }, []);
   useEffect(() => {
@@ -802,7 +903,7 @@ function GameColorMatch({ onRoundComplete }: { onRoundComplete?: () => void }) {
 
 const WORD_LIST = ['BRAIN', 'MONEY', 'GAMES', 'POINT', 'EARNS', 'COINS', 'SMART', 'BONUS', 'PRIZE', 'TOKEN', 'SPEED', 'QUICK', 'LUCKY', 'POWER', 'LIGHT', 'TRACK', 'SCORE', 'QUEST', 'FLASH', 'GLOBE'];
 
-function GameWordGuess({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameWordGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [target, setTarget] = useState(() => WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [current, setCurrent] = useState('');
@@ -810,7 +911,7 @@ function GameWordGuess({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [won, setWon] = useState(false);
   const MAX_GUESSES = 6;
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
 
   const keyboard = ['QWERTYUIOP'.split(''), 'ASDFGHJKL'.split(''), ['⌫', ...'ZXCVBNM'.split(''), '↵']];
 
@@ -883,14 +984,14 @@ function GameWordGuess({ onRoundComplete }: { onRoundComplete?: () => void }) {
 
 // ── GameNumberGuess ─────────────────────────────────────────────────────────────
 
-function GameNumberGuess({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameNumberGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [target, setTarget] = useState(() => Math.floor(Math.random() * 100) + 1);
   const [guess, setGuess] = useState('');
   const [guesses, setGuesses] = useState<number[]>([]);
   const [hint, setHint] = useState<'higher' | 'lower' | 'correct' | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
 
   function handleGuess() {
     const num = parseInt(guess);
@@ -932,7 +1033,7 @@ function GameNumberGuess({ onRoundComplete }: { onRoundComplete?: () => void }) 
 
 const TYPE_WORDS = ['brain', 'cash', 'money', 'games', 'points', 'earn', 'play', 'bonus', 'prize', 'fast', 'quick', 'type', 'word', 'game', 'win', 'score', 'reward', 'token', 'speed', 'power', 'light', 'smart', 'level', 'quest'];
 
-function GameWordType({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameWordType({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [words, setWords] = useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -942,7 +1043,7 @@ function GameWordType({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
 
   useEffect(() => { const shuffled = [...TYPE_WORDS].sort(() => Math.random() - 0.5).slice(0, 10); setWords(shuffled); }, []);
   useEffect(() => {
@@ -985,7 +1086,7 @@ function GameWordType({ onRoundComplete }: { onRoundComplete?: () => void }) {
 
 // ── GameMath ───────────────────────────────────────────────────────────────────
 
-function GameMath({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameMath({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [problem, setProblem] = useState({ a: 0, b: 0, op: '+' as '+' | '-' | '×', answer: 0 });
   const [input, setInput] = useState('');
   const [score, setScore] = useState(0);
@@ -994,7 +1095,7 @@ function GameMath({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
 
   useEffect(() => { newProblem(); }, []);
   useEffect(() => {
@@ -1049,14 +1150,14 @@ function GameMath({ onRoundComplete }: { onRoundComplete?: () => void }) {
 
 const SHAPES = ['Circle', 'Square', 'Triangle', 'Star', 'Heart', 'Smiley'];
 
-function GameDrawing({ onRoundComplete }: { onRoundComplete?: () => void }) {
+function GameDrawing({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
   const [targetShape, setTargetShape] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
 
   useEffect(() => { newShape(); }, []);
 
