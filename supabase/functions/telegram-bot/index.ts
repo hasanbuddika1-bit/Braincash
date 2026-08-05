@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const ADMIN_TELEGRAM_ID = 5419054691;
 const WELCOME_PHOTO_FILENAME = 'files_10647109-2026-06-19T11-55-14-664Z-file_00000000bac07208b0ae09c6a7b5a75b.webp';
-const MINI_APP_URL = "https://t.me/Brain_cashbot/braincash";
+const MINI_APP_URL = "https://t.me/Brain_cashbot/braincash?startapp";
 const COMMUNITY_CHANNEL = "https://t.me/brain_cach_channel";
 const PAYMENT_CHANNEL = "https://t.me/braincashpayment";
 
@@ -203,6 +203,28 @@ Deno.serve(async (req: Request) => {
       const bodyData = JSON.parse(bodyText);
       const action = bodyData.action;
 
+      // Setup webhook (called manually to enable bot command replies)
+      if (action === 'setup-webhook') {
+        const functionUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/telegram-bot`;
+        const res = await (await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: functionUrl, allowed_updates: ['message', 'callback_query', 'my_chat_member', 'chat_member'] }),
+        })).json();
+        return new Response(JSON.stringify(res), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Delete webhook (stop receiving updates)
+      if (action === 'delete-webhook') {
+        const res = await (await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook`)).json();
+        return new Response(JSON.stringify(res), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Get webhook info
+      if (action === 'webhook-info') {
+        const res = await (await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`)).json();
+        return new Response(JSON.stringify(res), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       // Check membership
       if (action === 'check_membership') {
         const isMember = await getChatMember(botToken, bodyData.chat_id, bodyData.user_id);
@@ -305,10 +327,22 @@ Deno.serve(async (req: Request) => {
         const method = 'USDT (BEP20)';
         const explorerUrl = `https://bscscan.com/tx/${w.tx_id}`;
 
+        // Try to get real user name from Telegram
+        let userName = w.user_name || 'Unknown';
+        try {
+          const chatRes = await (await fetch(`https://api.telegram.org/bot${botToken}/getChat?chat_id=${bodyData.user_telegram_id}`)).json();
+          if (chatRes.ok) {
+            const fn = chatRes.result.first_name || '';
+            const ln = chatRes.result.last_name || '';
+            const un = chatRes.result.username ? '@' + chatRes.result.username : '';
+            userName = [fn, ln, un].filter(Boolean).join(' ') || userName;
+          }
+        } catch {}
+
         // Send to user
         await sendMessage(botToken, bodyData.user_telegram_id,
           `✅ <b>Withdrawal Approved!</b>\n\n` +
-          `👤 <b>User:</b> ${w.user_name || 'Unknown'}\n` +
+          `👤 <b>User:</b> ${userName}\n` +
           `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
           `💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n` +
           `💳 <b>Method:</b> ${method}\n` +
@@ -325,13 +359,18 @@ Deno.serve(async (req: Request) => {
         try {
           await sendMessage(botToken, PAYMENT_CHANNEL.replace('https://t.me/', '@'),
             `✅ <b>Withdrawal Approved</b>\n\n` +
-            `👤 <b>User:</b> ${w.user_name || 'Unknown'}\n` +
+            `👤 <b>User:</b> ${userName} (ID: ${bodyData.user_telegram_id})\n` +
+            `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
             `💵 <b>Amount:</b> ${w.amount.toFixed(4)}\n` +
             `💳 <b>Method:</b> ${method}\n` +
             `💸 <b>Fee:</b> ${w.fee.toFixed(4)}\n` +
             `✅ <b>Net balance:</b> ${w.net_amount.toFixed(4)} ${method}\n` +
+            `📍 <b>Address:</b> <code>${w.wallet_address || 'N/A'}</code>\n` +
             `🔗 <b>TX ID:</b> <code>${w.tx_id}</code>`,
-            { inline_keyboard: [[{ text: "🔍 View Transaction", url: explorerUrl }]] }
+            { inline_keyboard: [
+              [{ text: "🔍 View Transaction", url: explorerUrl }],
+              [{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }],
+            ]}
           );
         } catch (e) { console.error('Payment channel send failed:', e); }
 

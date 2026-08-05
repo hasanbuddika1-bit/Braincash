@@ -77,7 +77,7 @@ export function AdminView() {
 // ── AdminStats ──────────────────────────────────────────────────────────────
 
 function AdminStats() {
-  const [stats, setStats] = useState({ totalUsers: 0, activeUsers: 0, suspendedUsers: 0, totalPoints: 0, totalWithdrawn: 0, pendingWithdrawals: 0, totalTasks: 0, todaySignups: 0 });
+  const [stats, setStats] = useState({ totalUsers: 0, onlineUsers: 0, activeUsers: 0, suspendedUsers: 0, totalPoints: 0, totalWithdrawn: 0, pendingWithdrawals: 0, totalTasks: 0, todaySignups: 0 });
   const { haptic } = useApp();
 
   useEffect(() => { loadStats(); }, []);
@@ -85,6 +85,7 @@ function AdminStats() {
   async function loadStats() {
     try {
       const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
+      const { count: onlineUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).gt('last_active', new Date(Date.now() - 5 * 60 * 1000).toISOString());
       const { count: activeUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).gt('last_active', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
       const { count: suspendedUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_suspended', true);
       const { data: pointsData } = await supabase.from('users').select('points, total_withdrawn');
@@ -93,7 +94,7 @@ function AdminStats() {
       const { count: pendingWithdrawals } = await supabase.from('withdrawals').select('*', { count: 'exact', head: true }).eq('status', 'pending');
       const { count: totalTasks } = await supabase.from('tasks').select('*', { count: 'exact', head: true });
       const { count: todaySignups } = await supabase.from('users').select('*', { count: 'exact', head: true }).gte('created_at', new Date().toISOString().split('T')[0]);
-      setStats({ totalUsers: totalUsers || 0, activeUsers: activeUsers || 0, suspendedUsers: suspendedUsers || 0, totalPoints, totalWithdrawn, pendingWithdrawals: pendingWithdrawals || 0, totalTasks: totalTasks || 0, todaySignups: todaySignups || 0 });
+      setStats({ totalUsers: totalUsers || 0, onlineUsers: onlineUsers || 0, activeUsers: activeUsers || 0, suspendedUsers: suspendedUsers || 0, totalPoints, totalWithdrawn, pendingWithdrawals: pendingWithdrawals || 0, totalTasks: totalTasks || 0, todaySignups: todaySignups || 0 });
     } catch (error) { console.error('Error loading stats:', error); }
   }
 
@@ -101,10 +102,11 @@ function AdminStats() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <StatCard icon={<Users className="text-neon-blue" />} value={stats.totalUsers.toLocaleString()} label="Total Users" />
+        <StatCard icon={<div className="w-4 h-4 rounded-full bg-green-400 animate-pulse" />} value={stats.onlineUsers.toLocaleString()} label="Online Now" />
         <StatCard icon={<TrendingUp className="text-neon-green" />} value={stats.todaySignups.toLocaleString()} label="Today Signups" />
         <StatCard icon={<AlertTriangle className="text-red-400" />} value={stats.suspendedUsers.toLocaleString()} label="Suspended" />
         <StatCard icon={<Gift className="text-neon-purple" />} value={stats.totalPoints.toLocaleString()} label="Total Points" />
-        <StatCard icon={<DollarSign className="text-neon-gold" />} value={`$${stats.totalWithdrawn.toFixed(2)}`} label="Total Withdrawn" />
+        <StatCard icon={<DollarSign className="text-neon-gold" />} value={`${stats.totalWithdrawn.toFixed(2)}`} label="Total Withdrawn" />
         <StatCard icon={<Clock className="text-yellow-400" />} value={stats.pendingWithdrawals.toString()} label="Pending Withdrawals" />
       </div>
       <button onClick={() => { haptic('light'); loadStats(); }} className="w-full py-3 bg-white/10 rounded-xl text-white font-semibold flex items-center justify-center gap-2">
@@ -477,6 +479,7 @@ function AdminWithdrawals() {
           <div className="flex items-start justify-between mb-2">
             <div>
               <p className="text-white font-semibold">{w.users?.first_name || w.users?.username || 'Unknown'}</p>
+              <p className="text-gray-400 text-xs">TG ID: {w.users?.telegram_id || 'N/A'}</p>
               <p className="text-gray-400 text-xs">#{w.withdraw_number} • ${w.amount.toFixed(4)} {w.currency}</p>
               <p className="text-gray-500 text-xs">Fee: ${w.fee.toFixed(4)} • Net: {w.net_amount.toFixed(4)} {w.currency}</p>
               <p className="text-gray-500 text-xs break-all">Address: <span className="font-mono text-gray-400">{w.wallet_address}</span></p>

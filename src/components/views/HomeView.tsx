@@ -106,7 +106,7 @@ export function HomeView() {
           haptic('light');
           setCurrentView('challenge');
         }}
-        className="glass-card p-4 mb-6 relative overflow-hidden cursor-pointer group bg-gradient-to-r from-purple-800/40 via-blue-800/40 to-gold-800/40 hover:from-purple-700/50 hover:via-blue-700/50 hover:to-gold-700/50 transition-all"
+        className="glass-card p-4 mb-4 relative overflow-hidden cursor-pointer group bg-gradient-to-r from-purple-800/40 via-blue-800/40 to-gold-800/40 hover:from-purple-700/50 hover:via-blue-700/50 hover:to-gold-700/50 transition-all"
       >
         <div className="absolute top-0 right-0 text-7xl opacity-30 transform translate-x-2 -translate-y-2 rotate-12">
           🏆
@@ -123,6 +123,62 @@ export function HomeView() {
               </h3>
               <p className="text-gray-400 text-sm">Complete all 3 challenges today!</p>
               <p className="text-yellow-400 text-xs mt-1 flex items-center gap-1"><Clock size={12} /> Resets in: {timeToReset}</p>
+            </div>
+          </div>
+          <ChevronRight className="text-gold-400 group-hover:translate-x-1 transition-transform" size={24} />
+        </div>
+      </div>
+
+      {/* Game Challenge Banner */}
+      <div
+        onClick={() => {
+          haptic('light');
+          setCurrentView('games');
+        }}
+        className="glass-card p-4 mb-4 relative overflow-hidden cursor-pointer group bg-gradient-to-r from-green-800/40 to-blue-800/40 hover:from-green-700/50 hover:to-blue-700/50 transition-all"
+      >
+        <div className="absolute top-0 right-0 text-7xl opacity-30 transform translate-x-2 -translate-y-2 rotate-12">
+          🎮
+        </div>
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-2xl shadow-neon-purple">
+              <Gamepad2 className="text-white" size={24} />
+            </div>
+            <div>
+              <h3 className="text-white font-bold flex items-center gap-2">
+                Game Challenge
+                <span className="badge bg-green-500/30 text-green-400 text-xs">Play & Earn</span>
+              </h3>
+              <p className="text-gray-400 text-sm">Play games and earn 4-8 points per game!</p>
+            </div>
+          </div>
+          <ChevronRight className="text-green-400 group-hover:translate-x-1 transition-transform" size={24} />
+        </div>
+      </div>
+
+      {/* Referral Challenge Banner */}
+      <div
+        onClick={() => {
+          haptic('light');
+          setCurrentView('referrals');
+        }}
+        className="glass-card p-4 mb-6 relative overflow-hidden cursor-pointer group bg-gradient-to-r from-purple-800/40 to-gold-800/40 hover:from-purple-700/50 hover:to-gold-700/50 transition-all"
+      >
+        <div className="absolute top-0 right-0 text-7xl opacity-30 transform translate-x-2 -translate-y-2 rotate-12">
+          👥
+        </div>
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-gold-500 flex items-center justify-center text-2xl shadow-neon-gold">
+              <Users className="text-white" size={24} />
+            </div>
+            <div>
+              <h3 className="text-white font-bold flex items-center gap-2">
+                Referral Challenge
+                <span className="badge-gold text-purple-900 text-xs">+1500 pts</span>
+              </h3>
+              <p className="text-gray-400 text-sm">Invite friends: 120 pts + 5% lifetime commission!</p>
             </div>
           </div>
           <ChevronRight className="text-gold-400 group-hover:translate-x-1 transition-transform" size={24} />

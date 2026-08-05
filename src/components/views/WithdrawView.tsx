@@ -154,7 +154,7 @@ export function WithdrawView() {
 
   async function checkPendingWithdrawal() {
     if (!user) return;
-    const hasPending = withdrawals.some(w => w.status === 'pending' || w.status === 'approved');
+    const hasPending = withdrawals.some(w => w.status === 'pending');
     setPendingWithdrawal(hasPending);
   }
 

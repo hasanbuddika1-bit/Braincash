@@ -71,9 +71,36 @@ export function AdsView() {
     setAdError(false);
     setAdErrorMsg('');
     setCurrentNetwork(network);
-    setAdTimer(MIN_WATCH_SECONDS);
 
-    // Start the countdown timer
+    // Show the ad first - no timer until we know the ad opened
+    let adResult: AdShowResult;
+    try {
+      adResult = await showAdFromNetwork(network);
+    } catch {
+      adResult = { watchedSeconds: 0, completed: false, opened: false, error: 'Ad failed to show' };
+    }
+
+    // If ad didn't open at all (SDK not available) — show VPN popup for Adsgram, error for others
+    if (!adResult.opened) {
+      setWatching(false);
+      setCurrentNetwork(null);
+      if (network === 'adsgram') {
+        setShowVpnPopup(true);
+        haptic('warning');
+      } else {
+        setAdError(true);
+        setAdErrorMsg(`${cfg.name} ads are not available right now. Please try again later.`);
+        haptic('error');
+        setTimeout(() => {
+          setAdError(false);
+          setAdErrorMsg('');
+        }, 3000);
+      }
+      return;
+    }
+
+    // Ad opened successfully — start the countdown timer
+    setAdTimer(MIN_WATCH_SECONDS);
     let timerFinished = false;
     const timerPromise = new Promise<void>((resolve) => {
       const startTime = Date.now();
@@ -91,38 +118,8 @@ export function AdsView() {
       }, 1000);
     });
 
-    // Show the ad concurrently
-    let adResult: AdShowResult;
-    try {
-      adResult = await showAdFromNetwork(network);
-    } catch {
-      adResult = { watchedSeconds: 0, completed: false, opened: false, error: 'Ad failed to show' };
-    }
-
-    // If ad didn't open at all (SDK not available) — show VPN popup for Adsgram, error for others
-    if (!adResult.opened) {
-      setWatching(false);
-      setCurrentNetwork(null);
-      setAdTimer(0);
-      if (network === 'adsgram') {
-        setShowVpnPopup(true);
-        haptic('warning');
-      } else {
-        setAdError(true);
-        setAdErrorMsg(`${cfg.name} ads are not available right now. Please try again later.`);
-        haptic('error');
-        setTimeout(() => {
-          setAdError(false);
-          setAdErrorMsg('');
-        }, 3000);
-      }
-      return;
-    }
-
-    // Wait for timer to finish if ad closed before timer
-    if (!timerFinished) {
-      await timerPromise;
-    }
+    // Wait for timer to finish
+    await timerPromise;
 
     // Check if ad was completed and watched for minimum seconds
     if (!adResult.completed || adResult.watchedSeconds < MIN_WATCH_SECONDS) {

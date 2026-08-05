@@ -49,7 +49,7 @@ export async function loadAdSettings(): Promise<Record<AdNetwork, AdNetworkConfi
       name: 'Adsgram AI',
       logo: '🤖',
       dailyLimit: parseInt(map.adsgram_daily_limit || '10'),
-      pointsPerAd: parseInt(map.adsgram_points_per_ad || '10'),
+      pointsPerAd: parseInt(map.adsgram_points_per_ad || '5'),
       cooldownSeconds: parseInt(map.adsgram_cooldown_seconds || '5'),
       enabled: true,
     },
