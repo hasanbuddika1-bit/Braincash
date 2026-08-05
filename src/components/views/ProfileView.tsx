@@ -125,7 +125,10 @@ export function ProfileView() {
     return `${days}d ago`;
   }
 
-  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Guest';
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') 
+    || (tgUser?.first_name ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') : null)
+    || (tgUser?.username ? tgUser.username : null)
+    || 'Guest';
   const initials = fullName
     .split(' ')
     .map((w) => w[0])

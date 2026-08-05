@@ -4,7 +4,7 @@ import { showAdsgramAd } from '../../lib/adManager';
 import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown, ExternalLink } from 'lucide-react';
 
 export function HomeView() {
-  const { user, leaderboard, setCurrentView, games, haptic, currentView } = useApp();
+  const { user, tgUser, leaderboard, setCurrentView, games, haptic, currentView } = useApp();
   const lastHomeAd = useRef(0);
   const [timeToReset, setTimeToReset] = useState('');
 
@@ -389,7 +389,7 @@ export function HomeView() {
               </div>
               <div className="flex-1">
                 <p className="text-white font-semibold">
-                  {player.first_name || player.username || 'Anonymous'}
+                  {player.first_name || player.username || (player.telegram_id === user?.telegram_id ? (tgUser?.first_name || tgUser?.username) : null) || 'Anonymous'}
                 </p>
                 <p className="text-gray-400 text-sm">{(player.total_earned || 0).toLocaleString()} pts</p>
               </div>

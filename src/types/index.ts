@@ -149,8 +149,10 @@ export interface LeaderboardEntry {
   user_id: string;
   username?: string;
   first_name?: string;
+  last_name?: string;
   photo_url?: string;
   total_earned: number;
+  telegram_id?: number;
   rank: number;
 }
 

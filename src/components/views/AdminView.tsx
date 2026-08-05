@@ -140,7 +140,7 @@ function AdminUsers() {
   useEffect(() => { loadUsers(); }, []);
 
   async function loadUsers() {
-    const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false }).limit(100);
+    const { data } = await supabase.from('users').select('*').order('points', { ascending: false }).limit(100);
     setUsers(data || []);
   }
 

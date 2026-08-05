@@ -416,7 +416,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error: fetchError } = await supabase
         .from('users')
-        .select('id as user_id, username, first_name, photo_url, total_earned')
+        .select('id as user_id, username, first_name, last_name, photo_url, total_earned, telegram_id')
         .eq('is_banned', false)
         .order('total_earned', { ascending: false })
         .limit(100);
@@ -527,13 +527,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Record activity
       await recordActivity('points_earned', { amount, source: 'app' });
 
+      // Refresh leaderboard so ranks and top earners update in real time
+      refreshLeaderboard();
+
       haptic('success');
     } catch (err) {
       console.error('Error adding points:', err);
       haptic('error');
       toastError('Error', 'Could not save points. Please try again.');
     }
-  }, [user, haptic, toastError, setUser]);
+  }, [user, haptic, toastError, setUser, refreshLeaderboard, recordActivity]);
 
   // Record user activity for tracking
   const recordActivity = useCallback(async (
