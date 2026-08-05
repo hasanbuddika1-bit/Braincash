@@ -86,6 +86,22 @@ function getMainKeyboard() {
   };
 }
 
+// Safe keyboard builder: Telegram rejects web_app buttons whose URL is a t.me link,
+// so fall back to a regular url button when the mini-app URL is not a direct HTTPS URL.
+function getSafeMainKeyboard() {
+  const isDirectHttps = MINI_APP_URL.startsWith('https://') && !MINI_APP_URL.includes('t.me/');
+  const openAppBtn = isDirectHttps
+    ? { text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }
+    : { text: "🧠 Open Mini App", url: MINI_APP_URL };
+  return {
+    inline_keyboard: [
+      [openAppBtn],
+      [{ text: "💳 Payment", callback_data: "payment" }, { text: "🌍 Community", callback_data: "community" }],
+      [{ text: "📜 History", callback_data: "history" }, { text: "💸 Withdraw", callback_data: "withdraw" }],
+    ],
+  };
+}
+
 async function getBotToken(supabase: ReturnType<typeof getSupabaseClient>): Promise<string | null> {
   try {
     const { data } = await supabase.from('settings').select('value').eq('key', 'bot_token').maybeSingle();
@@ -497,7 +513,7 @@ Deno.serve(async (req: Request) => {
         `🔗 <b>Your referral link:</b>\n<code>${referralLink}</code>`;
 
       // Always send text message (photo URL hosting is unreliable)
-      const msgResult = await sendMessage(botToken, chatId, welcomeText, getMainKeyboard());
+      const msgResult = await sendMessage(botToken, chatId, welcomeText, getSafeMainKeyboard());
       if (!msgResult.ok) console.error('sendMessage failed for /start:', JSON.stringify(msgResult));
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -509,7 +525,7 @@ Deno.serve(async (req: Request) => {
       if (!telegramUser) return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       const user = await getOrCreateUser(supabase, telegramUser);
       if (!user) { await sendMessage(botToken, chatId, "❌ Error: Could not access your account."); return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
-      await sendMessage(botToken, chatId, `💰 <b>Your Balance</b>\n\n🧠 <b>Points:</b> ${user.points.toLocaleString()}\n💵 <b>USD Value:</b> $${(user.points * 0.0001).toFixed(4)}\n\n<i>Open the Mini App to earn more!</i>`, getMainKeyboard());
+      await sendMessage(botToken, chatId, `💰 <b>Your Balance</b>\n\n🧠 <b>Points:</b> ${user.points.toLocaleString()}\n💵 <b>USD Value:</b> ${(user.points * 0.0001).toFixed(4)}\n\n<i>Open the Mini App to earn more!</i>`, getSafeMainKeyboard());
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -534,14 +550,14 @@ Deno.serve(async (req: Request) => {
     // /withdraw
     if (body.message?.text?.startsWith("/withdraw")) {
       const chatId = body.message.chat.id;
-      await sendMessage(botToken, chatId, `💸 <b>Withdraw Your Earnings</b>\n\n💰 <b>Minimum:</b> $0.05 USDT (500 points)\n💱 <b>Currency:</b> USDT (BEP20) only\n📉 <b>Fee:</b> $0.01 + 5%\n\n<i>Open the Mini App to withdraw your earnings.</i>`, getMainKeyboard());
+      await sendMessage(botToken, chatId, `💸 <b>Withdraw Your Earnings</b>\n\n💰 <b>Minimum:</b> $0.05 USDT (500 points)\n💱 <b>Currency:</b> USDT (BEP20) only\n📉 <b>Fee:</b> $0.01 + 5%\n\n<i>Open the Mini App to withdraw your earnings.</i>`, getSafeMainKeyboard());
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // /help
     if (body.message?.text?.startsWith("/help")) {
       const chatId = body.message.chat.id;
-      await sendMessage(botToken, chatId, `❓ <b>Brain Cash Help</b>\n\n🎮 <b>How to Earn:</b>\n• Play games and earn 4-8 points per game\n• Watch ads for instant points\n• Complete Telegram tasks\n• Invite friends for bonus + commission\n\n💰 <b>Points Value:</b>\n500 points = $0.05 USDT\n\n💳 <b>Withdrawal:</b>\nMinimum $0.05 to USDT (BEP20) wallet\n\n📢 <b>Official Channel:</b> @brain_cach_channel\n💳 <b>Payment Channel:</b> @braincashpayment`, getMainKeyboard());
+      await sendMessage(botToken, chatId, `❓ <b>Brain Cash Help</b>\n\n🎮 <b>How to Earn:</b>\n• Play games and earn 4-8 points per game\n• Watch ads for instant points\n• Complete Telegram tasks\n• Invite friends for bonus + commission\n\n💰 <b>Points Value:</b>\n500 points = $0.05 USDT\n\n💳 <b>Withdrawal:</b>\nMinimum $0.05 to USDT (BEP20) wallet\n\n📢 <b>Official Channel:</b> @brain_cach_channel\n💳 <b>Payment Channel:</b> @braincashpayment`, getSafeMainKeyboard());
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -581,7 +597,7 @@ Deno.serve(async (req: Request) => {
         `/withdraw - Withdraw your earnings\n` +
         `/help - Get help\n\n` +
         `Or click the button below to open the Mini App!`,
-        getMainKeyboard()
+        getSafeMainKeyboard()
       );
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

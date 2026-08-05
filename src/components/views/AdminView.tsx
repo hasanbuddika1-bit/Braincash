@@ -88,9 +88,10 @@ function AdminStats() {
       const { count: onlineUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).gt('last_active', new Date(Date.now() - 5 * 60 * 1000).toISOString());
       const { count: activeUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).gt('last_active', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
       const { count: suspendedUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_suspended', true);
-      const { data: pointsData } = await supabase.from('users').select('points, total_withdrawn');
+      const { data: pointsData } = await supabase.from('users').select('points');
       const totalPoints = pointsData?.reduce((sum, u) => sum + u.points, 0) || 0;
-      const totalWithdrawn = pointsData?.reduce((sum, u) => sum + u.total_withdrawn, 0) || 0;
+      const { data: withdrawnData } = await supabase.from('withdrawals').select('amount').eq('status', 'approved');
+      const totalWithdrawn = withdrawnData?.reduce((sum, w) => sum + (w.amount || 0), 0) || 0;
       const { count: pendingWithdrawals } = await supabase.from('withdrawals').select('*', { count: 'exact', head: true }).eq('status', 'pending');
       const { count: totalTasks } = await supabase.from('tasks').select('*', { count: 'exact', head: true });
       const { count: todaySignups } = await supabase.from('users').select('*', { count: 'exact', head: true }).gte('created_at', new Date().toISOString().split('T')[0]);
@@ -437,9 +438,6 @@ function AdminWithdrawals() {
     // Refund points
     const refundPoints = Math.round(w.amount / POINTS_TO_USD);
     await supabase.rpc('add_points', { user_id: w.user_id, amount: refundPoints });
-
-    // Decrement total_withdrawn
-    await supabase.from('users').update({ total_withdrawn: 0 }).eq('id', w.user_id); // Reset to avoid stale
 
     // Send bot notification
     try {
