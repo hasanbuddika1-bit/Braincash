@@ -205,7 +205,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // Fetch user IP address
         let userIp = '';
         try {
-          const ipRes = await fetch('https://api.ipify.org?format=json');
+          const ipController = new AbortController();
+          const ipTimeout = setTimeout(() => ipController.abort(), 4000);
+          const ipRes = await fetch('https://api.ipify.org?format=json', { signal: ipController.signal });
+          clearTimeout(ipTimeout);
           const ipData = await ipRes.json();
           userIp = ipData.ip || '';
         } catch { /* IP fetch failed, continue without */ }
@@ -266,7 +269,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // Detect and update IP for existing users missing registration_ip
         if (!data.registration_ip) {
           try {
-            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipController2 = new AbortController();
+            const ipTimeout2 = setTimeout(() => ipController2.abort(), 4000);
+            const ipRes = await fetch('https://api.ipify.org?format=json', { signal: ipController2.signal });
+            clearTimeout(ipTimeout2);
             const ipData = await ipRes.json();
             const detectedIp = ipData.ip || '';
             if (detectedIp) {
@@ -325,6 +331,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (!data.welcome_sent) {
           try {
             const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+            const botController = new AbortController();
+            const botTimeout = setTimeout(() => botController.abort(), 5000);
             await fetch(botUrl, {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -332,7 +340,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 referral_code: data.referral_code,
                 action: 'welcome',
               }),
+              signal: botController.signal,
             });
+            clearTimeout(botTimeout);
             await supabase.from('users').update({ welcome_sent: true }).eq('id', data.id);
           } catch (e) { console.error('Welcome notification failed:', e); }
         }
@@ -568,11 +578,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Load on mount
+  // Load on mount — with a safety timeout so the loading screen never hangs forever
   useEffect(() => {
     if (tgUser) {
       setLoading(true);
-      refreshUser().finally(() => setLoading(false));
+      const timeout = setTimeout(() => setLoading(false), 8000);
+      refreshUser().finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
     }
   }, [tgUser, refreshUser]);
 
