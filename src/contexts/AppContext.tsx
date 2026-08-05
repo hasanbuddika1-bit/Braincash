@@ -645,6 +645,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id]);
 
+  // Auto-refresh all data every 15 seconds so pages stay fresh
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      refreshUser();
+      refreshWithdrawals();
+      refreshLeaderboard();
+      refreshTasks();
+      refreshGames();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [user?.id, refreshUser, refreshWithdrawals, refreshLeaderboard, refreshTasks, refreshGames]);
+
   const refreshAll = useCallback(async () => {
     await Promise.all([refreshUser(), refreshTasks(), refreshGames(), refreshWithdrawals(), refreshLeaderboard()]);
   }, [refreshUser, refreshTasks, refreshGames, refreshWithdrawals, refreshLeaderboard]);

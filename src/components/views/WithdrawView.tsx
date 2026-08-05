@@ -4,8 +4,7 @@ import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
 import {
   Wallet, ArrowUpRight, Clock, CheckCircle, XCircle, ExternalLink, Info,
-  Lock, Play, AlertCircle, ChevronRight, Heart, Zap, TrendingUp, Users, Target, Shield,
-  Clock, X,
+  Lock, Play, AlertCircle, ChevronRight, Heart, Zap, TrendingUp, Users, Target, Shield, X,
 } from 'lucide-react';
 import type { Withdrawal } from '../../types';
 import { showAdFromNetwork, type AdNetwork, type AdShowResult } from '../../lib/adManager';
@@ -276,6 +275,17 @@ export function WithdrawView() {
       const pointsToDeduct = Math.round(inputAmount);
       const newWithdrawNumber = withdrawCount + 1;
 
+      // 1. Deduct points atomically via RPC (fails if insufficient balance)
+      const { error: deductError } = await supabase.rpc('deduct_points', {
+        user_uuid: user.id,
+        amount: pointsToDeduct,
+      });
+
+      if ( deductError) {
+        throw new Error(deductError.message || 'Failed to deduct points');
+      }
+
+      // 2. Create withdrawal record
       const { error: withdrawError } = await supabase.from('withdrawals').insert({
         user_id: user.id,
         amount: netAmount,
@@ -287,25 +297,28 @@ export function WithdrawView() {
         withdraw_number: newWithdrawNumber,
       });
 
-      if (withdrawError) throw withdrawError;
+      if (withdrawError) {
+        // Refund points if withdrawal insert fails
+        await supabase.rpc('add_points', { user_id: user.id, amount: pointsToDeduct });
+        throw withdrawError;
+      }
 
-      const { error: updateError } = await supabase
+      // 3. Update withdraw count and total withdrawn
+      await supabase
         .from('users')
         .update({
-          points: user.points - pointsToDeduct,
           total_withdrawn: user.total_withdrawn + netAmount,
           withdraw_count: newWithdrawNumber,
           first_withdraw_done: withdrawCount === 0,
         })
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
-
       await refreshWithdrawals();
       await refreshUser();
 
       setAmount('');
       setWalletAddress('');
+      setAdsWatched(0);
 
       showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review.`);
       haptic('success');
@@ -370,7 +383,7 @@ export function WithdrawView() {
 
   if (showVpnPopup) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
         <div className="w-full max-w-sm">
           <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(0,0,0,0.3))' }}>
             <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
@@ -391,7 +404,7 @@ export function WithdrawView() {
   if (showAdFlow) {
     const currentAd = AD_PROVIDERS[currentAdIdx % AD_PROVIDERS.length];
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
         <div className="w-full max-w-sm">
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
