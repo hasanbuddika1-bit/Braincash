@@ -55,7 +55,7 @@ export function LoadingAd({ onComplete, duration = 5000 }: LoadingAdProps) {
   }, [duration, user, onComplete, haptic]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
       <div className="glass-card p-8 text-center max-w-sm w-[90%]">
         {/* Ad content */}
         <div className="mb-6">
@@ -122,7 +122,7 @@ export function LoadingAdOverlay({
 
   if (showReward) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
         <div className="glass-card p-8 text-center max-w-sm w-[90%] animate-scale-in">
           <div className="text-6xl mb-4 animate-bounce">🎉</div>
           <h3 className="text-xl font-bold text-white mb-2">You Earned!</h3>
@@ -137,7 +137,7 @@ export function LoadingAdOverlay({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
       <div className="glass-card p-8 text-center max-w-sm w-[90%]">
         <div className="text-sm text-gray-500 mb-4">{sponsor}</div>
 

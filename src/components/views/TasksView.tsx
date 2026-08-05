@@ -414,7 +414,7 @@ function AddTaskModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const TASK_ICONS = ['📋', '📢', '👥', '🤖', '📰', '🤝', '🎁', '⭐', '🔥', '💰', '🎮', '📱', '💬', '✨', '🎯'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(8,8,20,0.85)' }}>
       <div className="glass-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-bold text-lg">Add Community Task</h3>
@@ -543,7 +543,7 @@ function PartnerSubmitModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(8,8,20,0.85)' }}>
       <div className="glass-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-bold text-lg">Ad Partner Task</h3>

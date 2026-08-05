@@ -283,6 +283,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               });
               await supabase.from('users').update({ referred_by: referrer.id }).eq('id', newUser.id);
               await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
+
+              // Notify referrer about new join
+              try {
+                const { data: referrerUser } = await supabase
+                  .from('users')
+                  .select('telegram_id')
+                  .eq('id', referrer.id)
+                  .maybeSingle();
+
+                if (referrerUser) {
+                  const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+                  await fetch(botUrl, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      action: 'notify-referral-join',
+                      user_telegram_id: referrerUser.telegram_id,
+                      referral_data: {
+                        referred_name: newUser.first_name || newUser.username || 'Anonymous',
+                        join_bonus: 20,
+                      },
+                    }),
+                  });
+                }
+              } catch (e) { console.error('Referral join notification failed:', e); }
             }
         }
       } else if (fetchError) {

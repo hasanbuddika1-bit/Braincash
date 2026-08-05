@@ -420,6 +420,45 @@ Deno.serve(async (req: Request) => {
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      // Notify withdraw request to user + payment channel (24hr message)
+      if (action === 'notify-withdraw-request-user' && bodyData.user_telegram_id && bodyData.withdraw_data) {
+        const w = bodyData.withdraw_data;
+        const method = 'USDT (BEP20)';
+        try {
+          // Send to user
+          await sendMessage(botToken, bodyData.user_telegram_id,
+            `⏳ <b>Withdrawal Request Received!</b>\n\n` +
+            `🔢 <b>Withdraw #:</b> #${w.withdraw_number}\n` +
+            `💵 <b>Amount:</b> ${w.amount.toFixed(4)} USD\n` +
+            `💳 <b>Method:</b> ${method}\n` +
+            `💸 <b>Fee:</b> ${w.fee.toFixed(4)}\n` +
+            `✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n` +
+            `📍 <b>Address:</b> <code>${w.wallet_address}</code>\n\n` +
+            `🕐 <b>Your withdrawal will be processed within 24 hours.</b>\n` +
+            `<i>You will receive a notification once it's approved.</i>`,
+            { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+          );
+        } catch (e) { console.error('User withdraw request notification failed:', e); }
+
+        // Send to payment channel
+        try {
+          await sendMessage(botToken, PAYMENT_CHANNEL.replace('https://t.me/', '@'),
+            `⏳ <b>New Withdrawal Request</b>\n\n` +
+            `👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${bodyData.user_telegram_id})\n` +
+            `🔢 <b>Withdraw #:</b> #${w.withdraw_number}\n` +
+            `💵 <b>Amount:</b> ${w.amount.toFixed(4)} USD\n` +
+            `💳 <b>Method:</b> ${method}\n` +
+            `💸 <b>Fee:</b> ${w.fee.toFixed(4)}\n` +
+            `✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n` +
+            `📍 <b>Address:</b> <code>${w.wallet_address}</code>\n\n` +
+            `🕐 <b>Processing within 24 hours.</b>`,
+            { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+          );
+        } catch (e) { console.error('Payment channel withdraw request notification failed:', e); }
+
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       // Notify withdraw rejection to user
       if (action === 'notify-withdraw-reject' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
@@ -495,6 +534,20 @@ Deno.serve(async (req: Request) => {
       }
 
       // Notify referral became active (10 ads watched)
+      // Notify referrer when someone joins with their code
+      if (action === 'notify-referral-join' && bodyData.user_telegram_id && bodyData.referral_data) {
+        const r = bodyData.referral_data;
+        await sendMessage(botToken, bodyData.user_telegram_id,
+          `🎉 <b>New Referral Joined!</b>\n\n` +
+          `👤 <b>Referred user:</b> ${r.referred_name || 'Anonymous'}\n` +
+          `💰 <b>Join bonus:</b> +${r.join_bonus || 20} pts\n\n` +
+          `Keep helping your friend complete tasks and watch ads to earn more bonuses!`,
+          { inline_keyboard: [[{ text: "🧠 Open Brain Cash", web_app: { url: MINI_APP_URL } }]] }
+        );
+        return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Notify referrer when referral becomes active
       if (action === 'notify-referral-active' && bodyData.user_telegram_id && bodyData.referral_data) {
         const r = bodyData.referral_data;
         await sendMessage(botToken, bodyData.user_telegram_id,

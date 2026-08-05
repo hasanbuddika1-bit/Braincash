@@ -4,13 +4,14 @@ import { supabase } from '../../lib/supabase';
 import { Crown, Trophy, Medal, TrendingUp, Users, Target, Flame } from 'lucide-react';
 import type { LeaderboardEntry } from '../../types';
 
-type Tab = 'earners' | 'referrers' | 'streak';
+type Tab = 'earners' | 'referrers' | 'streak' | 'withdrawn';
 
 export function LeaderboardView() {
   const { user, leaderboard, userRank, haptic } = useApp();
   const [tab, setTab] = useState<Tab>('earners');
   const [referrers, setReferrers] = useState<{ user_id: string; username?: string; first_name?: string; ref_count: number }[]>([]);
   const [streaks, setStreaks] = useState<{ user_id: string; username?: string; first_name?: string; streak: number }[]>([]);
+  const [withdrawers, setWithdrawers] = useState<{ user_id: string; username?: string; first_name?: string; total_withdrawn: number; withdraw_count: number }[]>([]);
   const [myRefCount, setMyRefCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +44,24 @@ export function LeaderboardView() {
       setLoading(false);
     }
   }, [user]);
+
+  const loadWithdrawers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('id as user_id, username, first_name, total_withdrawn, withdraw_count')
+        .eq('is_banned', false)
+        .gt('total_withdrawn', 0)
+        .order('total_withdrawn', { ascending: false })
+        .limit(50);
+      setWithdrawers(data || []);
+    } catch (err) {
+      console.error('Error loading withdrawers:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const loadStreaks = useCallback(async () => {
     setLoading(true);
@@ -77,12 +96,14 @@ export function LeaderboardView() {
   useEffect(() => {
     if (tab === 'referrers') loadReferrers();
     else if (tab === 'streak') loadStreaks();
+    else if (tab === 'withdrawn') loadWithdrawers();
   }, [tab]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'earners', label: 'Top Earners', icon: <Trophy size={16} /> },
     { id: 'referrers', label: 'Top Referrers', icon: <Users size={16} /> },
     { id: 'streak', label: 'Daily Streaks', icon: <Flame size={16} /> },
+    { id: 'withdrawn', label: 'Top Withdrawn', icon: <TrendingUp size={16} /> },
   ];
 
   const rankBadge = (rank: number) => {
@@ -199,6 +220,40 @@ export function LeaderboardView() {
     );
   };
 
+  const renderWithdrawers = () => {
+    if (withdrawers.length === 0) return <EmptyState icon="💸" text="No withdrawals yet" />;
+    return (
+      <div className="space-y-2">
+        {withdrawers.map((w, i) => {
+          const isMe = w.user_id === user?.id;
+          return (
+            <div
+              key={w.user_id}
+              className={`flex items-center gap-3 p-3 rounded-xl ${
+                isMe ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 border border-yellow-500/40' : 'bg-white/5'
+              }`}
+            >
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                i === 0 ? 'bg-yellow-500/20' : i === 1 ? 'bg-gray-400/20' : i === 2 ? 'bg-orange-500/20' : 'bg-white/10'
+              }`}>
+                {rankBadge(i + 1)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`font-semibold text-sm truncate ${isMe ? 'text-yellow-400' : 'text-white'}`}>
+                  {w.first_name || w.username || 'Anonymous'} {isMe && '(You)'}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-green-400 font-bold text-sm">${(w.total_withdrawn || 0).toFixed(4)}</p>
+                <p className="text-gray-500 text-xs">{w.withdraw_count || 0} withdrawals</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="px-4 pb-24 pt-4">
       {/* Header */}
@@ -265,6 +320,7 @@ export function LeaderboardView() {
       ) : (
         tab === 'earners' ? renderEarners() :
         tab === 'referrers' ? renderReferrers() :
+        tab === 'withdrawn' ? renderWithdrawers() :
         renderStreaks()
       )}
     </div>

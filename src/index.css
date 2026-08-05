@@ -249,6 +249,19 @@ a[aria-label*="Bolt"] {
     animation: shimmer-sweep 2s infinite;
   }
 
+  /* Dark overlay for full-screen modals */
+  .overlay-dark {
+    background: rgba(8, 8, 20, 0.9);
+  backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .overlay-dark-85 {
+    background: rgba(8, 8, 20, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
   /* Modal */
   .modal-overlay {
     @apply fixed inset-0 z-50 flex items-center justify-center;

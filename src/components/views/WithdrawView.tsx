@@ -303,16 +303,6 @@ export function WithdrawView() {
         throw withdrawError;
       }
 
-      // 3. Update withdraw count and total withdrawn
-      await supabase
-        .from('users')
-        .update({
-          total_withdrawn: user.total_withdrawn + netAmount,
-          withdraw_count: newWithdrawNumber,
-          first_withdraw_done: withdrawCount === 0,
-        })
-        .eq('id', user.id);
-
       await refreshWithdrawals();
       await refreshUser();
 
@@ -320,18 +310,41 @@ export function WithdrawView() {
       setWalletAddress('');
       setAdsWatched(0);
 
-      showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review.`);
+      showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review. You will be notified within 24 hours.`);
       haptic('success');
 
       try {
         await supabase.from('notifications').insert({
           user_id: user.id,
           title: 'Withdrawal Requested',
-          message: `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review.`,
+          message: `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review. You will be notified within 24 hours.`,
           type: 'info',
         });
       } catch (e) { console.error('Notification insert failed:', e); }
 
+      // Notify user + payment channel (24hr message)
+      try {
+        const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+        await fetch(botUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'notify-withdraw-request-user',
+            user_telegram_id: user.telegram_id,
+            withdraw_data: {
+              user_name: user.first_name || user.username || 'Unknown',
+              withdraw_number: newWithdrawNumber,
+              amount: netAmount,
+              fee,
+              net_amount: netAmount,
+              currency: 'USDT',
+              wallet_address: walletAddress,
+            },
+          }),
+        });
+      } catch (e) { console.error('Bot notification failed:', e); }
+
+      // Also notify admin
       try {
         const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
         await fetch(botUrl, {
@@ -351,7 +364,7 @@ export function WithdrawView() {
             },
           }),
         });
-      } catch (e) { console.error('Bot notification failed:', e); }
+      } catch (e) { console.error('Admin bot notification failed:', e); }
     } catch (error) {
       console.error('Withdrawal error:', error);
       showError('Withdrawal Failed', 'Could not create withdrawal. Please try again.');

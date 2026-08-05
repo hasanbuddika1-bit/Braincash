@@ -24,7 +24,7 @@ interface GameAdErrorProps {
 
 function GameAdErrorModal({ message, onRetry, onClose }: GameAdErrorProps) {
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/95 px-4">
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
       <div className="w-full max-w-sm">
         <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(0,0,0,0.3))' }}>
           <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
@@ -68,7 +68,7 @@ interface RewardPopupProps {
 
 function RewardPopup({ reward, score, onClaim, gameIcon = '🎮' }: RewardPopupProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/80 animate-fade-in">
+    <div className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
       <div className="mx-4 w-full max-w-sm rounded-3xl overflow-hidden" style={{
         background: 'linear-gradient(135deg, #0a0d1a 0%, #1a0a2e 100%)',
         border: '1px solid rgba(0,200,83,0.4)',
@@ -123,7 +123,7 @@ function TutorialOverlay({ gameType, onClose }: { gameType: string; onClose: () 
   const tutorial = TUTORIALS[gameType];
   if (!tutorial) return null;
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/80 animate-fade-in">
+    <div className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
       <div className="mx-4 w-full max-w-sm rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0a0d1a 0%, #0d0a18 100%)', border: '1px solid rgba(124,58,237,0.4)' }}>
         <div className="h-1" style={{ background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }} />
         <div className="p-6">
@@ -407,7 +407,7 @@ export function GamesView() {
 
       {/* Game Ad Overlay */}
       {showGameAd && gameAdProvider && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
           <div className="glass-card p-8 text-center max-w-sm w-[90%]">
             <div className="text-6xl mb-4 animate-pulse">
               {gameAdProvider === 'adsgram' ? '🤖' : gameAdProvider === 'monetag' ? '📊' : '🚀'}
@@ -599,7 +599,7 @@ export function GamePlayView() {
   if (showAdRefill) {
     const currentAd = AD_PROVIDERS[currentAdIdx];
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
         <div className="w-full max-w-sm">
           {!adPlaying ? (
             <div className="glass-card p-8 text-center">

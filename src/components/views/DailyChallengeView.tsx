@@ -350,7 +350,7 @@ export function DailyChallengeView() {
 
       {/* Ad watching overlay */}
       {watchingAd && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
           <div className="w-full max-w-sm">
             <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(0,200,83,0.2))' }}>
               <div className="text-5xl mb-4 animate-bounce">📺</div>
@@ -373,7 +373,7 @@ export function DailyChallengeView() {
 
       {/* Ad error overlay */}
       {adError && !watchingAd && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
           <div className="w-full max-w-sm">
             <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(0,0,0,0.3))' }}>
               <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
