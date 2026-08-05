@@ -114,27 +114,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const canGoBack = viewHistory.length > 0;
 
   useEffect(() => {
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      try { tg.setHeaderColor('#080814'); } catch {}
-      try { tg.setBackgroundColor('#080814'); } catch {}
+    let cancelled = false;
 
-      if (tg.initDataUnsafe?.user && tg.initDataUnsafe.user.id) {
-        setTgUser({
-          id: tg.initDataUnsafe.user.id,
-          first_name: tg.initDataUnsafe.user.first_name,
-          last_name: tg.initDataUnsafe.user.last_name,
-          username: tg.initDataUnsafe.user.username,
-          photo_url: tg.initDataUnsafe.user.photo_url,
-        });
-        return;
+    function initTelegram() {
+      if (cancelled) return;
+      try {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+          try { tg.ready(); } catch {}
+          try { tg.expand(); } catch {}
+          try { tg.setHeaderColor('#080814'); } catch {}
+          try { tg.setBackgroundColor('#080814'); } catch {}
+
+          if (tg.initDataUnsafe?.user && tg.initDataUnsafe.user.id) {
+            setTgUser({
+              id: tg.initDataUnsafe.user.id,
+              first_name: tg.initDataUnsafe.user.first_name,
+              last_name: tg.initDataUnsafe.user.last_name,
+              username: tg.initDataUnsafe.user.username,
+              photo_url: tg.initDataUnsafe.user.photo_url,
+            });
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Telegram init error:', e);
       }
+      // Fallback for development/testing
+      const devId = import.meta.env.DEV ? 5419054691 : 0;
+      setTgUser({ id: devId, first_name: devId ? 'Admin' : 'Guest', username: devId ? 'admin' : 'guest' });
     }
-    // Fallback for development/testing
-    const devId = import.meta.env.DEV ? 5419054691 : 0;
-    setTgUser({ id: devId, first_name: devId ? 'Admin' : 'Guest', username: devId ? 'admin' : 'guest' });
+
+    // If Telegram SDK is already loaded, init immediately
+    if (window.Telegram?.WebApp) {
+      initTelegram();
+    } else {
+      // Wait for the Telegram SDK script to load (deferred), poll for up to 3 seconds
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (window.Telegram?.WebApp || attempts > 30) {
+          clearInterval(interval);
+          initTelegram();
+        }
+      }, 100);
+      return () => { clearInterval(interval); cancelled = true; };
+    }
   }, []);
 
   const refreshUser = useCallback(async () => {
