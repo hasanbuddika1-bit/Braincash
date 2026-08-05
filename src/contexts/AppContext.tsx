@@ -463,6 +463,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Record user activity for tracking
+  const recordActivity = useCallback(async (
+    type: string,
+    details?: Record<string, unknown>
+  ) => {
+    if (!user || user.id === 'demo' || !isSupabaseConfigured) return;
+
+    try {
+      // Update last_active timestamp
+      await supabase
+        .from('users')
+        .update({ last_active: new Date().toISOString() })
+        .eq('id', user.id);
+
+      // Try to insert into activities table if it exists
+      const { error } = await supabase.from('user_activities').insert({
+        user_id: user.id,
+        activity_type: type,
+        details: details || {},
+      });
+
+      // Silently fail if table doesn't exist
+      if (error && error.code !== 'PGRST116') {
+        console.log('Activity logging not available');
+      }
+    } catch {
+      // Silently ignore activity logging errors
+    }
+  }, [user]);
+
   const addPoints = useCallback(async (amount: number) => {
     if (!user) return;
 
@@ -572,36 +602,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toastError('Error', 'Could not save points. Please try again.');
     }
   }, [user, haptic, toastError, setUser, refreshLeaderboard, recordActivity]);
-
-  // Record user activity for tracking
-  const recordActivity = useCallback(async (
-    type: string,
-    details?: Record<string, unknown>
-  ) => {
-    if (!user || user.id === 'demo' || !isSupabaseConfigured) return;
-
-    try {
-      // Update last_active timestamp
-      await supabase
-        .from('users')
-        .update({ last_active: new Date().toISOString() })
-        .eq('id', user.id);
-
-      // Try to insert into activities table if it exists
-      const { error } = await supabase.from('user_activities').insert({
-        user_id: user.id,
-        activity_type: type,
-        details: details || {},
-      });
-
-      // Silently fail if table doesn't exist
-      if (error && error.code !== 'PGRST116') {
-        console.log('Activity logging not available');
-      }
-    } catch {
-      // Silently ignore activity logging errors
-    }
-  }, [user]);
 
   // Load on mount — with a safety timeout so the loading screen never hangs forever
   useEffect(() => {
