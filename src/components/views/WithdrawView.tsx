@@ -223,16 +223,16 @@ export function WithdrawView() {
     }
 
     if (!result.opened) {
+      // SDK unavailable — skip ad, proceed to withdraw
       setAdPlaying(false);
       setAdTimer(0);
-      if (network === 'adsgram') {
-        setShowVpnPopup(true);
-        haptic('warning');
-      } else {
-        setAdError(true);
-        setAdErrorMsg('Ad not available. Please try another network.');
-        haptic('error');
-        setTimeout(() => { setAdError(false); setAdErrorMsg(''); }, 3000);
+      const newCount = adsWatched + 1;
+      setAdsWatched(newCount);
+      setCurrentAdIdx(currentAdIdx + 1);
+      haptic('success');
+      if (newCount >= config.ads_to_watch_for_withdraw) {
+        setShowAdFlow(false);
+        showSuccess('Ads Watched!', 'You can now make a withdrawal request.');
       }
       return;
     }

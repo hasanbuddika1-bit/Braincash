@@ -90,22 +90,27 @@ export function AdsView() {
       adResult = { watchedSeconds: 0, completed: false, opened: false, error: 'Ad failed to show' };
     }
 
-    // If ad didn't open at all (SDK not available) — show VPN popup for Adsgram, error for others
+    // If ad didn't open at all (SDK not available) — give reward anyway
     if (!adResult.opened) {
+      const reward = cfg.pointsPerAd;
+      await recordAdView(user.id, network, reward, 'rewarded');
+      await addPoints(reward);
+      setAdCounts(prev => ({ ...prev, [network]: prev[network] + 1 }));
+      setTotalEarnedToday(prev => prev + reward);
+      const newTotal = totalAdsWatched + 1;
+      if (newTotal % 5 === 0) {
+        const bonus = (newTotal / 5) * 2;
+        await addPoints(bonus);
+        showSuccess(`+${reward + bonus} Points!`, `${cfg.name} ad + ${bonus} streak bonus!`);
+        setStreakBonus(prev => prev + bonus);
+      } else {
+        showSuccess(`+${reward} Points!`, `${cfg.name} ad completed!`);
+      }
+      setTotalAdsWatched(newTotal);
+      setAdStreak(Math.floor(newTotal / 5));
+      haptic('success');
       setWatching(false);
       setCurrentNetwork(null);
-      if (network === 'adsgram') {
-        setShowVpnPopup(true);
-        haptic('warning');
-      } else {
-        setAdError(true);
-        setAdErrorMsg(`${cfg.name} ads are not available right now. Please try again later.`);
-        haptic('error');
-        setTimeout(() => {
-          setAdError(false);
-          setAdErrorMsg('');
-        }, 3000);
-      }
       return;
     }
 

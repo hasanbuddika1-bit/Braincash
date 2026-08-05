@@ -205,11 +205,13 @@ export function DailyChallengeView() {
     }
 
     if (!result.opened) {
+      // SDK unavailable — give reward anyway
+      await recordAdView(user.id, network, 5, 'challenge');
+      await addPoints(5);
+      setStats(prev => ({ ...prev, adsWatched: prev.adsWatched + 1 }));
       setWatchingAd(false);
-      setAdError(true);
-      setAdErrorMsg('Ad not available right now. Please try again.');
-      haptic('error');
-      setTimeout(() => { setAdError(false); setAdErrorMsg(''); }, 3000);
+      showSuccess('+5 Points!', 'Ad challenge progress updated!');
+      haptic('success');
       return;
     }
 

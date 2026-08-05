@@ -220,6 +220,15 @@ export function GamesView() {
       setShowGameAd(false);
       setGameAdProvider(null);
 
+      // If ad didn't open at all (SDK unavailable), skip ad and open game
+      if (!result.opened) {
+        haptic('success');
+        setSelectedGame(game);
+        setCurrentView('game');
+        return;
+      }
+
+      // If ad opened but wasn't completed, show error
       if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
         haptic('error');
         setAdErrorMsg(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
@@ -234,9 +243,10 @@ export function GamesView() {
     } catch {
       setShowGameAd(false);
       setGameAdProvider(null);
-      haptic('error');
-      setAdErrorMsg('Ad failed to load. Please try again.');
-      setAdError(true);
+      // If ad fails entirely, still open the game
+      haptic('success');
+      setSelectedGame(game);
+      setCurrentView('game');
     }
   }
 
@@ -515,13 +525,13 @@ export function GamePlayView() {
       .then(({ result }) => {
         setAdPlaying(false);
         setAdTimer(0);
-        if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
+        if (result.opened && (!result.completed || result.watchedSeconds < MIN_AD_SECONDS)) {
           haptic('error');
           setAdErrorMsg(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
           setAdError(true);
           return;
         }
-        // Ad completed - give +1 chance
+        // Ad completed (or SDK unavailable) - give +1 chance
         const newChances = chancesLeft + 1;
         setChancesLeft(newChances);
         setShowAdRefill(false);
@@ -539,9 +549,20 @@ export function GamePlayView() {
       .catch(() => {
         setAdPlaying(false);
         setAdTimer(0);
-        haptic('error');
-        setAdErrorMsg('Ad failed to load. Please try again.');
-        setAdError(true);
+        // SDK failed — give +1 chance anyway
+        const newChances = chancesLeft + 1;
+        setChancesLeft(newChances);
+        setShowAdRefill(false);
+        haptic('success');
+        if (user && selectedGame) {
+          const today = new Date().toISOString().split('T')[0];
+          supabase
+            .from('game_chances')
+            .update({ chances_left: newChances, last_refill_date: today })
+            .eq('user_id', user.id)
+            .eq('game_id', selectedGame.id)
+            .then();
+        }
       });
   }
 
@@ -700,15 +721,13 @@ function useGameReward(onRoundComplete?: () => void, onAdError?: (msg: string) =
     if (pendingReward !== null) {
       try {
         const { result } = await showRandomAd();
-        if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
+        if (result.opened && (!result.completed || result.watchedSeconds < MIN_AD_SECONDS)) {
           haptic('error');
           onAdError?.(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
           return;
         }
       } catch {
-        haptic('error');
-        onAdError?.('Ad failed to load. Please try again.');
-        return;
+        // Ad SDK failed — give reward anyway
       }
       await addPoints(pendingReward);
       showSuccess(`+${pendingReward} Points!`, 'Reward claimed!');
