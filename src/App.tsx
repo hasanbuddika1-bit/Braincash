@@ -13,6 +13,7 @@ import { DailyChallengeView } from './components/views/DailyChallengeView';
 import { HistoryView } from './components/views/HistoryView';
 import { PaymentView } from './components/views/PaymentView';
 import { ProfileView } from './components/views/ProfileView';
+import { LeaderboardView } from './components/views/LeaderboardView';
 import { ArrowLeft } from 'lucide-react';
 import { VIEW_LABELS, type ViewType } from './types';
 import { useEffect, useRef } from 'react';
@@ -21,7 +22,7 @@ import { useEffect, useRef } from 'react';
 const HIDE_TAB_VIEWS = new Set(['game', 'challenge']);
 
 // Views that show the back button
-const SHOW_BACK_VIEWS: Set<ViewType> = new Set(['games', 'ads', 'referrals', 'withdraw', 'admin', 'challenge', 'history', 'payment', 'profile', 'tasks', 'game']);
+const SHOW_BACK_VIEWS: Set<ViewType> = new Set(['games', 'ads', 'referrals', 'withdraw', 'admin', 'challenge', 'history', 'payment', 'profile', 'tasks', 'game', 'leaderboard']);
 
 function App() {
   const { loading, currentView, selectedGame, goBack, canGoBack, haptic, user, error } = useApp();
@@ -100,6 +101,7 @@ function App() {
         {currentView === 'history'   && <HistoryView />}
         {currentView === 'payment'   && <PaymentView />}
         {currentView === 'profile'   && <ProfileView />}
+        {currentView === 'leaderboard' && <LeaderboardView />}
       </main>
 
       {!HIDE_TAB_VIEWS.has(currentView) && <TabBar />}

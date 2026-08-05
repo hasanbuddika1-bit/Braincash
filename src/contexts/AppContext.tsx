@@ -28,6 +28,7 @@ interface AppContextType {
   games: Game[];
   withdrawals: Withdrawal[];
   leaderboard: LeaderboardEntry[];
+  userRank: number | null;
   currentView: ViewType;
   setCurrentView: (view: ViewType) => void;
   goBack: () => void;
@@ -64,6 +65,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [games, setGames] = useState<Game[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [userRank, setUserRank] = useState<number | null>(null);
   const [currentView, setCurrentViewState] = useState<ViewType>('home');
   const [viewHistory, setViewHistory] = useState<ViewType[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
@@ -458,10 +460,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (fetchError) throw fetchError;
       setLeaderboard((data || []).map((entry, i) => ({ ...entry, rank: i + 1 })));
+
+      // Fetch the current user's actual rank even if outside top 100
+      if (user) {
+        const { count } = await supabase
+          .from('users')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_banned', false)
+          .gt('total_earned', user.total_earned || 0);
+        setUserRank((count || 0) + 1);
+      }
     } catch (err) {
       console.error('Error refreshing leaderboard:', err);
     }
-  }, []);
+  }, [user]);
 
   // Record user activity for tracking
   const recordActivity = useCallback(async (
@@ -528,13 +540,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (directError) throw directError;
       }
 
-      // Update local state
-      setUser({
-        ...user,
-        points: user.points + amount,
-        total_earned: user.total_earned + amount,
-        last_active: new Date().toISOString(),
-      });
+      // Refresh from server so balance is always accurate
+      const { data: updatedUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (updatedUser) {
+        setUser(updatedUser);
+      } else {
+        // Fallback to optimistic update
+        setUser({
+          ...user,
+          points: user.points + amount,
+          total_earned: user.total_earned + amount,
+          last_active: new Date().toISOString(),
+        });
+      }
 
       // 5% lifetime referral commission
       try {
@@ -627,6 +650,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     games,
     withdrawals,
     leaderboard,
+    userRank,
     currentView,
     setCurrentView,
     goBack,

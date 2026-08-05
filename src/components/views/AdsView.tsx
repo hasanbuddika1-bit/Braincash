@@ -28,6 +28,9 @@ export function AdsView() {
   const [showVpnPopup, setShowVpnPopup] = useState(false);
   const [totalEarnedToday, setTotalEarnedToday] = useState(0);
   const [currentNetwork, setCurrentNetwork] = useState<AdNetwork | null>(null);
+  const [adStreak, setAdStreak] = useState(0);
+  const [streakBonus, setStreakBonus] = useState(0);
+  const [totalAdsWatched, setTotalAdsWatched] = useState(0);
 
   useEffect(() => {
     if (user) loadData();
@@ -52,6 +55,14 @@ export function AdsView() {
         monetagCount * (cfgs.monetag.pointsPerAd || 5) +
         gigapubCount * (cfgs.gigapub.pointsPerAd || 5);
       setTotalEarnedToday(total);
+
+      // Load ad streak
+      const totalAds = adsgramCount + monetagCount + gigapubCount;
+      setTotalAdsWatched(totalAds);
+      // Streak bonus: +1 pt per 5 ads watched today (compounding)
+      const streak = Math.floor(totalAds / 5);
+      setAdStreak(streak);
+      setStreakBonus(streak * 2);
     } catch (err) {
       console.error('Error loading ad data:', err);
     }
@@ -141,7 +152,18 @@ export function AdsView() {
     await addPoints(reward);
     setAdCounts(prev => ({ ...prev, [network]: prev[network] + 1 }));
     setTotalEarnedToday(prev => prev + reward);
-    showSuccess(`+${reward} Points!`, `${cfg.name} ad completed!`);
+    // Check for streak bonus (every 5 ads)
+    const newTotal = totalAdsWatched + 1;
+    if (newTotal % 5 === 0) {
+      const bonus = (newTotal / 5) * 2;
+      await addPoints(bonus);
+      showSuccess(`+${reward + bonus} Points!`, `${cfg.name} ad + ${bonus} streak bonus!`);
+      setStreakBonus(prev => prev + bonus);
+    } else {
+      showSuccess(`+${reward} Points!`, `${cfg.name} ad completed!`);
+    }
+    setTotalAdsWatched(newTotal);
+    setAdStreak(Math.floor(newTotal / 5));
     haptic('success');
     setWatching(false);
     setCurrentNetwork(null);
@@ -259,6 +281,54 @@ export function AdsView() {
           <p className="text-3xl font-black text-gold-400 font-['Orbitron']">+{totalEarnedToday} pts</p>
         </div>
       </div>
+
+      {/* Ad Streak Bonus */}
+      <div className="glass-card p-4 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(0,200,83,0.1))' }}>
+        <div className="flex items-center gap-3 mb-3">
+          <Flame className="text-orange-400" size={24} />
+          <div>
+            <p className="text-white font-bold">Ad Streak Bonus</p>
+            <p className="text-gray-400 text-sm">Every 5 ads = +2 bonus pts!</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mb-2">
+          {Array.from({ length: 5 }).map((_, i) => {
+            const mod = totalAdsWatched % 5;
+            const filled = totalAdsWatched > 0 && i < mod;
+            const current = totalAdsWatched > 0 && i === mod;
+            const cls = filled
+              ? 'flex-1 h-3 rounded-full transition-all bg-gradient-to-r from-orange-500 to-yellow-500'
+              : current
+              ? 'flex-1 h-3 rounded-full transition-all bg-yellow-500/50 animate-pulse'
+              : 'flex-1 h-3 rounded-full transition-all bg-white/10';
+            return <div key={i} className={cls} />;
+          })}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-gray-400 text-xs">Total today: {totalAdsWatched} ads</span>
+          <span className="text-yellow-400 font-bold text-sm">+{streakBonus} bonus earned</span>
+        </div>
+      </div>
+
+      {/* Quick Watch - Random Network */}
+      <button
+        onClick={() => {
+          haptic('light');
+          const networks: AdNetwork[] = ['adsgram', 'monetag', 'gigapub'];
+          const available = networks.filter(n => (adCounts[n] || 0) < (configs?.[n]?.dailyLimit || 10));
+          if (available.length === 0) {
+            showError('Daily Limit', 'You have reached all daily ad limits!');
+            return;
+          }
+          const random = available[Math.floor(Math.random() * available.length)];
+          watchAd(random);
+        }}
+        disabled={watching}
+        className="w-full mb-6 py-4 rounded-xl bg-gradient-to-r from-green-600 via-yellow-500 to-orange-500 text-white font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.02] transition-transform"
+      >
+        <Zap size={24} />
+        Quick Watch (Random)
+      </button>
 
       {/* All Networks */}
       <div className="glass-card p-4 mb-6">

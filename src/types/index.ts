@@ -206,7 +206,7 @@ export interface WithdrawRequirement {
   updated_at: string;
 }
 
-export type ViewType = 'home' | 'games' | 'game' | 'tasks' | 'ads' | 'referrals' | 'withdraw' | 'admin' | 'challenge' | 'history' | 'payment' | 'profile';
+export type ViewType = 'home' | 'games' | 'game' | 'tasks' | 'ads' | 'referrals' | 'withdraw' | 'admin' | 'challenge' | 'history' | 'payment' | 'profile' | 'leaderboard';
 
 export const VIEW_LABELS: Record<ViewType, string> = {
   home: 'Home',
@@ -221,6 +221,7 @@ export const VIEW_LABELS: Record<ViewType, string> = {
   history: 'History',
   payment: 'Buy',
   profile: 'Profile',
+  leaderboard: 'Rankings',
 };
 
 export interface GameState {

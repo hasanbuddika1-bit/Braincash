@@ -4,7 +4,7 @@ import { showAdsgramAd } from '../../lib/adManager';
 import { Trophy, TrendingUp, Clock, Gift, Zap, Target, ChevronRight, Medal, Gamepad2, Tv, Wallet, Users, CreditCard, History, Flame, Crown, ExternalLink } from 'lucide-react';
 
 export function HomeView() {
-  const { user, tgUser, leaderboard, setCurrentView, games, haptic, currentView } = useApp();
+  const { user, tgUser, leaderboard, userRank, setCurrentView, games, haptic, currentView } = useApp();
   const lastHomeAd = useRef(0);
   const [timeToReset, setTimeToReset] = useState('');
 
@@ -49,8 +49,8 @@ export function HomeView() {
     return (points * 0.0001).toFixed(2);
   };
 
-  const userRank = leaderboard.find((entry) => entry.user_id === user?.id);
   const topPlayers = leaderboard.slice(0, 5);
+  const myRank = userRank || leaderboard.find((entry) => entry.user_id === user?.id)?.rank || null;
 
   return (
     <div className="px-4 pb-24 pt-4" onClick={handleHomeTouch}>
@@ -95,7 +95,7 @@ export function HomeView() {
             className="glass-card px-3 py-2 bg-gradient-to-r from-purple-600/30 to-blue-600/30 flex items-center gap-2"
           >
             <Crown className="text-gold-400" size={18} />
-            <span className="text-gold-400 font-bold">#{userRank?.rank || '-'}</span>
+            <span className="text-gold-400 font-bold">#{myRank || '-'}</span>
           </button>
         </div>
       </div>
@@ -298,11 +298,14 @@ export function HomeView() {
           <p className="stat-value text-lg">${(user?.total_withdrawn || 0).toFixed(2)}</p>
           <p className="text-gray-400 text-xs mt-1">Withdrawn</p>
         </div>
-        <div className="stat-card group hover:scale-105 transition-transform">
+        <button
+          onClick={() => { haptic('light'); setCurrentView('leaderboard'); }}
+          className="stat-card group hover:scale-105 transition-transform text-center"
+        >
           <Medal className="text-gold-400 w-6 h-6 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-          <p className="stat-value text-lg">#{userRank?.rank || '-'}</p>
+          <p className="stat-value text-lg">#{myRank || '-'}</p>
           <p className="text-gray-400 text-xs mt-1">Rank</p>
-        </div>
+        </button>
       </div>
 
       {/* Quick Actions */}
@@ -403,6 +406,12 @@ export function HomeView() {
             </div>
           )}
         </div>
+        <button
+          onClick={() => { haptic('light'); setCurrentView('leaderboard'); }}
+          className="w-full mt-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600/30 to-blue-600/30 text-purple-300 text-sm font-bold flex items-center justify-center gap-2 hover:from-purple-600/50 hover:to-blue-600/50 transition-all"
+        >
+          <Trophy size={16} /> View Full Leaderboard
+        </button>
       </div>
     </div>
   );
