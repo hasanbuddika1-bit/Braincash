@@ -381,51 +381,45 @@ function AdminWithdrawals() {
 
     if (error) { showError('Error', 'Failed to approve withdrawal'); return; }
 
-    // Send bot notification to user + payment channel
-    try {
-      const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
-      await fetch(botUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'notify-withdraw-approve',
-          user_telegram_id: w.users?.telegram_id,
-          withdraw_data: {
-            user_name: w.users?.first_name || w.users?.username || 'Unknown',
-            withdraw_number: w.withdraw_number,
-            amount: w.amount,
-            fee: w.fee,
-            net_amount: w.net_amount,
-            currency: w.currency,
-            tx_id: txId,
-          },
-        }),
-      });
-    } catch (e) { console.error('Bot notification failed:', e); }
-
-    // Send notification to admin about the approval
-    try {
-      const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
-      await fetch(botUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'notify-admin-withdraw-approve',
-          withdraw_data: {
-            user_name: w.users?.first_name || w.users?.username || 'Unknown',
-            user_telegram_id: w.users?.telegram_id,
-            withdraw_number: w.withdraw_number,
-            amount: w.amount,
-            fee: w.fee,
-            net_amount: w.net_amount,
-            currency: w.currency,
-            wallet_address: w.wallet_address,
-            tx_id: txId,
-          },
-        }),
-      });
-    } catch (e) { console.error('Admin bot notification failed:', e); }
-
     showSuccess('Approved!', 'Withdrawal approved and user notified.');
     loadWithdrawals();
+
+    // Send bot notifications (non-blocking so list refresh isn't delayed)
+    const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+    fetch(botUrl, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'notify-withdraw-approve',
+        user_telegram_id: w.users?.telegram_id,
+        withdraw_data: {
+          user_name: w.users?.first_name || w.users?.username || 'Unknown',
+          withdraw_number: w.withdraw_number,
+          amount: w.amount,
+          fee: w.fee,
+          net_amount: w.net_amount,
+          currency: w.currency,
+          tx_id: txId,
+        },
+      }),
+    }).catch(e => console.error('Bot notification failed:', e));
+
+    fetch(botUrl, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'notify-admin-withdraw-approve',
+        withdraw_data: {
+          user_name: w.users?.first_name || w.users?.username || 'Unknown',
+          user_telegram_id: w.users?.telegram_id,
+          withdraw_number: w.withdraw_number,
+          amount: w.amount,
+          fee: w.fee,
+          net_amount: w.net_amount,
+          currency: w.currency,
+          wallet_address: w.wallet_address,
+          tx_id: txId,
+        },
+      }),
+    }).catch(e => console.error('Admin bot notification failed:', e));
   }
 
   async function rejectWithdrawal(w: any) {
@@ -443,28 +437,26 @@ function AdminWithdrawals() {
     const refundPoints = Math.round(w.amount / POINTS_TO_USD);
     await supabase.rpc('add_points', { user_id: w.user_id, amount: refundPoints });
 
-    // Send bot notification
-    try {
-      const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
-      await fetch(botUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'notify-withdraw-reject',
-          user_telegram_id: w.users?.telegram_id,
-          withdraw_data: {
-            withdraw_number: w.withdraw_number,
-            amount: w.amount,
-            fee: w.fee,
-            net_amount: w.net_amount,
-            currency: w.currency,
-            reject_reason: reason,
-          },
-        }),
-      });
-    } catch (e) { console.error('Bot notification failed:', e); }
-
     showSuccess('Rejected', 'Withdrawal rejected and points refunded.');
     loadWithdrawals();
+
+    // Send bot notification (non-blocking)
+    const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
+    fetch(botUrl, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'notify-withdraw-reject',
+        user_telegram_id: w.users?.telegram_id,
+        withdraw_data: {
+          withdraw_number: w.withdraw_number,
+          amount: w.amount,
+          fee: w.fee,
+          net_amount: w.net_amount,
+          currency: w.currency,
+          reject_reason: reason,
+        },
+      }),
+    }).catch(e => console.error('Bot notification failed:', e));
   }
 
   return (
