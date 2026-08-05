@@ -42,6 +42,7 @@ interface AppContextType {
   refreshGames: () => Promise<void>;
   refreshWithdrawals: () => Promise<void>;
   refreshLeaderboard: () => Promise<void>;
+  refreshAll: () => Promise<void>;
   addPoints: (amount: number) => Promise<void>;
   recordActivity: (type: string, details?: Record<string, unknown>) => Promise<void>;
   tgUser: {
@@ -644,6 +645,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id]);
 
+  const refreshAll = useCallback(async () => {
+    await Promise.all([refreshUser(), refreshTasks(), refreshGames(), refreshWithdrawals(), refreshLeaderboard()]);
+  }, [refreshUser, refreshTasks, refreshGames, refreshWithdrawals, refreshLeaderboard]);
+
   const value: AppContextType = {
     user,
     tasks,
@@ -664,6 +669,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     refreshGames,
     refreshWithdrawals,
     refreshLeaderboard,
+    refreshAll,
     addPoints,
     recordActivity,
     tgUser,

@@ -141,23 +141,27 @@ function AdminUsers() {
   useEffect(() => { loadUsers(); }, []);
 
   async function loadUsers() {
-    const { data } = await supabase.from('users').select('*').order('points', { ascending: false }).limit(100);
+    const { data } = await supabase.from('users').select('*').order('total_earned', { ascending: false }).limit(100);
     setUsers(data || []);
   }
 
   async function toggleBan(userId: string, currentBanned: boolean) {
     haptic('light');
-    await supabase.from('users').update({ is_banned: !currentBanned, suspended_at: !currentBanned ? new Date().toISOString() : null }).eq('id', userId);
+    const { error } = await supabase.from('users').update({ is_banned: !currentBanned, suspended_at: !currentBanned ? new Date().toISOString() : null }).eq('id', userId);
+    if (error) { showError('Error', 'Failed to update ban status'); return; }
+    showSuccess(currentBanned ? 'Unbanned' : 'Banned', `User ${currentBanned ? 'unbanned' : 'banned'} successfully`);
     loadUsers();
   }
 
   async function toggleSuspend(userId: string, currentSuspended: boolean, reason?: string) {
     haptic('light');
-    await supabase.from('users').update({
+    const { error } = await supabase.from('users').update({
       is_suspended: !currentSuspended,
       suspended_at: !currentSuspended ? new Date().toISOString() : null,
       suspension_reason: !currentSuspended ? (reason || 'Suspended by admin') : null,
     }).eq('id', userId);
+    if (error) { showError('Error', 'Failed to update suspension'); return; }
+    showSuccess(currentSuspended ? 'Unsuspended' : 'Suspended', `User ${currentSuspended ? 'unsuspended' : 'suspended'} successfully`);
     loadUsers();
   }
 
@@ -233,8 +237,8 @@ function AdminUsers() {
         <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <p className="text-white font-semibold">{u.first_name || u.username || 'Unknown'} {u.is_admin && '👑'}</p>
-              <p className="text-gray-400 text-xs">ID: {u.telegram_id} • Points: {u.points}</p>
+              <p className="text-white font-semibold">{u.first_name || u.username || 'User ' + (u.telegram_id || 'Unknown')} {u.is_admin && '👑'}</p>
+              <p className="text-gray-400 text-xs">ID: {u.telegram_id} • Points: {u.points} • Earned: {u.total_earned || 0}</p>
               <p className="text-gray-500 text-xs">IP: {u.ip_address || 'N/A'} {ipCounts[u.ip_address] > 1 && <span className="text-yellow-400 font-bold">DUP IP</span>}</p>
               {u.is_suspended && <p className="text-red-400 text-xs mt-1">SUSPENDED: {u.suspension_reason || 'No reason'}</p>}
             </div>
@@ -324,7 +328,7 @@ function AdminSuspended() {
                   <Ban className="text-red-400" size={20} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-white font-semibold">{u.first_name || u.username || 'Unknown'}</p>
+                  <p className="text-white font-semibold">{u.first_name || u.username || 'User ' + (u.telegram_id || 'Unknown')}</p>
                   <p className="text-gray-400 text-xs">ID: {u.telegram_id}</p>
                   <p className="text-gray-400 text-xs">IP: {u.registration_ip || u.ip_address || 'N/A'}</p>
                   {u.suspension_reason && (
@@ -476,7 +480,7 @@ function AdminWithdrawals() {
         <div key={w.id} className="bg-white/5 border border-white/10 rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <p className="text-white font-semibold">{w.users?.first_name || w.users?.username || 'Unknown'}</p>
+              <p className="text-white font-semibold">{w.users?.first_name || w.users?.username || 'User ' + (w.users?.telegram_id || 'Unknown')}</p>
               <p className="text-gray-400 text-xs">TG ID: {w.users?.telegram_id || 'N/A'}</p>
               <p className="text-gray-400 text-xs">#{w.withdraw_number} • ${w.amount.toFixed(4)} {w.currency}</p>
               <p className="text-gray-500 text-xs">Fee: ${w.fee.toFixed(4)} • Net: {w.net_amount.toFixed(4)} {w.currency}</p>
@@ -552,7 +556,9 @@ function AdminTasks() {
 
   async function toggleTask(id: string, current: boolean) {
     haptic('light');
-    await supabase.from('tasks').update({ is_active: !current }).eq('id', id);
+    const { error } = await supabase.from('tasks').update({ is_active: !current }).eq('id', id);
+    if (error) { showError('Error', 'Failed to toggle task'); return; }
+    showSuccess(current ? 'Disabled' : 'Enabled', `Task ${current ? 'disabled' : 'enabled'} successfully`);
     loadTasks();
   }
 
@@ -867,7 +873,7 @@ function AdminWithdrawSettings() {
   });
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const { haptic } = useApp();
+  const { haptic, refreshAll } = useApp();
   const { showSuccess, showError } = useToast();
 
   useEffect(() => { loadConfig(); }, []);
@@ -964,6 +970,7 @@ function AdminWithdrawSettings() {
       }
 
       showSuccess('Saved', 'Withdraw settings updated successfully');
+      await refreshAll();
     } catch (err) {
       console.error('Error saving withdraw config:', err);
       showError('Error', 'Failed to save withdraw settings');
@@ -1137,8 +1144,8 @@ function AdminWithdrawSettings() {
 function AdminSettings() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
-  const { haptic } = useApp();
-  const { showSuccess } = useToast();
+  const { haptic, refreshAll } = useApp();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => { loadSettings(); }, []);
 
@@ -1154,14 +1161,18 @@ function AdminSettings() {
     haptic('light');
     const newVal = !maintenanceMode;
     setMaintenanceMode(newVal);
-    await supabase.from('settings').upsert({ key: 'maintenance_mode', value: newVal.toString() }, { onConflict: 'key' });
+    const { error } = await supabase.from('settings').upsert({ key: 'maintenance_mode', value: newVal.toString() }, { onConflict: 'key' });
+    if (error) { showError('Error', 'Failed to update maintenance mode'); return; }
     showSuccess('Updated', `Maintenance mode ${newVal ? 'enabled' : 'disabled'}`);
+    await refreshAll();
   }
 
   async function saveMessage() {
     haptic('light');
-    await supabase.from('settings').upsert({ key: 'maintenance_message', value: maintenanceMessage }, { onConflict: 'key' });
+    const { error } = await supabase.from('settings').upsert({ key: 'maintenance_message', value: maintenanceMessage }, { onConflict: 'key' });
+    if (error) { showError('Error', 'Failed to save message'); return; }
     showSuccess('Saved', 'Maintenance message updated');
+    await refreshAll();
   }
 
   return (

@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Wallet, ArrowUpRight, Clock, CheckCircle, XCircle, ExternalLink, Info,
   Lock, Play, AlertCircle, ChevronRight, Heart, Zap, TrendingUp, Users, Target, Shield,
+  Clock, X,
 } from 'lucide-react';
 import type { Withdrawal } from '../../types';
 import { showAdFromNetwork, type AdNetwork, type AdShowResult } from '../../lib/adManager';
@@ -438,9 +439,24 @@ export function WithdrawView() {
               <p className="text-white font-bold text-lg mb-2">{currentAd.name}</p>
               <p className="text-gray-400 text-sm mb-6">Watch this ad to continue (10s minimum)</p>
               {adError && (
-                <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2">
-                  <AlertCircle className="text-red-400" size={18} />
-                  <p className="text-red-400 text-sm">{adErrorMsg}</p>
+                <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+                  <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-3">
+                    <Clock className="text-red-400" size={28} />
+                  </div>
+                  <p className="text-white font-bold mb-1">Ad Not Completed</p>
+                  <p className="text-gray-400 text-sm mb-4">{adErrorMsg || 'You must watch the full 10 seconds to continue.'}</p>
+                  <button
+                    onClick={() => { setAdError(false); setAdErrorMsg(''); }}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold mb-2"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={() => { setAdError(false); setAdErrorMsg(''); }}
+                    className="w-full py-2.5 rounded-xl bg-white/10 text-gray-300 font-semibold"
+                  >
+                    Close
+                  </button>
                 </div>
               )}
               <button

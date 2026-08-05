@@ -8,7 +8,7 @@ import {
 } from '../../lib/adManager';
 import {
   Play, Clock, CheckCircle, Gift, Zap, TrendingUp, Award,
-  Flame, ChevronRight, Lock, AlertCircle, Shield, Tv,
+  Flame, ChevronRight, Lock, AlertCircle, Shield, Tv, X,
 } from 'lucide-react';
 
 const REWARD_BLOCK_ID = '35762';
@@ -218,11 +218,23 @@ export function AdsView() {
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4">
           <div className="w-full max-w-sm">
             <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(0,0,0,0.3))' }}>
-              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="text-red-400" size={32} />
+              <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <Clock className="text-red-400" size={40} />
               </div>
-              <p className="text-white font-bold text-lg mb-2">Ad Not Completed</p>
-              <p className="text-gray-400 text-sm">{adErrorMsg || 'You must watch the full ad to earn rewards. Please try again.'}</p>
+              <p className="text-white font-bold text-xl mb-2">Ad Not Completed</p>
+              <p className="text-gray-400 text-sm mb-6">{adErrorMsg || 'You must watch the full 10 seconds to earn rewards.'}</p>
+              <button
+                onClick={() => { haptic('light'); setAdError(false); setAdErrorMsg(''); setWatching(false); setCurrentNetwork(null); }}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold mb-3"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => { haptic('light'); setAdError(false); setAdErrorMsg(''); setWatching(false); setCurrentNetwork(null); }}
+                className="w-full py-3 rounded-xl bg-white/10 text-gray-300 font-semibold"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

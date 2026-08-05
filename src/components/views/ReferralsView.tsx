@@ -348,10 +348,42 @@ export function ReferralsView() {
         </h3>
 
         {referrals.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-4xl mb-3 opacity-50">👥</div>
-            <p className="text-gray-400">No referrals yet</p>
-            <p className="text-gray-500 text-sm mt-1">Share your link to start earning!</p>
+          <div className="space-y-3">
+            {[
+              { name: 'CryptoMaster', commission: 20, status: 'pending', days: 2 },
+              { name: 'GamePro2026', commission: 60, status: 'intermediate', days: 5 },
+              { name: 'EarnMax', commission: 130, status: 'active', days: 12 },
+            ].map((ref, i) => {
+              const statusColors: Record<string, string> = {
+                pending: 'text-yellow-400 bg-yellow-500/20',
+                intermediate: 'text-blue-400 bg-blue-500/20',
+                active: 'text-green-400 bg-green-500/20',
+              };
+              const statusLabels: Record<string, string> = {
+                pending: 'Pending',
+                intermediate: 'Intermediate',
+                active: 'Active',
+              };
+              return (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 opacity-60">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold">
+                    {ref.name[0]}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-semibold text-sm">{ref.name}</p>
+                    <p className="text-gray-400 text-xs">
+                      Commission: <span className="text-gold-400">{ref.commission} pts</span> • {ref.days}d ago
+                    </p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${statusColors[ref.status]}`}>
+                    {statusLabels[ref.status]}
+                  </span>
+                </div>
+              );
+            })}
+            <div className="text-center py-4">
+              <p className="text-gray-500 text-sm">Share your link to start earning real commissions!</p>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">

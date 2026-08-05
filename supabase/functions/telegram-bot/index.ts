@@ -144,19 +144,26 @@ async function getOrCreateUser(supabase: ReturnType<typeof getSupabaseClient>, t
 
     if (referredBy && referredBy.startsWith('ref_')) {
       const referrerCode = referredBy.replace('ref_', '');
-      const { data: referrer } = await supabase.from('users').select('id, referral_blocked').eq('referral_code', referrerCode).maybeSingle();
+      const { data: referrer } = await supabase.from('users').select('id, referral_blocked, ip_address, registration_ip').eq('referral_code', referrerCode).maybeSingle();
       if (referrer && referrer.id !== user.id && !referrer.referral_blocked) {
         const { data: existingReferral } = await supabase.from('referrals').select('id').eq('referrer_id', referrer.id).eq('referred_id', user.id).maybeSingle();
         if (!existingReferral) {
-          await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: user.id, join_bonus: 20, task_bonus: 0, ad_bonus: 0, total_commission: 20, lifetime_commission: 0 });
-          await supabase.from('users').update({ referred_by: referrer.id }).eq('id', user.id);
-          await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
-          if (botToken) {
-            try {
-              await sendMessage(botToken, referrer.id, `🎉 <b>New Referral!</b>\n\n👤 <b>Referred user:</b> ${telegramUser.first_name || 'Anonymous'}\n💰 <b>Your bonus:</b> +20 pts\n\nKeep inviting friends to earn more!`, {
-                inline_keyboard: [[{ text: "🧠 Open Brain Cash", web_app: { url: MINI_APP_URL } }]],
-              });
-            } catch (e) { console.error('Failed to send referral notification:', e); }
+          // Block referral if both users share the same IP (multi-account abuse)
+          const referrerIp = referrer.ip_address || referrer.registration_ip;
+          const newUserIp = user.ip_address || user.registration_ip;
+          if (referrerIp && newUserIp && referrerIp === newUserIp) {
+            console.log(`Referral blocked: same IP ${referrerIp} for referrer ${referrer.id} and referred ${user.id}`);
+          } else {
+            await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: user.id, join_bonus: 20, task_bonus: 0, ad_bonus: 0, total_commission: 20, lifetime_commission: 0 });
+            await supabase.from('users').update({ referred_by: referrer.id }).eq('id', user.id);
+            await supabase.rpc('add_points', { user_id: referrer.id, amount: 20 });
+            if (botToken) {
+              try {
+                await sendMessage(botToken, referrer.id, `🎉 <b>New Referral!</b>\n\n👤 <b>Referred user:</b> ${telegramUser.first_name || 'Anonymous'}\n💰 <b>Your bonus:</b> +20 pts\n\nKeep inviting friends to earn more!`, {
+                  inline_keyboard: [[{ text: "🧠 Open Brain Cash", web_app: { url: MINI_APP_URL } }]],
+                });
+              } catch (e) { console.error('Failed to send referral notification:', e); }
+            }
           }
         }
       }
@@ -294,15 +301,25 @@ Deno.serve(async (req: Request) => {
       if (action === 'notify-admin-withdraw' && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
         const method = 'USDT (BEP20)';
+        // Fetch real user data from database
+        let userName = w.user_name || 'Unknown';
+        if (w.user_telegram_id) {
+          try {
+            const { data: userData } = await supabase.from('users').select('first_name, username').eq('telegram_id', w.user_telegram_id).maybeSingle();
+            if (userData) {
+              userName = userData.first_name || userData.username || 'Unknown';
+            }
+          } catch {}
+        }
         await sendMessage(botToken, ADMIN_TELEGRAM_ID,
           `🧠💰 <b>New Withdrawal Request</b>\n\n` +
-          `👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})\n` +
+          `👤 <b>User:</b> ${userName} (ID: ${w.user_telegram_id || 'N/A'})\n` +
           `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}\n` +
           `💵 <b>Amount USD:</b> ${w.amount.toFixed(4)}\n` +
           `💳 <b>Method:</b> ${method}\n` +
           `💸 <b>Withdraw fee:</b> ${w.fee.toFixed(4)}\n` +
           `✅ <b>Net (after fee):</b> ${w.net_amount.toFixed(4)} ${method}\n` +
-          `📍 <b>Address:</b> <code>${w.wallet_address}</code>`,
+          `📍 <b>Address:</b> <code>${w.wallet_address || 'N/A'}</code>`,
           { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
         );
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -313,11 +330,21 @@ Deno.serve(async (req: Request) => {
         const w = bodyData.withdraw_data;
         const method = 'USDT (BEP20)';
         const explorerUrl = w.tx_id ? `https://bscscan.com/tx/${w.tx_id}` : '';
+        // Fetch real user data from database
+        let userName = w.user_name || 'Unknown';
+        if (w.user_telegram_id) {
+          try {
+            const { data: userData } = await supabase.from('users').select('first_name, username').eq('telegram_id', w.user_telegram_id).maybeSingle();
+            if (userData) {
+              userName = userData.first_name || userData.username || 'Unknown';
+            }
+          } catch {}
+        }
         await sendMessage(botToken, ADMIN_TELEGRAM_ID,
           `✅ <b>Withdrawal Approved</b>
 
 ` +
-          `👤 <b>User:</b> ${w.user_name || 'Unknown'} (ID: ${w.user_telegram_id})
+          `👤 <b>User:</b> ${userName} (ID: ${w.user_telegram_id || 'N/A'})
 ` +
           `🔢 <b>Number of withdraw:</b> #${w.withdraw_number}
 ` +
