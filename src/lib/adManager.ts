@@ -33,6 +33,12 @@ declare global {
   }
 }
 
+let cachedAdsgramBlockId = '35762';
+
+export function getAdsgramBlockId(): string {
+  return cachedAdsgramBlockId;
+}
+
 export async function loadAdSettings(): Promise<Record<AdNetwork, AdNetworkConfig>> {
   const { data } = await supabase.from('settings').select('key, value').in('key', [
     'adsgram_block_id', 'adsgram_daily_limit', 'adsgram_points_per_ad', 'adsgram_cooldown_seconds',
@@ -42,6 +48,7 @@ export async function loadAdSettings(): Promise<Record<AdNetwork, AdNetworkConfi
 
   const map: Record<string, string> = {};
   (data || []).forEach((s: { key: string; value: string }) => { map[s.key] = s.value; });
+  if (map.adsgram_block_id) cachedAdsgramBlockId = map.adsgram_block_id;
 
   return {
     adsgram: {
@@ -124,11 +131,17 @@ async function ensureAdsgram(blockId: string): Promise<boolean> {
   if (!window.Adsgram) {
     try {
       await loadScript('https://sad.adsgram.ai/js/sad.min.js');
+      let waitTries = 0;
+      while (!window.Adsgram && waitTries < 30) {
+        await new Promise(r => setTimeout(r, 100));
+        waitTries++;
+      }
     } catch {
       return false;
     }
   }
-  if (!adsgramController && window.Adsgram) {
+  if (!window.Adsgram) return false;
+  if (!adsgramController) {
     try {
       adsgramController = window.Adsgram.init({ blockId });
     } catch {
@@ -205,18 +218,19 @@ export async function showAdsgramAd(blockId: string): Promise<AdShowResult> {
   let adError: string | null = null;
 
   await new Promise<void>((resolve) => {
-    adsgramController.show().then(() => {
-      completed = true;
+    adsgramController.show().then((result: any) => {
+      completed = result?.done === true;
+      if (result?.error) adError = result?.description || 'Ad show failed';
       resolve();
-    }).catch((err: any) => {
-      adError = err?.message || 'Ad show failed';
+    }).catch((result: any) => {
+      adError = result?.description || result?.message || 'Ad show failed';
       resolve();
     });
     setTimeout(() => resolve(), 120000);
   });
 
   const watchedSeconds = Math.floor((Date.now() - startTime) / 1000);
-  return { watchedSeconds, completed: completed && !adError, opened: true, error: adError || undefined };
+  return { watchedSeconds, completed, opened: true, error: adError || undefined };
 }
 
 export async function showMonetagAd(zoneId: string): Promise<AdShowResult> {
@@ -296,7 +310,7 @@ export async function showRandomAd(): Promise<{ network: AdNetwork; result: AdSh
   const network = pickRandomNetwork();
   let result: AdShowResult;
   if (network === 'adsgram') {
-    result = await showAdsgramAd('35762');
+    result = await showAdsgramAd(getAdsgramBlockId());
   } else if (network === 'monetag') {
     result = await showMonetagAd('11230846');
   } else {
@@ -307,19 +321,19 @@ export async function showRandomAd(): Promise<{ network: AdNetwork; result: AdSh
 
 // Show ad from a specific network - returns AdShowResult
 export async function showAdFromNetwork(network: AdNetwork): Promise<AdShowResult> {
-  if (network === 'adsgram') return showAdsgramAd('35762');
+  if (network === 'adsgram') return showAdsgramAd(getAdsgramBlockId());
   if (network === 'monetag') return showMonetagAd('11230846');
   return showGigapubAd('7151');
 }
 
 // Show a rewarded Adsgram ad
 export async function showRewardedAd(): Promise<AdShowResult> {
-  return showAdsgramAd('35762');
+  return showAdsgramAd(getAdsgramBlockId());
 }
 
 // Get the block ID for a network
 export function getNetworkBlockId(network: AdNetwork): string {
-  if (network === 'adsgram') return '35762';
+  if (network === 'adsgram') return getAdsgramBlockId();
   if (network === 'monetag') return '11230846';
   return '7151';
 }

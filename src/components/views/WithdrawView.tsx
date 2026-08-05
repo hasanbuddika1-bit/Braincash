@@ -301,12 +301,23 @@ export function WithdrawView() {
 
       if (updateError) throw updateError;
 
-      await supabase.from('notifications').insert({
-        user_id: user.id,
-        title: 'Withdrawal Requested',
-        message: `Your withdrawal #${newWithdrawNumber} of $${netAmount.toFixed(4)} USDT is pending review.`,
-        type: 'withdrawal',
-      });
+      await refreshWithdrawals();
+      await refreshUser();
+
+      setAmount('');
+      setWalletAddress('');
+
+      showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review.`);
+      haptic('success');
+
+      try {
+        await supabase.from('notifications').insert({
+          user_id: user.id,
+          title: 'Withdrawal Requested',
+          message: `Your withdrawal #${newWithdrawNumber} of ${netAmount.toFixed(4)} USDT is pending review.`,
+          type: 'info',
+        });
+      } catch (e) { console.error('Notification insert failed:', e); }
 
       try {
         const botUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-bot`;
@@ -328,15 +339,6 @@ export function WithdrawView() {
           }),
         });
       } catch (e) { console.error('Bot notification failed:', e); }
-
-      await refreshWithdrawals();
-      await refreshUser();
-
-      setAmount('');
-      setWalletAddress('');
-
-      showSuccess('Withdrawal Requested', `Your withdrawal #${newWithdrawNumber} of $${netAmount.toFixed(4)} USDT is pending review.`);
-      haptic('success');
     } catch (error) {
       console.error('Withdrawal error:', error);
       showError('Withdrawal Failed', 'Could not create withdrawal. Please try again.');

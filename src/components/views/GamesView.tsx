@@ -427,6 +427,10 @@ export function GamePlayView() {
   const [adPlaying, setAdPlaying] = useState(false);
   const [currentAdIdx, setCurrentAdIdx] = useState(0);
   const [roundCompleted, setRoundCompleted] = useState(false);
+  const [adError, setAdError] = useState(false);
+  const [adErrorMsg, setAdErrorMsg] = useState('');
+  const [rewardAdError, setRewardAdError] = useState(false);
+  const [rewardAdErrorMsg, setRewardAdErrorMsg] = useState('');
 
   useEffect(() => {
     if (user && selectedGame) {
@@ -667,7 +671,7 @@ export function GamePlayView() {
 // ── useGameReward hook ───────────────────────────────────────────────────────
 
 function useGameReward(onRoundComplete?: () => void, onAdError?: (msg: string) => void) {
-  const { user, addPoints, haptic } = useApp();
+  const { user, addPoints, haptic, selectedGame } = useApp();
   const { success: showSuccess } = useToast();
   const [pendingReward, setPendingReward] = useState<number | null>(null);
   const [pendingScore, setPendingScore] = useState<number | string | undefined>(undefined);
@@ -679,7 +683,7 @@ function useGameReward(onRoundComplete?: () => void, onAdError?: (msg: string) =
       try {
         await supabase.from('game_sessions').insert({
           user_id: user.id,
-          game_id: selectedGame?.id || user.id,
+          game_id: selectedGame?.id ?? user.id,
           score: typeof score === 'number' ? score : 0,
           reward,
         });

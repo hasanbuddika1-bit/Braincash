@@ -11,7 +11,6 @@ import {
   Flame, ChevronRight, Lock, AlertCircle, Shield, Tv, X,
 } from 'lucide-react';
 
-const REWARD_BLOCK_ID = '35762';
 const MIN_WATCH_SECONDS = 10;
 
 export function AdsView() {
