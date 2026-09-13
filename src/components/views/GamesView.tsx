@@ -2,60 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useToast } from '../Toast';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Trophy, HelpCircle, X, Star, Zap, Heart, Play, Target, Award, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, HelpCircle, X, Star, Zap, Play, Heart, Gamepad2 } from 'lucide-react';
 
-import { showAdsgramAd, showMonetagAd, showGigapubAd, showRandomAd, showAdFromNetwork, pickRandomNetwork, type AdNetwork } from '../../lib/adManager';
-
-const MAX_CHANCES = 5;
-const MIN_AD_SECONDS = 10;
-const AD_PROVIDERS: { id: AdNetwork; name: string; logo: string }[] = [
-  { id: 'adsgram', name: 'Adsgram AI', logo: '🤖' },
-  { id: 'monetag', name: 'Monetag', logo: '📊' },
-  { id: 'gigapub', name: 'Gigapub', logo: '🚀' },
-];
-
-// ── Ad Error Modal ──────────────────────────────────────────────────────────
-
-interface GameAdErrorProps {
-  message?: string;
-  onRetry: () => void;
-  onClose: () => void;
-}
-
-function GameAdErrorModal({ message, onRetry, onClose }: GameAdErrorProps) {
-  return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
-      <div className="w-full max-w-sm">
-        <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(0,0,0,0.3))' }}>
-          <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
-            <Clock className="text-red-400" size={40} />
-          </div>
-          <p className="text-white font-bold text-xl mb-2">Ad Not Completed</p>
-          <p className="text-gray-400 text-sm mb-6">{message || 'You must watch the full 10 seconds to earn rewards.'}</p>
-          <button
-            onClick={onRetry}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold mb-3"
-          >
-            Try Again
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full py-3 rounded-xl bg-white/10 text-gray-300 font-semibold"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const GAME_CHALLENGE_TIERS = [
-  { rounds: 10, reward: 10 },
-  { rounds: 20, reward: 25 },
-  { rounds: 50, reward: 100 },
-  { rounds: 100, reward: 500 },
-];
+const MAX_CHANCES = 2;
 
 // ── Reward claim popup ──────────────────────────────────────────────────────
 
@@ -154,138 +103,76 @@ function TutorialOverlay({ gameType, onClose }: { gameType: string; onClose: () 
 
 export function GamesView() {
   const { games, setCurrentView, setSelectedGame, haptic, user } = useApp();
-  const [gameChances, setGameChances] = useState<Record<string, number>>({});
-  const [totalRounds, setTotalRounds] = useState(0);
-  const [claimedTiers, setClaimedTiers] = useState<number[]>([]);
+  const [gamePlays, setGamePlays] = useState<Record<string, number>>({});
+  const [loadingGame, setLoadingGame] = useState<string | null>(null);
 
   useEffect(() => {
-    loadChancesAndChallenges();
+    loadGamePlays();
   }, [user?.id]);
 
-  async function loadChancesAndChallenges() {
+  async function loadGamePlays() {
     if (!user) return;
     try {
-      // Load chances for all games
-      const { data: chances } = await supabase
-        .from('game_chances')
-        .select('game_id, chances_left, last_refill_date')
-        .eq('user_id', user.id);
-
       const today = new Date().toISOString().split('T')[0];
-      const chancesMap: Record<string, number> = {};
-      (chances || []).forEach(c => {
-        // Reset if new day
-        chancesMap[c.game_id] = c.last_refill_date !== today ? MAX_CHANCES : c.chances_left;
+      const { data } = await supabase
+        .from('game_plays')
+        .select('game_id, played_at')
+        .eq('user_id', user.id);
+      const counts: Record<string, number> = {};
+      (data || []).forEach((p: { game_id: string; played_at: string }) => {
+        if (p.played_at.startsWith(today)) {
+          counts[p.game_id] = (counts[p.game_id] || 0) + 1;
+        }
       });
-      setGameChances(chancesMap);
-
-      // Load total rounds today
-      const { data: rounds } = await supabase
-        .from('game_round_counts')
-        .select('rounds_played, last_reset_date')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (rounds) {
-        setTotalRounds(rounds.last_reset_date !== today ? 0 : rounds.rounds_played);
-      }
-
-      // Load claimed challenge tiers today
-      const { data: claims } = await supabase
-        .from('game_challenge_claims')
-        .select('tier')
-        .eq('user_id', user.id)
-        .eq('claim_date', today);
-
-      setClaimedTiers((claims || []).map(c => c.tier));
+      setGamePlays(counts);
     } catch (err) {
-      console.error('Error loading game data:', err);
+      console.error('Error loading game plays:', err);
     }
   }
 
-  const [showGameAd, setShowGameAd] = useState(false);
-  const [gameAdProvider, setGameAdProvider] = useState<AdNetwork | null>(null);
-  const [adError, setAdError] = useState(false);
-  const [adErrorMsg, setAdErrorMsg] = useState('');
-  const [pendingGame, setPendingGame] = useState<typeof games[0] | null>(null);
-
-  async function playGameAd(game: typeof games[0]) {
-    const network = pickRandomNetwork();
-    setGameAdProvider(network);
-    setShowGameAd(true);
+  async function handleGameClick(game: typeof games[0]) {
     haptic('light');
+    if (!user) return;
 
+    setLoadingGame(game.id);
     try {
-      const result = await showAdFromNetwork(network);
-      setShowGameAd(false);
-      setGameAdProvider(null);
+      const { data, error } = await supabase.rpc('check_game_play', {
+        p_user_id: user.id,
+        p_game_id: game.id,
+      });
 
-      // If ad didn't open at all (SDK unavailable), skip ad and open game
-      if (!result.opened) {
-        haptic('success');
-        setSelectedGame(game);
-        setCurrentView('game');
-        return;
-      }
+      if (error) throw error;
 
-      // If ad opened but wasn't completed, show error
-      if (!result.completed || result.watchedSeconds < MIN_AD_SECONDS) {
+      const result = typeof data === 'string' ? JSON.parse(data) : data;
+
+      if (!result.allowed) {
         haptic('error');
-        setAdErrorMsg(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
-        setAdError(true);
+        const { error: showError } = useToast();
+        showError('No Chances Left', result.message || 'You have used both chances for this game today.');
         return;
       }
 
-      // Ad completed successfully - start game
+      // Update local state
+      setGamePlays(prev => ({
+        ...prev,
+        [game.id]: (prev[game.id] || 0) + 1,
+      }));
+
       haptic('success');
       setSelectedGame(game);
       setCurrentView('game');
-    } catch {
-      setShowGameAd(false);
-      setGameAdProvider(null);
-      // If ad fails entirely, still open the game
-      haptic('success');
+    } catch (err) {
+      console.error('Error checking game play:', err);
+      // Fallback: just open the game
       setSelectedGame(game);
       setCurrentView('game');
+    } finally {
+      setLoadingGame(null);
     }
   }
-
-  const handleGameClick = (game: typeof games[0]) => {
-    haptic('light');
-    const chances = gameChances[game.id] ?? MAX_CHANCES;
-    if (chances <= 0) {
-      haptic('error');
-      return;
-    }
-    setPendingGame(game);
-    playGameAd(game);
-  };
 
   const SUPPORTED_TYPES = ['memory', 'connect', 'color', 'wordguess', 'numberguess', 'wordtype', 'math', 'drawing'];
   const availableGames = games.filter(g => SUPPORTED_TYPES.includes(g.game_type));
-
-  async function claimGameChallenge(tier: typeof GAME_CHALLENGE_TIERS[0]) {
-    if (!user || claimedTiers.includes(tier.rounds) || totalRounds < tier.rounds) return;
-    haptic('light');
-    try {
-      await supabase.from('game_challenge_claims').insert({
-        user_id: user.id,
-        tier: tier.rounds,
-      });
-      // Add points
-      const { error } = await supabase.rpc('add_points', { user_id: user.id, amount: tier.reward });
-      if (error) {
-        await supabase.from('users').update({ points: user.points + tier.reward, total_earned: user.total_earned + tier.reward }).eq('id', user.id);
-      }
-      setClaimedTiers([...claimedTiers, tier.rounds]);
-      showGameSuccess(`+${tier.reward} Points!`, `Game challenge (${tier.rounds} rounds) claimed!`);
-      haptic('success');
-    } catch (err) {
-      console.error('Error claiming challenge:', err);
-    }
-  }
-
-  const { success: showGameSuccess } = useToast();
 
   return (
     <div className="px-4 pb-24 pt-4">
@@ -294,131 +181,55 @@ export function GamesView() {
           <span className="text-4xl">🎮</span>
           Play & Earn
         </h1>
-        <p className="text-green-400 mt-2">Play games to earn points! 5 chances per game per day.</p>
-      </div>
-
-      {/* Daily Game Challenge */}
-      <div className="glass-card p-4 mb-6" style={{ background: 'linear-gradient(135deg, rgba(0,200,83,0.1) 0%, rgba(124,58,237,0.1) 100%)', border: '1px solid rgba(0,200,83,0.2)' }}>
-        <div className="flex items-center gap-3 mb-4">
-          <Trophy className="text-gold-400" size={24} />
-          <div>
-            <p className="text-white font-bold">Daily Game Challenge</p>
-            <p className="text-gray-400 text-sm">Play games to reach round milestones!</p>
-          </div>
-        </div>
-
-        {/* Total rounds progress bar */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400 text-sm">Rounds played today</span>
-            <span className="text-gold-400 font-bold">{totalRounds}</span>
-          </div>
-          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${Math.min((totalRounds / 100) * 100, 100)}%`,
-                background: 'linear-gradient(90deg, #00c853, #fbbf24, #7c3aed)',
-                backgroundSize: '200% 100%',
-                animation: 'shimmer 2s linear infinite',
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Challenge tiers */}
-        <div className="grid grid-cols-2 gap-3">
-          {GAME_CHALLENGE_TIERS.map((tier) => {
-            const reached = totalRounds >= tier.rounds;
-            const claimed = claimedTiers.includes(tier.rounds);
-            return (
-              <div
-                key={tier.rounds}
-                className={`p-3 rounded-xl border-2 transition-all ${
-                  claimed ? 'bg-green-500/10 border-green-500/30' :
-                  reached ? 'bg-gold-400/10 border-gold-400/50' :
-                  'bg-white/5 border-white/10'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-white font-bold text-sm">{tier.rounds} Rounds</span>
-                  {claimed && <CheckCircle className="text-green-400" size={16} />}
-                </div>
-                <p className="text-gold-400 text-sm font-semibold mb-2">+{tier.reward} pts</p>
-                {claimed ? (
-                  <p className="text-green-400 text-xs text-center">Claimed</p>
-                ) : reached ? (
-                  <button
-                    onClick={() => claimGameChallenge(tier)}
-                    className="w-full py-1.5 rounded-lg bg-gradient-to-r from-green-600 to-gold-500 text-white text-xs font-bold"
-                  >
-                    Claim
-                  </button>
-                ) : (
-                  <p className="text-gray-500 text-xs text-center">{tier.rounds - totalRounds} more</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <p className="text-green-400 mt-2">2 chances per game per day. No extra chances available.</p>
       </div>
 
       {/* Games Grid */}
       <div className="grid grid-cols-2 gap-4">
         {availableGames.map((game) => {
-          const chances = gameChances[game.id] ?? MAX_CHANCES;
+          const played = gamePlays[game.id] || 0;
+          const remaining = MAX_CHANCES - played;
+          const noChances = remaining <= 0;
           return (
             <div
               key={game.id}
-              onClick={() => handleGameClick(game)}
-              className={`glass-card p-5 flex flex-col items-center gap-3 cursor-pointer transition-all hover:scale-105 active:scale-95 ${chances <= 0 ? 'opacity-50' : ''}`}
+              onClick={() => !noChances && !loadingGame && handleGameClick(game)}
+              className={`glass-card p-5 flex flex-col items-center gap-3 transition-all ${
+                noChances ? 'opacity-50' : 'cursor-pointer hover:scale-105 active:scale-95'
+              }`}
               style={{ border: '1px solid rgba(0,200,83,0.2)' }}
             >
               <div className="text-5xl">{game.icon}</div>
               <h3 className="text-white font-bold text-center text-sm">{game.name}</h3>
               <p className="text-gray-400 text-xs text-center leading-relaxed">{game.description}</p>
-              {/* Chances (hearts) */}
+              {/* Chances display */}
               <div className="flex items-center gap-1">
                 {Array.from({ length: MAX_CHANCES }).map((_, i) => (
                   <Heart
                     key={i}
-                    size={14}
-                    className={i < chances ? 'text-red-400 fill-red-400' : 'text-gray-600'}
+                    size={16}
+                    className={i < remaining ? 'text-red-400 fill-red-400' : 'text-gray-600'}
                   />
                 ))}
               </div>
-              <div className="flex items-center gap-1 mt-1 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-                <Zap className="text-gold-400" size={12} />
-                <span className="text-gold-400 text-sm font-bold">{game.reward_range_min}-{game.reward_range_max} pts</span>
-              </div>
+              {noChances ? (
+                <p className="text-red-400 text-xs font-semibold">Come back tomorrow</p>
+              ) : (
+                <div className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+                  <Zap className="text-gold-400" size={12} />
+                  <span className="text-gold-400 text-sm font-bold">{game.reward_range_min}-{game.reward_range_max} pts</span>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Ad Error Modal */}
-      {adError && (
-        <GameAdErrorModal
-          message={adErrorMsg}
-          onRetry={() => { setAdError(false); if (pendingGame) playGameAd(pendingGame); }}
-          onClose={() => { setAdError(false); setPendingGame(null); }}
-        />
-      )}
-
-      {/* Game Ad Overlay */}
-      {showGameAd && gameAdProvider && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(8,8,20,0.85)' }}>
-          <div className="glass-card p-8 text-center max-w-sm w-[90%]">
-            <div className="text-6xl mb-4 animate-pulse">
-              {gameAdProvider === 'adsgram' ? '🤖' : gameAdProvider === 'monetag' ? '📊' : '🚀'}
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">
-              {gameAdProvider === 'adsgram' ? 'Adsgram AI' : gameAdProvider === 'monetag' ? 'Monetag' : 'Gigapub'}
-            </h3>
-            <p className="text-gray-400 mb-4">Loading ad...</p>
-            <div className="w-full h-4 rounded-full overflow-hidden mb-4" style={{ background: 'rgba(255,255,255,0.1)' }}>
-              <div className="h-full rounded-full animate-pulse" style={{ width: '60%', background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }} />
-            </div>
+      {loadingGame && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(8,8,20,0.85)' }}>
+          <div className="glass-card p-8 text-center">
+            <div className="text-5xl mb-4 animate-bounce">🎮</div>
+            <p className="text-white font-bold">Loading game...</p>
           </div>
         </div>
       )}
@@ -431,202 +242,11 @@ export function GamesView() {
 export function GamePlayView() {
   const { selectedGame, setCurrentView, haptic, user } = useApp();
   const [showTutorial, setShowTutorial] = useState(true);
-  const [chancesLeft, setChancesLeft] = useState(MAX_CHANCES);
-  const [showAdRefill, setShowAdRefill] = useState(false);
-  const [adTimer, setAdTimer] = useState(0);
-  const [adPlaying, setAdPlaying] = useState(false);
-  const [currentAdIdx, setCurrentAdIdx] = useState(0);
   const [roundCompleted, setRoundCompleted] = useState(false);
-  const [adError, setAdError] = useState(false);
-  const [adErrorMsg, setAdErrorMsg] = useState('');
-  const [rewardAdError, setRewardAdError] = useState(false);
-  const [rewardAdErrorMsg, setRewardAdErrorMsg] = useState('');
-
-  useEffect(() => {
-    if (user && selectedGame) {
-      loadChances();
-    }
-  }, [user?.id, selectedGame?.id]);
-
-  async function loadChances() {
-    if (!user || !selectedGame) return;
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const { data } = await supabase
-        .from('game_chances')
-        .select('chances_left, last_refill_date')
-        .eq('user_id', user.id)
-        .eq('game_id', selectedGame.id)
-        .maybeSingle();
-
-      if (data) {
-        setChancesLeft(data.last_refill_date !== today ? MAX_CHANCES : data.chances_left);
-      } else {
-        setChancesLeft(MAX_CHANCES);
-      }
-    } catch {}
-  }
-
-  async function consumeChance() {
-    if (!user || !selectedGame) return;
-    const newChances = chancesLeft - 1;
-    setChancesLeft(newChances);
-    setRoundCompleted(true);
-
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      // Upsert game chances
-      const { data: existing } = await supabase
-        .from('game_chances')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('game_id', selectedGame.id)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from('game_chances')
-          .update({ chances_left: newChances, last_refill_date: today })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('game_chances')
-          .insert({ user_id: user.id, game_id: selectedGame.id, chances_left: newChances, last_refill_date: today });
-      }
-
-      // Increment total rounds
-      const { data: roundsData } = await supabase
-        .from('game_round_counts')
-        .select('id, rounds_played, last_reset_date')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (roundsData) {
-        const newRounds = roundsData.last_reset_date !== today ? 1 : roundsData.rounds_played + 1;
-        await supabase
-          .from('game_round_counts')
-          .update({ rounds_played: newRounds, last_reset_date: today })
-          .eq('id', roundsData.id);
-      } else {
-        await supabase
-          .from('game_round_counts')
-          .insert({ user_id: user.id, rounds_played: 1, last_reset_date: today });
-      }
-    } catch (err) {
-      console.error('Error consuming chance:', err);
-    }
-  }
-
-  function startAdRefill() {
-    haptic('light');
-    setAdPlaying(true);
-    setAdTimer(15);
-    showRandomAd()
-      .then(({ result }) => {
-        setAdPlaying(false);
-        setAdTimer(0);
-        if (result.opened && (!result.completed || result.watchedSeconds < MIN_AD_SECONDS)) {
-          haptic('error');
-          setAdErrorMsg(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
-          setAdError(true);
-          return;
-        }
-        // Ad completed (or SDK unavailable) - give +1 chance
-        const newChances = chancesLeft + 1;
-        setChancesLeft(newChances);
-        setShowAdRefill(false);
-        haptic('success');
-        if (user && selectedGame) {
-          const today = new Date().toISOString().split('T')[0];
-          supabase
-            .from('game_chances')
-            .update({ chances_left: newChances, last_refill_date: today })
-            .eq('user_id', user.id)
-            .eq('game_id', selectedGame.id)
-            .then();
-        }
-      })
-      .catch(() => {
-        setAdPlaying(false);
-        setAdTimer(0);
-        // SDK failed — give +1 chance anyway
-        const newChances = chancesLeft + 1;
-        setChancesLeft(newChances);
-        setShowAdRefill(false);
-        haptic('success');
-        if (user && selectedGame) {
-          const today = new Date().toISOString().split('T')[0];
-          supabase
-            .from('game_chances')
-            .update({ chances_left: newChances, last_refill_date: today })
-            .eq('user_id', user.id)
-            .eq('game_id', selectedGame.id)
-            .then();
-        }
-      });
-  }
-
-  useEffect(() => {
-    if (adPlaying && adTimer > 0) {
-      const t = setTimeout(() => setAdTimer(at => at - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [adPlaying, adTimer]);
 
   if (!selectedGame) {
     setCurrentView('games');
     return null;
-  }
-
-  // No chances left - show ad refill prompt
-  if (chancesLeft <= 0 && !showAdRefill) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #080814 0%, #0a0d1a 100%)' }}>
-        <div className="text-6xl mb-4">💔</div>
-        <h2 className="text-white font-bold text-xl mb-2">No Chances Left!</h2>
-        <p className="text-gray-400 text-center mb-6">You've used all your chances for this game today. Watch an ad to get 1 more chance!</p>
-        <button onClick={() => setShowAdRefill(true)} className="btn-neon-gold w-full max-w-xs flex items-center justify-center gap-2">
-          <Play size={20} /> Watch Ad for +1 Chance
-        </button>
-        <button onClick={() => { haptic('light'); setCurrentView('games'); }} className="mt-4 text-gray-400 text-sm">
-          Back to Games
-        </button>
-      </div>
-    );
-  }
-
-  // Ad refill overlay
-  if (showAdRefill) {
-    const currentAd = AD_PROVIDERS[currentAdIdx];
-    return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: 'rgba(8,8,20,0.9)' }}>
-        <div className="w-full max-w-sm">
-          {!adPlaying ? (
-            <div className="glass-card p-8 text-center">
-              <div className="text-5xl mb-4">{currentAd.logo}</div>
-              <p className="text-white font-bold text-lg mb-2">{currentAd.name}</p>
-              <p className="text-gray-400 text-sm mb-6">Watch this ad to get +1 chance</p>
-              <button onClick={startAdRefill} className="btn-neon-gold w-full flex items-center justify-center gap-2">
-                <Play size={20} /> Watch Ad
-              </button>
-              <button onClick={() => setShowAdRefill(false)} className="w-full mt-4 py-3 rounded-xl bg-white/10 text-gray-400 font-semibold">
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <div className="glass-card p-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(0,212,255,0.2))' }}>
-              <div className="text-5xl mb-4 animate-bounce-slow">{currentAd.logo}</div>
-              <p className="text-white font-bold text-lg mb-2">{currentAd.name}</p>
-              <p className="text-gray-400 text-sm mb-4">Ad playing...</p>
-              <div className="text-6xl font-black text-gold-400 font-['Orbitron']">{adTimer}s</div>
-              <div className="mt-4 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
-                <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${((5 - adTimer) / 5) * 100}%`, background: 'linear-gradient(90deg, #00c853, #fbbf24)' }} />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -643,12 +263,6 @@ export function GamePlayView() {
             <p className="text-green-400 text-xs">+{selectedGame.reward_range_min}-{selectedGame.reward_range_max} pts per level</p>
           </div>
         </div>
-        {/* Chances display */}
-        <div className="flex items-center gap-1">
-          {Array.from({ length: MAX_CHANCES }).map((_, i) => (
-            <Heart key={i} size={16} className={i < chancesLeft ? 'text-red-400 fill-red-400' : 'text-gray-600'} />
-          ))}
-        </div>
         <button onClick={() => setShowTutorial(true)} className="p-2 rounded-full bg-white/10 text-gray-400">
           <HelpCircle size={20} />
         </button>
@@ -656,42 +270,24 @@ export function GamePlayView() {
 
       {/* Game Area */}
       <div className="flex-1 overflow-auto">
-        {selectedGame.game_type === 'memory'      && <GameMemory onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'connect'     && <GameTileConnect onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'color'       && <GameColorMatch onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'wordguess'   && <GameWordGuess onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'numberguess' && <GameNumberGuess onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'wordtype'    && <GameWordType onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'math'        && <GameMath onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
-        {selectedGame.game_type === 'drawing'     && <GameDrawing onRoundComplete={consumeChance} onAdError={(msg) => { setRewardAdErrorMsg(msg); setRewardAdError(true); }} />}
+        {selectedGame.game_type === 'memory'      && <GameMemory onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'connect'     && <GameTileConnect onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'color'       && <GameColorMatch onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'wordguess'   && <GameWordGuess onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'numberguess' && <GameNumberGuess onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'wordtype'    && <GameWordType onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'math'        && <GameMath onRoundComplete={() => setRoundCompleted(true)} />}
+        {selectedGame.game_type === 'drawing'     && <GameDrawing onRoundComplete={() => setRoundCompleted(true)} />}
       </div>
 
       {showTutorial && <TutorialOverlay gameType={selectedGame.game_type} onClose={() => setShowTutorial(false)} />}
-
-      {/* Ad Error Modal for reward claim */}
-      {rewardAdError && (
-        <GameAdErrorModal
-          message={rewardAdErrorMsg}
-          onRetry={() => setRewardAdError(false)}
-          onClose={() => setRewardAdError(false)}
-        />
-      )}
-
-      {/* Ad Error Modal for ad refill */}
-      {adError && (
-        <GameAdErrorModal
-          message={adErrorMsg}
-          onRetry={() => { setAdError(false); startAdRefill(); }}
-          onClose={() => { setAdError(false); setShowAdRefill(false); }}
-        />
-      )}
     </div>
   );
 }
 
 // ── useGameReward hook ───────────────────────────────────────────────────────
 
-function useGameReward(onRoundComplete?: () => void, onAdError?: (msg: string) => void) {
+function useGameReward(onRoundComplete?: () => void) {
   const { user, addPoints, haptic, selectedGame } = useApp();
   const { success: showSuccess } = useToast();
   const [pendingReward, setPendingReward] = useState<number | null>(null);
@@ -719,35 +315,25 @@ function useGameReward(onRoundComplete?: () => void, onAdError?: (msg: string) =
 
   const claimReward = useCallback(async () => {
     if (pendingReward !== null) {
-      try {
-        const { result } = await showRandomAd();
-        if (result.opened && (!result.completed || result.watchedSeconds < MIN_AD_SECONDS)) {
-          haptic('error');
-          onAdError?.(result.error || `You only watched ${result.watchedSeconds}s. Need 10s minimum.`);
-          return;
-        }
-      } catch {
-        // Ad SDK failed — give reward anyway
-      }
       await addPoints(pendingReward);
       showSuccess(`+${pendingReward} Points!`, 'Reward claimed!');
       setPendingReward(null);
       setPendingScore(undefined);
     }
-  }, [pendingReward, addPoints, showSuccess, onAdError]);
+  }, [pendingReward, addPoints, showSuccess]);
 
   return { completeLevel, claimReward, pendingReward, pendingScore };
 }
 
 // ── GameMemory ───────────────────────────────────────────────────────────────
 
-function GameMemory({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameMemory({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [cards, setCards] = useState<string[]>([]);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete);
 
   const emojis = ['🧠', '💎', '💰', '🎮', '🏆', '⭐', '🚀', '💫'];
 
@@ -807,12 +393,12 @@ function GameMemory({ onRoundComplete, onAdError }: { onRoundComplete?: () => vo
 
 // ── GameTileConnect ──────────────────────────────────────────────────────────
 
-function GameTileConnect({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameTileConnect({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [tiles, setTiles] = useState<{ id: number; emoji: string; matched: boolean }[]>([]);
   const [selectedTile, setSelectedTile] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward, pendingScore } = useGameReward(onRoundComplete);
 
   const emojis = ['💎', '💰', '🧠', '⚡', '🚀', '⭐', '🎮', '🏆'];
 
@@ -864,7 +450,7 @@ function GameTileConnect({ onRoundComplete, onAdError }: { onRoundComplete?: () 
 
 // ── GameColorMatch ───────────────────────────────────────────────────────────
 
-function GameColorMatch({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameColorMatch({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const colors = [
     { name: 'Red', hex: '#ef4444' }, { name: 'Orange', hex: '#f97316' }, { name: 'Yellow', hex: '#eab308' },
     { name: 'Green', hex: '#22c55e' }, { name: 'Blue', hex: '#3b82f6' }, { name: 'Purple', hex: '#a855f7' }, { name: 'Pink', hex: '#ec4899' },
@@ -876,7 +462,7 @@ function GameColorMatch({ onRoundComplete, onAdError }: { onRoundComplete?: () =
   const [gameOver, setGameOver] = useState(false);
   const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
 
   useEffect(() => { newRound(); }, []);
   useEffect(() => {
@@ -926,7 +512,7 @@ function GameColorMatch({ onRoundComplete, onAdError }: { onRoundComplete?: () =
 
 const WORD_LIST = ['BRAIN', 'MONEY', 'GAMES', 'POINT', 'EARNS', 'COINS', 'SMART', 'BONUS', 'PRIZE', 'TOKEN', 'SPEED', 'QUICK', 'LUCKY', 'POWER', 'LIGHT', 'TRACK', 'SCORE', 'QUEST', 'FLASH', 'GLOBE'];
 
-function GameWordGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameWordGuess({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [target, setTarget] = useState(() => WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [current, setCurrent] = useState('');
@@ -934,7 +520,7 @@ function GameWordGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () =>
   const [won, setWon] = useState(false);
   const MAX_GUESSES = 6;
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
 
   const keyboard = ['QWERTYUIOP'.split(''), 'ASDFGHJKL'.split(''), ['⌫', ...'ZXCVBNM'.split(''), '↵']];
 
@@ -1007,14 +593,14 @@ function GameWordGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () =>
 
 // ── GameNumberGuess ─────────────────────────────────────────────────────────────
 
-function GameNumberGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameNumberGuess({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [target, setTarget] = useState(() => Math.floor(Math.random() * 100) + 1);
   const [guess, setGuess] = useState('');
   const [guesses, setGuesses] = useState<number[]>([]);
   const [hint, setHint] = useState<'higher' | 'lower' | 'correct' | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
 
   function handleGuess() {
     const num = parseInt(guess);
@@ -1056,7 +642,7 @@ function GameNumberGuess({ onRoundComplete, onAdError }: { onRoundComplete?: () 
 
 const TYPE_WORDS = ['brain', 'cash', 'money', 'games', 'points', 'earn', 'play', 'bonus', 'prize', 'fast', 'quick', 'type', 'word', 'game', 'win', 'score', 'reward', 'token', 'speed', 'power', 'light', 'smart', 'level', 'quest'];
 
-function GameWordType({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameWordType({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [words, setWords] = useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -1066,7 +652,7 @@ function GameWordType({ onRoundComplete, onAdError }: { onRoundComplete?: () => 
   const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
 
   useEffect(() => { const shuffled = [...TYPE_WORDS].sort(() => Math.random() - 0.5).slice(0, 10); setWords(shuffled); }, []);
   useEffect(() => {
@@ -1109,7 +695,7 @@ function GameWordType({ onRoundComplete, onAdError }: { onRoundComplete?: () => 
 
 // ── GameMath ───────────────────────────────────────────────────────────────────
 
-function GameMath({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameMath({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [problem, setProblem] = useState({ a: 0, b: 0, op: '+' as '+' | '-' | '×', answer: 0 });
   const [input, setInput] = useState('');
   const [score, setScore] = useState(0);
@@ -1118,7 +704,7 @@ function GameMath({ onRoundComplete, onAdError }: { onRoundComplete?: () => void
   const [flash, setFlash] = useState<'correct' | 'wrong' | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
 
   useEffect(() => { newProblem(); }, []);
   useEffect(() => {
@@ -1173,14 +759,14 @@ function GameMath({ onRoundComplete, onAdError }: { onRoundComplete?: () => void
 
 const SHAPES = ['Circle', 'Square', 'Triangle', 'Star', 'Heart', 'Smiley'];
 
-function GameDrawing({ onRoundComplete, onAdError }: { onRoundComplete?: () => void; onAdError?: (msg: string) => void }) {
+function GameDrawing({ onRoundComplete }: { onRoundComplete?: () => void }) {
   const [targetShape, setTargetShape] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
   const { haptic } = useApp();
-  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete, onAdError);
+  const { completeLevel, claimReward, pendingReward } = useGameReward(onRoundComplete);
 
   useEffect(() => { newShape(); }, []);
 

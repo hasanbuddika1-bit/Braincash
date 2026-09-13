@@ -73,6 +73,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tgUser, setTgUser] = useState<AppContextType['tgUser']>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Wrap setUser to always persist to cache
   const setUser = useCallback((u: User | null) => {
@@ -93,12 +94,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  // Track view history for back navigation
+  // Track view history for back navigation — also triggers a data refresh on every navigation
   const setCurrentView = useCallback((view: ViewType) => {
     if (!EXCLUDED_FROM_HISTORY.includes(currentView)) {
       setViewHistory((prev) => [...prev, currentView]);
     }
     setCurrentViewState(view);
+    setRefreshTrigger(t => t + 1);
   }, [currentView]);
 
   const goBack = useCallback(() => {
