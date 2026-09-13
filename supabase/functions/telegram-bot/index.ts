@@ -459,7 +459,7 @@ Deno.serve(async (req: Request) => {
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Notify withdraw rejection to user
+      // Notify withdraw rejection to user + payment channel
       if (action === 'notify-withdraw-reject' && bodyData.user_telegram_id && bodyData.withdraw_data) {
         const w = bodyData.withdraw_data;
         const method = 'USDT (BEP20)';
@@ -472,6 +472,18 @@ Deno.serve(async (req: Request) => {
           `💰 <b>Your points have been refunded.</b>`,
           { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
         );
+        // Also notify payment channel
+        try {
+          await sendMessage(botToken, PAYMENT_CHANNEL.replace('https://t.me/', '@'),
+            `❌ <b>Withdrawal Rejected</b>\n\n` +
+            `👤 <b>User ID:</b> ${bodyData.user_telegram_id}\n` +
+            `🔢 <b>Withdraw #:</b> #${w.withdraw_number}\n` +
+            `💵 <b>Amount:</b> ${w.amount.toFixed(4)} USD\n` +
+            `❌ <b>Reason:</b> ${w.reject_reason || 'Not specified'}\n` +
+            `💰 <b>Points refunded to user.</b>`,
+            { inline_keyboard: [[{ text: "🧠 Open Mini App", web_app: { url: MINI_APP_URL } }]] }
+          );
+        } catch (e) { console.error('Payment channel reject notification failed:', e); }
         return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 

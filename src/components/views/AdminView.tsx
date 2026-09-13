@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Users, DollarSign, TrendingUp, Gift, Settings, CheckCircle, XCircle, Clock,
   BarChart3, Bell, RefreshCw, AlertTriangle, Globe, Handshake, ExternalLink, Send, X, Tv, Save,
-  Ban, UserCheck, Plus, Minus, Megaphone, Wrench, Trash2, History,
+  Ban, UserCheck, Plus, Minus, Megaphone, Wrench, Trash2, History, Lock, LogIn,
 } from 'lucide-react';
 import type { Withdrawal, User, Task, PartnerSubmission } from '../../types';
 
@@ -13,12 +13,39 @@ const ADMIN_TELEGRAM_ID = 5419054691;
 const WITHDRAW_FEE = 0.01;
 const WITHDRAW_FEE_PERCENT = 5;
 const POINTS_TO_USD = 0.0001;
+const ADMIN_EMAIL = 'athapaththubuddika1@gmail.com';
+const ADMIN_PASSWORD = 'Hasanbuddika1';
+const ADMIN_LOGIN_KEY = 'brain_cash_admin_authed';
 
 export function AdminView() {
-  const { user, haptic } = useApp();
+  const { user, haptic, refreshTrigger } = useApp();
   const [tab, setTab] = useState<'stats' | 'users' | 'withdrawals' | 'tasks' | 'partner' | 'ads' | 'broadcast' | 'withdraw' | 'settings'>('stats');
+  const [authed, setAuthed] = useState(() => { try { return sessionStorage.getItem(ADMIN_LOGIN_KEY) === '1'; } catch { return false; } });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const isAdmin = user?.is_admin || user?.telegram_id === ADMIN_TELEGRAM_ID;
+
+  function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    haptic('light');
+    if (email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      setAuthed(true);
+      try { sessionStorage.setItem(ADMIN_LOGIN_KEY, '1'); } catch {}
+      setLoginError('');
+      haptic('success');
+    } else {
+      haptic('error');
+      setLoginError('Invalid email or password.');
+    }
+  }
+
+  function handleLogout() {
+    haptic('light');
+    setAuthed(false);
+    try { sessionStorage.removeItem(ADMIN_LOGIN_KEY); } catch {}
+  }
 
   if (!isAdmin) {
     return (
@@ -30,14 +57,63 @@ export function AdminView() {
     );
   }
 
+  if (!authed) {
+    return (
+      <div className="px-4 pb-24 pt-4 flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mx-auto mb-4">
+              <Lock className="text-white" size={36} />
+            </div>
+            <h1 className="text-2xl font-bold font-['Orbitron'] text-white mb-2">Admin Login</h1>
+            <p className="text-gray-400 text-sm">Enter your credentials to access the admin panel.</p>
+          </div>
+          <form onSubmit={handleLogin} className="glass-card p-6 space-y-4">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@email.com"
+                required
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+                className="w-full py-3 px-4 rounded-xl bg-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            {loginError && <p className="text-red-400 text-sm text-center">{loginError}</p>}
+            <button type="submit" className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold flex items-center justify-center gap-2">
+              <LogIn size={18} /> Login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 pb-24 pt-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold font-['Orbitron'] text-white flex items-center gap-3">
-          <span className="text-4xl">👑</span>
-          Admin Panel
-        </h1>
-        <p className="text-purple-300 mt-2">Manage your Brain Cash app</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold font-['Orbitron'] text-white flex items-center gap-3">
+            <span className="text-4xl">👑</span>
+            Admin Panel
+          </h1>
+          <p className="text-purple-300 mt-2">Manage your Brain Cash app</p>
+        </div>
+        <button onClick={handleLogout} className="px-4 py-2 rounded-xl bg-white/10 text-gray-400 text-sm font-semibold hover:bg-white/20">
+          Logout
+        </button>
       </div>
 
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
@@ -60,16 +136,16 @@ export function AdminView() {
         ))}
       </div>
 
-      {tab === 'stats' && <AdminStats />}
-      {tab === 'users' && <AdminUsers />}
-      {tab === 'suspended' && <AdminSuspended />}
-      {tab === 'withdrawals' && <AdminWithdrawals />}
-      {tab === 'tasks' && <AdminTasks />}
-      {tab === 'partner' && <AdminPartner />}
-      {tab === 'ads' && <AdminAds />}
-      {tab === 'broadcast' && <AdminBroadcast />}
-      {tab === 'withdraw' && <AdminWithdrawSettings />}
-      {tab === 'settings' && <AdminSettings />}
+      {tab === 'stats' && <AdminStats key={`stats-${refreshTrigger}`} />}
+      {tab === 'users' && <AdminUsers key={`users-${refreshTrigger}`} />}
+      {tab === 'suspended' && <AdminSuspended key={`suspended-${refreshTrigger}`} />}
+      {tab === 'withdrawals' && <AdminWithdrawals key={`withdrawals-${refreshTrigger}`} />}
+      {tab === 'tasks' && <AdminTasks key={`tasks-${refreshTrigger}`} />}
+      {tab === 'partner' && <AdminPartner key={`partner-${refreshTrigger}`} />}
+      {tab === 'ads' && <AdminAds key={`ads-${refreshTrigger}`} />}
+      {tab === 'broadcast' && <AdminBroadcast key={`broadcast-${refreshTrigger}`} />}
+      {tab === 'withdraw' && <AdminWithdrawSettings key={`withdraw-${refreshTrigger}`} />}
+      {tab === 'settings' && <AdminSettings key={`settings-${refreshTrigger}`} />}
     </div>
   );
 }

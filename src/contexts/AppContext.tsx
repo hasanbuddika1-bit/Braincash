@@ -53,6 +53,7 @@ interface AppContextType {
     photo_url?: string;
   } | null;
   haptic: (type: 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning') => void;
+  refreshTrigger: number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -108,10 +109,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (prev.length > 0) {
         const lastView = prev[prev.length - 1];
         setCurrentViewState(lastView);
+        setRefreshTrigger(t => t + 1);
         return prev.slice(0, -1);
       }
-      // Default to home if no history
       setCurrentViewState('home');
+      setRefreshTrigger(t => t + 1);
       return [];
     });
   }, []);
@@ -713,6 +715,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     recordActivity,
     tgUser,
     haptic,
+    refreshTrigger,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
